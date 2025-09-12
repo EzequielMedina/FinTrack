@@ -1,0 +1,19 @@
+<div class="login-wrapper">
+  <mat-card class="login-card">
+    <h2>Iniciar sesión</h2>
+    <form (ngSubmit)="onSubmit()" #f="ngForm">
+      <mat-form-field appearance="outline" class="full">
+        <mat-label>Email</mat-label>
+        <input matInput name="email" required [(ngModel)]="email" type="email" />
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="full">
+        <mat-label>Password</mat-label>
+        <input matInput name="password" required [(ngModel)]="password" type="password" />
+      </mat-form-field>
+      <button mat-raised-button color="primary" [disabled]="loading" type="submit">
+        Entrar
+      </button>
+      <p class="error" *ngIf="error">{{ error }}</p>
+    </form>
+  </mat-card>
+</div>

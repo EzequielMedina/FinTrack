@@ -28,6 +28,8 @@ COPY nginx.conf /etc/nginx/nginx.conf
 # Copy Angular browser build output
 COPY --from=builder /app/dist/fintrack/browser /usr/share/nginx/html
 
+RUN apk add --no-cache curl
+
 # Add non-root user
 RUN addgroup -g 1001 -S nodejs
 RUN adduser -S angular -u 1001

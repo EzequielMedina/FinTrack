@@ -4,37 +4,17 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { firstValueFrom } from 'rxjs';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule],
-  template: `
-    <section class="login">
-      <h2>Iniciar sesión</h2>
-      <form (ngSubmit)="onSubmit()" #f="ngForm">
-        <label>
-          Email
-          <input name="email" required [(ngModel)]="email" type="email" />
-        </label>
-        <label>
-          Password
-          <input name="password" required [(ngModel)]="password" type="password" />
-        </label>
-        <button [disabled]="loading" type="submit">Entrar</button>
-      </form>
-      <p class="error" *ngIf="error">{{ error }}</p>
-    </section>
-  `,
-  styles: [
-    `
-    .login { max-width: 360px; margin: 3rem auto; display:flex; flex-direction:column; gap:.75rem; }
-    label { display:flex; flex-direction:column; gap:.25rem; }
-    input { padding:.5rem; border:1px solid #ccc; border-radius:4px; }
-    button { padding:.5rem .75rem; }
-    .error { color: #b00020; }
-    `
-  ],
+  imports: [CommonModule, FormsModule, MatCardModule, MatFormFieldModule, MatInputModule, MatButtonModule],
+  templateUrl: './login.component.html',
+  styleUrls: ['./login.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LoginComponent {
