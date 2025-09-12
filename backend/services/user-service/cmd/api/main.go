@@ -49,7 +49,7 @@ func main() {
 	})
 
 	handlers := apirouter.NewHandlers(application)
-	apirouter.MapRoutes(r, handlers, cfg)
+	apirouter.MapRoutes(r, handlers, cfg, application)
 
 	addr := fmt.Sprintf(":%s", cfg.Port)
 	srv := &http.Server{
