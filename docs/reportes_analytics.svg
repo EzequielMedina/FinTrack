@@ -1,0 +1,250 @@
+<svg width="1200" height="800" viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="1200" height="800" fill="#f8fafc"/>
+  
+  <!-- Header -->
+  <rect x="0" y="0" width="1200" height="70" fill="#1e293b"/>
+  
+  <!-- Logo -->
+  <circle cx="40" cy="35" r="20" fill="#3b82f6"/>
+  <text x="70" y="42" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="white">FinTrack</text>
+  
+  <!-- User Menu -->
+  <circle cx="1140" cy="35" r="18" fill="#64748b"/>
+  <text x="1135" y="40" font-family="Arial, sans-serif" font-size="12" fill="white">JD</text>
+  
+  <!-- Navigation -->
+  <text x="300" y="42" font-family="Arial, sans-serif" font-size="14" fill="#94a3b8">Dashboard</text>
+  <text x="400" y="42" font-family="Arial, sans-serif" font-size="14" fill="#94a3b8">Cuentas</text>
+  <text x="480" y="42" font-family="Arial, sans-serif" font-size="14" fill="#94a3b8">Tarjetas</text>
+  <text x="560" y="42" font-family="Arial, sans-serif" font-size="14" fill="#94a3b8">Billetera</text>
+  <text x="640" y="42" font-family="Arial, sans-serif" font-size="14" fill="#cbd5e1">Reportes</text>
+  
+  <!-- Sidebar -->
+  <rect x="0" y="70" width="250" height="730" fill="#f1f5f9"/>
+  
+  <!-- Sidebar Menu Items -->
+  <rect x="20" y="100" width="210" height="40" rx="8" fill="transparent"/>
+  <text x="35" y="125" font-family="Arial, sans-serif" font-size="14" fill="#64748b">📊 Dashboard</text>
+  
+  <rect x="20" y="150" width="210" height="40" rx="8" fill="transparent"/>
+  <text x="35" y="175" font-family="Arial, sans-serif" font-size="14" fill="#64748b">🏦 Mis Cuentas</text>
+  
+  <rect x="20" y="200" width="210" height="40" rx="8" fill="transparent"/>
+  <text x="35" y="225" font-family="Arial, sans-serif" font-size="14" fill="#64748b">💳 Mis Tarjetas</text>
+  
+  <rect x="20" y="250" width="210" height="40" rx="8" fill="transparent"/>
+  <text x="35" y="275" font-family="Arial, sans-serif" font-size="14" fill="#64748b">💰 Billetera</text>
+  
+  <rect x="20" y="300" width="210" height="40" rx="8" fill="#3b82f6"/>
+  <text x="35" y="325" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">📈 Reportes</text>
+  
+  <rect x="20" y="350" width="210" height="40" rx="8" fill="transparent"/>
+  <text x="35" y="375" font-family="Arial, sans-serif" font-size="14" fill="#64748b">🤖 Chatbot</text>
+  
+  <!-- Report Submenu -->
+  <rect x="40" y="400" width="190" height="30" rx="6" fill="#e2e8f0"/>
+  <text x="55" y="420" font-family="Arial, sans-serif" font-size="12" fill="#475569">📊 Analytics</text>
+  
+  <rect x="40" y="440" width="190" height="30" rx="6" fill="transparent"/>
+  <text x="55" y="460" font-family="Arial, sans-serif" font-size="12" fill="#64748b">📋 Movimientos</text>
+  
+  <rect x="40" y="480" width="190" height="30" rx="6" fill="transparent"/>
+  <text x="55" y="500" font-family="Arial, sans-serif" font-size="12" fill="#64748b">💹 Balances</text>
+  
+  <!-- Main Content Area -->
+  <rect x="270" y="90" width="910" height="690" fill="white" rx="12"/>
+  
+  <!-- Page Title -->
+  <text x="300" y="130" font-family="Arial, sans-serif" font-size="28" font-weight="bold" fill="#1e293b">Analytics y Reportes</text>
+  <text x="300" y="155" font-family="Arial, sans-serif" font-size="16" fill="#64748b">Análisis detallado de tu actividad financiera</text>
+  
+  <!-- Filter Controls -->
+  <rect x="300" y="170" width="860" height="50" rx="8" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  
+  <!-- Date Range -->
+  <text x="320" y="190" font-family="Arial, sans-serif" font-size="12" fill="#374151">Período</text>
+  <rect x="320" y="195" width="120" height="20" rx="4" fill="white" stroke="#d1d5db" stroke-width="1"/>
+  <text x="325" y="208" font-family="Arial, sans-serif" font-size="11" fill="#374151">Últimos 30 días ▼</text>
+  
+  <!-- Account Filter -->
+  <text x="460" y="190" font-family="Arial, sans-serif" font-size="12" fill="#374151">Cuenta</text>
+  <rect x="460" y="195" width="100" height="20" rx="4" fill="white" stroke="#d1d5db" stroke-width="1"/>
+  <text x="465" y="208" font-family="Arial, sans-serif" font-size="11" fill="#374151">Todas ▼</text>
+  
+  <!-- Currency Filter -->
+  <text x="580" y="190" font-family="Arial, sans-serif" font-size="12" fill="#374151">Moneda</text>
+  <rect x="580" y="195" width="80" height="20" rx="4" fill="white" stroke="#d1d5db" stroke-width="1"/>
+  <text x="585" y="208" font-family="Arial, sans-serif" font-size="11" fill="#374151">ARS ▼</text>
+  
+  <!-- Export Buttons -->
+  <rect x="1000" y="195" width="60" height="20" rx="4" fill="#10b981"/>
+  <text x="1015" y="208" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">📊 Excel</text>
+  
+  <rect x="1070" y="195" width="60" height="20" rx="4" fill="#dc2626"/>
+  <text x="1088" y="208" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">📄 PDF</text>
+  
+  <!-- KPI Cards Row -->
+  <!-- Total Income -->
+  <rect x="300" y="240" width="200" height="100" rx="12" fill="linear-gradient(135deg, #10b981 0%, #059669 100%)"/>
+  <text x="320" y="265" font-family="Arial, sans-serif" font-size="14" fill="#a7f3d0">Ingresos Totales</text>
+  <text x="320" y="290" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="white">$2,450,000</text>
+  <text x="320" y="315" font-family="Arial, sans-serif" font-size="12" fill="#a7f3d0">↗ +15.2% vs mes anterior</text>
+  <circle cx="450" cy="280" r="20" fill="rgba(255,255,255,0.2)"/>
+  <text x="440" y="288" font-family="Arial, sans-serif" font-size="16" fill="white">💰</text>
+  
+  <!-- Total Expenses -->
+  <rect x="520" y="240" width="200" height="100" rx="12" fill="linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)"/>
+  <text x="540" y="265" font-family="Arial, sans-serif" font-size="14" fill="#fca5a5">Gastos Totales</text>
+  <text x="540" y="290" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="white">$1,890,000</text>
+  <text x="540" y="315" font-family="Arial, sans-serif" font-size="12" fill="#fca5a5">↗ +8.7% vs mes anterior</text>
+  <circle cx="670" cy="280" r="20" fill="rgba(255,255,255,0.2)"/>
+  <text x="660" y="288" font-family="Arial, sans-serif" font-size="16" fill="white">💸</text>
+  
+  <!-- Net Balance -->
+  <rect x="740" y="240" width="200" height="100" rx="12" fill="linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)"/>
+  <text x="760" y="265" font-family="Arial, sans-serif" font-size="14" fill="#bfdbfe">Balance Neto</text>
+  <text x="760" y="290" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="white">$560,000</text>
+  <text x="760" y="315" font-family="Arial, sans-serif" font-size="12" fill="#bfdbfe">↗ +28.5% vs mes anterior</text>
+  <circle cx="890" cy="280" r="20" fill="rgba(255,255,255,0.2)"/>
+  <text x="880" y="288" font-family="Arial, sans-serif" font-size="16" fill="white">📈</text>
+  
+  <!-- Transactions Count -->
+  <rect x="960" y="240" width="200" height="100" rx="12" fill="linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)"/>
+  <text x="980" y="265" font-family="Arial, sans-serif" font-size="14" fill="#c4b5fd">Transacciones</text>
+  <text x="980" y="290" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="white">1,247</text>
+  <text x="980" y="315" font-family="Arial, sans-serif" font-size="12" fill="#c4b5fd">↗ +12.3% vs mes anterior</text>
+  <circle cx="1110" cy="280" r="20" fill="rgba(255,255,255,0.2)"/>
+  <text x="1100" y="288" font-family="Arial, sans-serif" font-size="16" fill="white">🔄</text>
+  
+  <!-- Charts Section -->
+  <!-- Monthly Trend Chart -->
+  <rect x="300" y="360" width="420" height="200" rx="12" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="320" y="385" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#1e293b">📈 Tendencia Mensual</text>
+  
+  <!-- Chart Area -->
+  <rect x="320" y="400" width="380" height="140" fill="white" stroke="#e5e7eb" stroke-width="1"/>
+  
+  <!-- Chart Grid Lines -->
+  <line x1="320" y1="420" x2="700" y2="420" stroke="#f3f4f6" stroke-width="1"/>
+  <line x1="320" y1="460" x2="700" y2="460" stroke="#f3f4f6" stroke-width="1"/>
+  <line x1="320" y1="500" x2="700" y2="500" stroke="#f3f4f6" stroke-width="1"/>
+  
+  <!-- Income Line (Green) -->
+  <polyline points="340,480 380,460 420,440 460,420 500,430 540,410 580,400 620,390 660,380" 
+            fill="none" stroke="#10b981" stroke-width="3"/>
+  
+  <!-- Expense Line (Red) -->
+  <polyline points="340,500 380,490 420,480 460,470 500,480 540,470 580,460 620,450 660,440" 
+            fill="none" stroke="#dc2626" stroke-width="3"/>
+  
+  <!-- Chart Labels -->
+  <text x="325" y="555" font-family="Arial, sans-serif" font-size="10" fill="#6b7280">Ene</text>
+  <text x="365" y="555" font-family="Arial, sans-serif" font-size="10" fill="#6b7280">Feb</text>
+  <text x="405" y="555" font-family="Arial, sans-serif" font-size="10" fill="#6b7280">Mar</text>
+  <text x="445" y="555" font-family="Arial, sans-serif" font-size="10" fill="#6b7280">Abr</text>
+  <text x="485" y="555" font-family="Arial, sans-serif" font-size="10" fill="#6b7280">May</text>
+  <text x="525" y="555" font-family="Arial, sans-serif" font-size="10" fill="#6b7280">Jun</text>
+  <text x="565" y="555" font-family="Arial, sans-serif" font-size="10" fill="#6b7280">Jul</text>
+  <text x="605" y="555" font-family="Arial, sans-serif" font-size="10" fill="#6b7280">Ago</text>
+  <text x="645" y="555" font-family="Arial, sans-serif" font-size="10" fill="#6b7280">Sep</text>
+  
+  <!-- Legend -->
+  <circle cx="730" cy="420" r="4" fill="#10b981"/>
+  <text x="740" y="425" font-family="Arial, sans-serif" font-size="12" fill="#374151">Ingresos</text>
+  
+  <circle cx="730" cy="440" r="4" fill="#dc2626"/>
+  <text x="740" y="445" font-family="Arial, sans-serif" font-size="12" fill="#374151">Gastos</text>
+  
+  <!-- Category Breakdown Chart -->
+  <rect x="740" y="360" width="420" height="200" rx="12" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="760" y="385" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#1e293b">🥧 Gastos por Categoría</text>
+  
+  <!-- Pie Chart (simplified representation) -->
+  <circle cx="860" cy="470" r="60" fill="#e5e7eb"/>
+  
+  <!-- Pie Slices -->
+  <path d="M 860 410 A 60 60 0 0 1 920 470 L 860 470 Z" fill="#3b82f6"/>
+  <path d="M 920 470 A 60 60 0 0 1 890 525 L 860 470 Z" fill="#10b981"/>
+  <path d="M 890 525 A 60 60 0 0 1 830 525 L 860 470 Z" fill="#f59e0b"/>
+  <path d="M 830 525 A 60 60 0 0 1 800 470 L 860 470 Z" fill="#dc2626"/>
+  <path d="M 800 470 A 60 60 0 0 1 860 410 L 860 470 Z" fill="#8b5cf6"/>
+  
+  <!-- Category Legend -->
+  <rect x="950" y="420" width="12" height="12" fill="#3b82f6"/>
+  <text x="970" y="430" font-family="Arial, sans-serif" font-size="12" fill="#374151">Alimentación (35%)</text>
+  
+  <rect x="950" y="440" width="12" height="12" fill="#10b981"/>
+  <text x="970" y="450" font-family="Arial, sans-serif" font-size="12" fill="#374151">Transporte (20%)</text>
+  
+  <rect x="950" y="460" width="12" height="12" fill="#f59e0b"/>
+  <text x="970" y="470" font-family="Arial, sans-serif" font-size="12" fill="#374151">Entretenimiento (15%)</text>
+  
+  <rect x="950" y="480" width="12" height="12" fill="#dc2626"/>
+  <text x="970" y="490" font-family="Arial, sans-serif" font-size="12" fill="#374151">Servicios (20%)</text>
+  
+  <rect x="950" y="500" width="12" height="12" fill="#8b5cf6"/>
+  <text x="970" y="510" font-family="Arial, sans-serif" font-size="12" fill="#374151">Otros (10%)</text>
+  
+  <!-- Recent Transactions Table -->
+  <rect x="300" y="580" width="860" height="180" rx="12" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="320" y="605" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#1e293b">📋 Últimas Transacciones</text>
+  
+  <!-- Table Header -->
+  <rect x="320" y="615" width="820" height="30" fill="#e2e8f0"/>
+  <text x="330" y="635" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#374151">Fecha</text>
+  <text x="420" y="635" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#374151">Descripción</text>
+  <text x="650" y="635" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#374151">Categoría</text>
+  <text x="780" y="635" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#374151">Tipo</text>
+  <text x="880" y="635" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#374151">Monto</text>
+  <text x="1050" y="635" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#374151">Estado</text>
+  
+  <!-- Table Rows -->
+  <!-- Row 1 -->
+  <rect x="320" y="645" width="820" height="25" fill="white"/>
+  <text x="330" y="662" font-family="Arial, sans-serif" font-size="11" fill="#374151">15/01/2024</text>
+  <text x="420" y="662" font-family="Arial, sans-serif" font-size="11" fill="#374151">Supermercado Central</text>
+  <text x="650" y="662" font-family="Arial, sans-serif" font-size="11" fill="#374151">Alimentación</text>
+  <text x="780" y="662" font-family="Arial, sans-serif" font-size="11" fill="#374151">Débito</text>
+  <text x="880" y="662" font-family="Arial, sans-serif" font-size="11" fill="#dc2626">-$45,230</text>
+  <rect x="1050" y="655" width="60" height="15" rx="8" fill="#dcfce7"/>
+  <text x="1065" y="665" font-family="Arial, sans-serif" font-size="9" fill="#166534">Completado</text>
+  
+  <!-- Row 2 -->
+  <rect x="320" y="670" width="820" height="25" fill="#f9fafb"/>
+  <text x="330" y="687" font-family="Arial, sans-serif" font-size="11" fill="#374151">14/01/2024</text>
+  <text x="420" y="687" font-family="Arial, sans-serif" font-size="11" fill="#374151">Transferencia recibida</text>
+  <text x="650" y="687" font-family="Arial, sans-serif" font-size="11" fill="#374151">Transferencia</text>
+  <text x="780" y="687" font-family="Arial, sans-serif" font-size="11" fill="#374151">Ingreso</text>
+  <text x="880" y="687" font-family="Arial, sans-serif" font-size="11" fill="#10b981">+$125,000</text>
+  <rect x="1050" y="680" width="60" height="15" rx="8" fill="#dcfce7"/>
+  <text x="1065" y="690" font-family="Arial, sans-serif" font-size="9" fill="#166534">Completado</text>
+  
+  <!-- Row 3 -->
+  <rect x="320" y="695" width="820" height="25" fill="white"/>
+  <text x="330" y="712" font-family="Arial, sans-serif" font-size="11" fill="#374151">13/01/2024</text>
+  <text x="420" y="712" font-family="Arial, sans-serif" font-size="11" fill="#374151">Uber - Viaje Centro</text>
+  <text x="650" y="712" font-family="Arial, sans-serif" font-size="11" fill="#374151">Transporte</text>
+  <text x="780" y="712" font-family="Arial, sans-serif" font-size="11" fill="#374151">Débito</text>
+  <text x="880" y="712" font-family="Arial, sans-serif" font-size="11" fill="#dc2626">-$8,500</text>
+  <rect x="1050" y="705" width="60" height="15" rx="8" fill="#dcfce7"/>
+  <text x="1065" y="715" font-family="Arial, sans-serif" font-size="9" fill="#166534">Completado</text>
+  
+  <!-- Row 4 -->
+  <rect x="320" y="720" width="820" height="25" fill="#f9fafb"/>
+  <text x="330" y="737" font-family="Arial, sans-serif" font-size="11" fill="#374151">12/01/2024</text>
+  <text x="420" y="737" font-family="Arial, sans-serif" font-size="11" fill="#374151">Netflix Suscripción</text>
+  <text x="650" y="737" font-family="Arial, sans-serif" font-size="11" fill="#374151">Entretenimiento</text>
+  <text x="780" y="737" font-family="Arial, sans-serif" font-size="11" fill="#374151">Débito</text>
+  <text x="880" y="737" font-family="Arial, sans-serif" font-size="11" fill="#dc2626">-$2,990</text>
+  <rect x="1050" y="730" width="60" height="15" rx="8" fill="#fef3c7"/>
+  <text x="1065" y="740" font-family="Arial, sans-serif" font-size="9" fill="#92400e">Pendiente</text>
+  
+  <!-- Chatbot Button -->
+  <circle cx="1100" cy="700" r="30" fill="#3b82f6" stroke="white" stroke-width="3"/>
+  <text x="1090" y="708" font-family="Arial, sans-serif" font-size="20" fill="white">💬</text>
+  
+  <!-- Notification Badge -->
+  <circle cx="1115" cy="685" r="8" fill="#dc2626"/>
+  <text x="1111" y="690" font-family="Arial, sans-serif" font-size="10" fill="white">3</text>
+</svg>

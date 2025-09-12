@@ -1,0 +1,314 @@
+version: '3.8'
+
+services:
+  # Database
+  mysql:
+    build:
+      context: ./database
+      dockerfile: Dockerfile
+    container_name: fintrack-mysql
+    environment:
+      MYSQL_DATABASE: fintrack
+      MYSQL_USER: fintrack_user
+      MYSQL_PASSWORD: fintrack_password
+      MYSQL_ROOT_PASSWORD: root_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/migrations:/docker-entrypoint-initdb.d/migrations
+      - ./database/seeds:/docker-entrypoint-initdb.d/seeds
+    networks:
+      - fintrack-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "fintrack_user", "-pfintrack_password"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+
+
+  # User Service
+  user-service:
+    build:
+      context: ./backend/services/user-service
+      dockerfile: Dockerfile
+    container_name: fintrack-user-service
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_NAME=fintrack
+      - DB_USER=fintrack_user
+      - DB_PASSWORD=fintrack_password
+      - JWT_SECRET=your-jwt-secret-key
+      - PORT=8080
+    ports:
+      - "8081:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - fintrack-network
+    healthcheck:
+      test: ["CMD", "./main", "health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Transaction Service
+  transaction-service:
+    build:
+      context: ./backend/services/transaction-service
+      dockerfile: Dockerfile
+    container_name: fintrack-transaction-service
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_NAME=fintrack
+      - DB_USER=fintrack_user
+      - DB_PASSWORD=fintrack_password
+      - USER_SERVICE_URL=http://user-service:8080
+      - WALLET_SERVICE_URL=http://wallet-service:8080
+      - PORT=8080
+    ports:
+      - "8082:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      user-service:
+        condition: service_healthy
+    networks:
+      - fintrack-network
+    healthcheck:
+      test: ["CMD", "./main", "health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Wallet Service
+  wallet-service:
+    build:
+      context: ./backend/services/wallet-service
+      dockerfile: Dockerfile
+    container_name: fintrack-wallet-service
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_NAME=fintrack
+      - DB_USER=fintrack_user
+      - DB_PASSWORD=fintrack_password
+      - USER_SERVICE_URL=http://user-service:8080
+      - PORT=8080
+    ports:
+      - "8083:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      user-service:
+        condition: service_healthy
+    networks:
+      - fintrack-network
+    healthcheck:
+      test: ["CMD", "./main", "health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Account Service
+  account-service:
+    build:
+      context: ./backend/services/account-service
+      dockerfile: Dockerfile
+    container_name: fintrack-account-service
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_NAME=fintrack
+      - DB_USER=fintrack_user
+      - DB_PASSWORD=fintrack_password
+      - USER_SERVICE_URL=http://user-service:8080
+      - PORT=8080
+    ports:
+      - "8084:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      user-service:
+        condition: service_healthy
+    networks:
+      - fintrack-network
+    healthcheck:
+      test: ["CMD", "./main", "health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Notification Service
+  notification-service:
+    build:
+      context: ./backend/services/notification-service
+      dockerfile: Dockerfile
+    container_name: fintrack-notification-service
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_NAME=fintrack
+      - DB_USER=fintrack_user
+      - DB_PASSWORD=fintrack_password
+      - USER_SERVICE_URL=http://user-service:8080
+      - SMTP_HOST=smtp.gmail.com
+      - SMTP_PORT=587
+      - SMTP_USER=your-email@gmail.com
+      - SMTP_PASSWORD=your-app-password
+      - PORT=8080
+    ports:
+      - "8085:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      user-service:
+        condition: service_healthy
+    networks:
+      - fintrack-network
+    healthcheck:
+      test: ["CMD", "./main", "health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Chatbot Service
+  chatbot-service:
+    build:
+      context: ./backend/services/chatbot-service
+      dockerfile: Dockerfile
+    container_name: fintrack-chatbot-service
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_NAME=fintrack
+      - DB_USER=fintrack_user
+      - DB_PASSWORD=fintrack_password
+      - USER_SERVICE_URL=http://user-service:8080
+      - OPENAI_API_KEY=your-openai-api-key
+      - PORT=8080
+    ports:
+      - "8086:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      user-service:
+        condition: service_healthy
+    networks:
+      - fintrack-network
+    healthcheck:
+      test: ["CMD", "./main", "health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Exchange Service
+  exchange-service:
+    build:
+      context: ./backend/services/exchange-service
+      dockerfile: Dockerfile
+    container_name: fintrack-exchange-service
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_NAME=fintrack
+      - DB_USER=fintrack_user
+      - DB_PASSWORD=fintrack_password
+      - EXCHANGE_API_KEY=your-exchange-api-key
+      - PORT=8080
+    ports:
+      - "8087:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - fintrack-network
+    healthcheck:
+      test: ["CMD", "./main", "health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Report Service
+  report-service:
+    build:
+      context: ./backend/services/report-service
+      dockerfile: Dockerfile
+    container_name: fintrack-report-service
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_NAME=fintrack
+      - DB_USER=fintrack_user
+      - DB_PASSWORD=fintrack_password
+      - USER_SERVICE_URL=http://user-service:8080
+      - TRANSACTION_SERVICE_URL=http://transaction-service:8080
+      - WALLET_SERVICE_URL=http://wallet-service:8080
+      - PORT=8080
+    ports:
+      - "8088:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      user-service:
+        condition: service_healthy
+      transaction-service:
+        condition: service_healthy
+      wallet-service:
+        condition: service_healthy
+    networks:
+      - fintrack-network
+    healthcheck:
+      test: ["CMD", "./main", "health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: fintrack-frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      - user-service
+      - transaction-service
+      - wallet-service
+      - account-service
+      - notification-service
+      - chatbot-service
+      - exchange-service
+      - report-service
+    networks:
+      - fintrack-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  mysql_data:
+    driver: local
+
+networks:
+  fintrack-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

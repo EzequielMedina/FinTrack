@@ -1,0 +1,198 @@
+<svg width="1200" height="800" viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="1200" height="800" fill="#f8fafc"/>
+  
+  <!-- Header -->
+  <rect x="0" y="0" width="1200" height="70" fill="#1e293b"/>
+  
+  <!-- Logo -->
+  <circle cx="40" cy="35" r="20" fill="#3b82f6"/>
+  <text x="70" y="42" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="white">FinTrack</text>
+  
+  <!-- User Menu -->
+  <circle cx="1140" cy="35" r="18" fill="#64748b"/>
+  <text x="1135" y="40" font-family="Arial, sans-serif" font-size="12" fill="white">JD</text>
+  
+  <!-- Navigation -->
+  <text x="300" y="42" font-family="Arial, sans-serif" font-size="14" fill="#94a3b8">Dashboard</text>
+  <text x="400" y="42" font-family="Arial, sans-serif" font-size="14" fill="#94a3b8">Cuentas</text>
+  <text x="480" y="42" font-family="Arial, sans-serif" font-size="14" fill="#cbd5e1">Tarjetas</text>
+  <text x="560" y="42" font-family="Arial, sans-serif" font-size="14" fill="#94a3b8">Billetera</text>
+  <text x="640" y="42" font-family="Arial, sans-serif" font-size="14" fill="#94a3b8">Reportes</text>
+  
+  <!-- Sidebar -->
+  <rect x="0" y="70" width="250" height="730" fill="#f1f5f9"/>
+  
+  <!-- Sidebar Menu Items -->
+  <rect x="20" y="100" width="210" height="40" rx="8" fill="transparent"/>
+  <text x="35" y="125" font-family="Arial, sans-serif" font-size="14" fill="#64748b">📊 Dashboard</text>
+  
+  <rect x="20" y="150" width="210" height="40" rx="8" fill="transparent"/>
+  <text x="35" y="175" font-family="Arial, sans-serif" font-size="14" fill="#64748b">🏦 Mis Cuentas</text>
+  
+  <rect x="20" y="200" width="210" height="40" rx="8" fill="#3b82f6"/>
+  <text x="35" y="225" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">💳 Mis Tarjetas</text>
+  
+  <rect x="20" y="250" width="210" height="40" rx="8" fill="transparent"/>
+  <text x="35" y="275" font-family="Arial, sans-serif" font-size="14" fill="#64748b">💰 Billetera</text>
+  
+  <rect x="20" y="300" width="210" height="40" rx="8" fill="transparent"/>
+  <text x="35" y="325" font-family="Arial, sans-serif" font-size="14" fill="#64748b">📈 Reportes</text>
+  
+  <rect x="20" y="350" width="210" height="40" rx="8" fill="transparent"/>
+  <text x="35" y="375" font-family="Arial, sans-serif" font-size="14" fill="#64748b">🤖 Chatbot</text>
+  
+  <!-- Main Content Area -->
+  <rect x="270" y="90" width="910" height="690" fill="white" rx="12"/>
+  
+  <!-- Page Title -->
+  <text x="300" y="130" font-family="Arial, sans-serif" font-size="28" font-weight="bold" fill="#1e293b">Mis Tarjetas</text>
+  <text x="300" y="155" font-family="Arial, sans-serif" font-size="16" fill="#64748b">Gestiona tus tarjetas de débito y crédito</text>
+  
+  <!-- Add Card Button -->
+  <rect x="950" y="110" width="200" height="45" rx="8" fill="#3b82f6"/>
+  <text x="970" y="125" font-family="Arial, sans-serif" font-size="14" fill="white">➕</text>
+  <text x="990" y="140" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">Agregar Tarjeta</text>
+  
+  <!-- Cards Grid -->
+  <!-- Card 1: Visa Débito -->
+  <rect x="300" y="180" width="350" height="200" rx="16" fill="linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)"/>
+  
+  <!-- Card chip -->
+  <rect x="330" y="220" width="30" height="25" rx="4" fill="#fbbf24"/>
+  <rect x="335" y="225" width="20" height="15" rx="2" fill="#f59e0b"/>
+  
+  <!-- Visa logo -->
+  <text x="580" y="210" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="white">VISA</text>
+  
+  <!-- Card number -->
+  <text x="330" y="280" font-family="Courier, monospace" font-size="18" font-weight="bold" fill="white">**** **** **** 4532</text>
+  
+  <!-- Card details -->
+  <text x="330" y="320" font-family="Arial, sans-serif" font-size="12" fill="#bfdbfe">VÁLIDA HASTA</text>
+  <text x="330" y="340" font-family="Courier, monospace" font-size="14" fill="white">12/27</text>
+  
+  <text x="450" y="320" font-family="Arial, sans-serif" font-size="12" fill="#bfdbfe">TITULAR</text>
+  <text x="450" y="340" font-family="Arial, sans-serif" font-size="14" fill="white">JUAN PEREZ</text>
+  
+  <!-- Card type badge -->
+  <rect x="580" y="330" width="60" height="25" rx="12" fill="rgba(255,255,255,0.2)"/>
+  <text x="595" y="347" font-family="Arial, sans-serif" font-size="12" fill="white">DÉBITO</text>
+  
+  <!-- Card status -->
+  <circle cx="620" cy="200" r="6" fill="#10b981"/>
+  <text x="635" y="205" font-family="Arial, sans-serif" font-size="12" fill="white">Activa</text>
+  
+  <!-- Card 2: Mastercard Crédito -->
+  <rect x="680" y="180" width="350" height="200" rx="16" fill="linear-gradient(135deg, #7c2d12 0%, #dc2626 100%)"/>
+  
+  <!-- Card chip -->
+  <rect x="710" y="220" width="30" height="25" rx="4" fill="#fbbf24"/>
+  <rect x="715" y="225" width="20" height="15" rx="2" fill="#f59e0b"/>
+  
+  <!-- Mastercard logo -->
+  <circle cx="950" cy="205" r="15" fill="#ff5f00"/>
+  <circle cx="970" cy="205" r="15" fill="#eb001b"/>
+  <text x="990" y="210" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">MC</text>
+  
+  <!-- Card number -->
+  <text x="710" y="280" font-family="Courier, monospace" font-size="18" font-weight="bold" fill="white">**** **** **** 8901</text>
+  
+  <!-- Card details -->
+  <text x="710" y="320" font-family="Arial, sans-serif" font-size="12" fill="#fecaca">VÁLIDA HASTA</text>
+  <text x="710" y="340" font-family="Courier, monospace" font-size="14" fill="white">08/26</text>
+  
+  <text x="830" y="320" font-family="Arial, sans-serif" font-size="12" fill="#fecaca">TITULAR</text>
+  <text x="830" y="340" font-family="Arial, sans-serif" font-size="14" fill="white">JUAN PEREZ</text>
+  
+  <!-- Card type badge -->
+  <rect x="960" y="330" width="60" height="25" rx="12" fill="rgba(255,255,255,0.2)"/>
+  <text x="970" y="347" font-family="Arial, sans-serif" font-size="12" fill="white">CRÉDITO</text>
+  
+  <!-- Card status -->
+  <circle cx="1000" cy="200" r="6" fill="#10b981"/>
+  <text x="1015" y="205" font-family="Arial, sans-serif" font-size="12" fill="white">Activa</text>
+  
+  <!-- Card 3: Prepaid Card (Inactive) -->
+  <rect x="300" y="400" width="350" height="200" rx="16" fill="linear-gradient(135deg, #64748b 0%, #94a3b8 100%)"/>
+  
+  <!-- Card chip -->
+  <rect x="330" y="440" width="30" height="25" rx="4" fill="#d1d5db"/>
+  <rect x="335" y="445" width="20" height="15" rx="2" fill="#9ca3af"/>
+  
+  <!-- Card brand -->
+  <text x="580" y="430" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="white">PREPAID</text>
+  
+  <!-- Card number -->
+  <text x="330" y="500" font-family="Courier, monospace" font-size="18" font-weight="bold" fill="white">**** **** **** 2468</text>
+  
+  <!-- Card details -->
+  <text x="330" y="540" font-family="Arial, sans-serif" font-size="12" fill="#cbd5e1">VÁLIDA HASTA</text>
+  <text x="330" y="560" font-family="Courier, monospace" font-size="14" fill="white">03/25</text>
+  
+  <text x="450" y="540" font-family="Arial, sans-serif" font-size="12" fill="#cbd5e1">TITULAR</text>
+  <text x="450" y="560" font-family="Arial, sans-serif" font-size="14" fill="white">JUAN PEREZ</text>
+  
+  <!-- Card type badge -->
+  <rect x="570" y="550" width="70" height="25" rx="12" fill="rgba(255,255,255,0.2)"/>
+  <text x="585" y="567" font-family="Arial, sans-serif" font-size="12" fill="white">PREPAGO</text>
+  
+  <!-- Card status -->
+  <circle cx="620" cy="420" r="6" fill="#f59e0b"/>
+  <text x="635" y="425" font-family="Arial, sans-serif" font-size="12" fill="white">Inactiva</text>
+  
+  <!-- Card Actions Panel -->
+  <rect x="680" y="400" width="350" height="200" rx="12" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  
+  <text x="700" y="430" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#1e293b">Acciones de Tarjeta</text>
+  
+  <!-- Action buttons -->
+  <rect x="700" y="450" width="140" height="40" rx="8" fill="#3b82f6"/>
+  <text x="720" y="465" font-family="Arial, sans-serif" font-size="12" fill="white">👁️</text>
+  <text x="720" y="480" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Ver Detalles</text>
+  
+  <rect x="860" y="450" width="140" height="40" rx="8" fill="#10b981"/>
+  <text x="880" y="465" font-family="Arial, sans-serif" font-size="12" fill="white">💳</text>
+  <text x="880" y="480" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Usar Tarjeta</text>
+  
+  <rect x="700" y="510" width="140" height="40" rx="8" fill="#f59e0b"/>
+  <text x="720" y="525" font-family="Arial, sans-serif" font-size="12" fill="white">⏸️</text>
+  <text x="720" y="540" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Bloquear</text>
+  
+  <rect x="860" y="510" width="140" height="40" rx="8" fill="#dc2626"/>
+  <text x="880" y="525" font-family="Arial, sans-serif" font-size="12" fill="white">🗑️</text>
+  <text x="880" y="540" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">Eliminar</text>
+  
+  <!-- Security Info -->
+  <rect x="700" y="570" width="300" height="20" rx="4" fill="#fef3c7"/>
+  <text x="710" y="585" font-family="Arial, sans-serif" font-size="12" fill="#92400e">🔒 Todas las tarjetas están protegidas con cifrado AES-256</text>
+  
+  <!-- Transaction History Section -->
+  <text x="300" y="640" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="#1e293b">Últimas Transacciones con Tarjetas</text>
+  
+  <!-- Transaction List -->
+  <rect x="300" y="660" width="820" height="100" rx="8" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  
+  <!-- Transaction items -->
+  <text x="320" y="685" font-family="Arial, sans-serif" font-size="12" fill="#6b7280">Hoy, 15:30</text>
+  <text x="420" y="685" font-family="Arial, sans-serif" font-size="12" fill="#374151">Compra en MercadoLibre - Tarjeta *4532</text>
+  <text x="750" y="685" font-family="Arial, sans-serif" font-size="12" fill="#dc2626">-$12,500.00</text>
+  <rect x="850" y="675" width="50" height="18" rx="9" fill="#10b981"/>
+  <text x="865" y="687" font-family="Arial, sans-serif" font-size="10" fill="white">Exitoso</text>
+  
+  <text x="320" y="715" font-family="Arial, sans-serif" font-size="12" fill="#6b7280">Ayer, 09:15</text>
+  <text x="420" y="715" font-family="Arial, sans-serif" font-size="12" fill="#374151">Carga de combustible YPF - Tarjeta *8901</text>
+  <text x="750" y="715" font-family="Arial, sans-serif" font-size="12" fill="#dc2626">-$8,750.00</text>
+  <rect x="850" y="705" width="50" height="18" rx="9" fill="#10b981"/>
+  <text x="865" y="717" font-family="Arial, sans-serif" font-size="10" fill="white">Exitoso</text>
+  
+  <text x="320" y="745" font-family="Arial, sans-serif" font-size="12" fill="#6b7280">13/01, 14:22</text>
+  <text x="420" y="745" font-family="Arial, sans-serif" font-size="12" fill="#374151">Supermercado Carrefour - Tarjeta *4532</text>
+  <text x="750" y="745" font-family="Arial, sans-serif" font-size="12" fill="#dc2626">-$15,230.50</text>
+  <rect x="850" y="735" width="50" height="18" rx="9" fill="#10b981"/>
+  <text x="865" y="747" font-family="Arial, sans-serif" font-size="10" fill="white">Exitoso</text>
+  
+  <!-- Chatbot Button -->
+  <circle cx="1100" cy="700" r="30" fill="#3b82f6" stroke="white" stroke-width="3"/>
+  <text x="1090" y="708" font-family="Arial, sans-serif" font-size="20" fill="white">💬</text>
+</svg>

@@ -1,0 +1,48 @@
+{
+  "jira": {
+    "base_url": "https://tu-dominio.atlassian.net",
+    "email": "tu-email@ejemplo.com",
+    "api_token": "ATATT3xFfGF0...",
+    "project_key": "FINTRACK",
+    "board_id": 1,
+    "issue_type": "Task"
+  },
+  "github": {
+    "token": "ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "repo": "usuario/fintrack",
+    "project_id": "PVT_kwDOBkEeAM4ABeNS",
+    "owner": "tu-usuario"
+  },
+  "azure": {
+    "organization": "tu-organizacion",
+    "project": "FinTrack",
+    "personal_access_token": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "area_path": "FinTrack",
+    "iteration_path": "FinTrack\\Sprint 1"
+  },
+  "trello": {
+    "api_key": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "token": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "board_id": "xxxxxxxxxxxxxxxxx",
+    "list_ids": {
+      "backlog": "xxxxxxxxxxxxxxxxx",
+      "sprint_1": "xxxxxxxxxxxxxxxxx",
+      "sprint_2": "xxxxxxxxxxxxxxxxx",
+      "sprint_3": "xxxxxxxxxxxxxxxxx",
+      "sprint_4": "xxxxxxxxxxxxxxxxx",
+      "sprint_5": "xxxxxxxxxxxxxxxxx",
+      "sprint_6": "xxxxxxxxxxxxxxxxx"
+    }
+  },
+  "linear": {
+    "api_key": "lin_api_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "team_id": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+    "project_id": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+  },
+  "general": {
+    "default_assignee": "tu-usuario",
+    "default_priority": "Medium",
+    "sprint_duration_days": 15,
+    "project_start_date": "2024-09-10"
+  }
+}

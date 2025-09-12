@@ -1,0 +1,34 @@
+Issue key,Summary,Description,Issue Type,Priority,Sprint,Estimation
+TASK-001,Configurar repositorio Git con estructura de microservicios,Repo con estructura frontend/backend/docs,Task,Alta,Sprint 1,1
+TASK-002,Configurar Docker y Docker Compose para desarrollo,"Containers funcionando para MySQL, Redis, Go, Angular",Task,Alta,Sprint 1,2
+TASK-003,Configurar CI/CD pipeline básico con GitHub Actions,Pipeline ejecutando tests y build automático,Task,Media,Sprint 1,2
+TASK-004,Implementar microservicio de autenticación en Go,"JWT, registro, login, middleware de auth",Task,Alta,Sprint 1,3
+TASK-005,Configurar base de datos MySQL con migraciones,"Esquema inicial, migraciones automáticas con GORM",Task,Alta,Sprint 1,2
+TASK-006,Configurar proyecto Angular 20 con arquitectura base,"Proyecto con routing, guards, interceptors",Task,Alta,Sprint 1,2
+TASK-007,Implementar componentes de autenticación (login/registro),"Formularios reactivos, validaciones, integración con API",Task,Alta,Sprint 1,3
+TASK-008,Implementar microservicio de gestión de usuarios,"CRUD usuarios, perfiles, roles",Task,Alta,Sprint 2,3
+TASK-009,Implementar sistema de roles y permisos,"Roles (admin, user), middleware de autorización",Task,Alta,Sprint 2,3
+TASK-010,Crear layout principal con navegación,"Sidebar, header, routing funcional",Task,Alta,Sprint 2,2
+TASK-011,Implementar dashboard básico con widgets,"Resumen de cuentas, gráficos básicos, responsive",Task,Alta,Sprint 2,4
+TASK-012,Implementar tests unitarios para autenticación,Cobertura >80% en auth service,Task,Media,Sprint 2,2
+TASK-013,Documentar APIs con Swagger/OpenAPI,Documentación interactiva disponible,Task,Media,Sprint 2,1
+TASK-014,Implementar microservicio de cuentas virtuales,"CRUD cuentas, tipos de cuenta, saldos",Task,Alta,Sprint 3,4
+TASK-015,Implementar gestión de tarjetas (sandbox),"Vinculación tarjetas, validaciones, encriptación",Task,Alta,Sprint 3,4
+TASK-016,Crear módulo de gestión de cuentas,"Lista, crear, editar, eliminar cuentas",Task,Alta,Sprint 3,3
+TASK-017,Crear módulo de gestión de tarjetas,"Formulario seguro, lista enmascarada",Task,Alta,Sprint 3,2
+TASK-018,Integrar API de conversión de divisas (ExchangeRates),"Conversión USD/ARS automática, cache",Task,Media,Sprint 3,2
+TASK-019,Implementar microservicio de billetera digital,"Carga, retiro, transferencias entre usuarios",Task,Alta,Sprint 4,4
+TASK-020,Implementar sistema de transacciones,"Historial, categorización, validaciones",Task,Alta,Sprint 4,4
+TASK-021,Crear módulo de billetera digital,"Vista de saldo, operaciones, historial",Task,Alta,Sprint 4,3
+TASK-022,Implementar formularios de transacciones,"Transferencias, validaciones en tiempo real",Task,Alta,Sprint 4,2
+TASK-023,Integrar Firebase Cloud Messaging,Notificaciones de transacciones en tiempo real,Task,Media,Sprint 4,2
+TASK-024,Implementar microservicio de reportes,"Generación PDF/Excel, filtros, agregaciones",Task,Alta,Sprint 5,4
+TASK-025,Implementar analytics y métricas,"KPIs financieros, patrones de gasto",Task,Media,Sprint 5,2
+TASK-026,Crear módulo de reportes con gráficos,"Charts interactivos, filtros, exportación",Task,Alta,Sprint 5,4
+TASK-027,Implementar dashboard de analytics,"Métricas en tiempo real, comparativas",Task,Media,Sprint 5,2
+TASK-028,Integrar Google Analytics 4,"Tracking de eventos, métricas de uso",Task,Baja,Sprint 5,1
+TASK-029,Integrar Alpha Vantage para datos de mercado,"Cotizaciones en dashboard, cache por rate limit",Task,Media,Sprint 5,2
+TASK-030,Implementar integración con OpenAI GPT-3.5,"API integration, context management",Task,Alta,Sprint 6,3
+TASK-031,Crear interfaz de chatbot en frontend,"Chat UI, historial, respuestas en tiempo real",Task,Alta,Sprint 6,3
+TASK-032,Testing integral y corrección de bugs,"E2E tests, cobertura >80%",Task,Alta,Sprint 6,2
+TASK-033,Documentación final y deployment,"README, guías de instalación, demo funcional",Task,Alta,Sprint 6,1

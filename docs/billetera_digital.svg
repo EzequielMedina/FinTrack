@@ -1,0 +1,210 @@
+<svg width="1200" height="800" viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="1200" height="800" fill="#f8fafc"/>
+  
+  <!-- Header -->
+  <rect x="0" y="0" width="1200" height="70" fill="#1e293b"/>
+  
+  <!-- Logo -->
+  <circle cx="40" cy="35" r="20" fill="#3b82f6"/>
+  <text x="70" y="42" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="white">FinTrack</text>
+  
+  <!-- User Menu -->
+  <circle cx="1140" cy="35" r="18" fill="#64748b"/>
+  <text x="1135" y="40" font-family="Arial, sans-serif" font-size="12" fill="white">JD</text>
+  
+  <!-- Navigation -->
+  <text x="300" y="42" font-family="Arial, sans-serif" font-size="14" fill="#94a3b8">Dashboard</text>
+  <text x="400" y="42" font-family="Arial, sans-serif" font-size="14" fill="#94a3b8">Cuentas</text>
+  <text x="480" y="42" font-family="Arial, sans-serif" font-size="14" fill="#94a3b8">Tarjetas</text>
+  <text x="560" y="42" font-family="Arial, sans-serif" font-size="14" fill="#cbd5e1">Billetera</text>
+  <text x="640" y="42" font-family="Arial, sans-serif" font-size="14" fill="#94a3b8">Reportes</text>
+  
+  <!-- Sidebar -->
+  <rect x="0" y="70" width="250" height="730" fill="#f1f5f9"/>
+  
+  <!-- Sidebar Menu Items -->
+  <rect x="20" y="100" width="210" height="40" rx="8" fill="transparent"/>
+  <text x="35" y="125" font-family="Arial, sans-serif" font-size="14" fill="#64748b">📊 Dashboard</text>
+  
+  <rect x="20" y="150" width="210" height="40" rx="8" fill="transparent"/>
+  <text x="35" y="175" font-family="Arial, sans-serif" font-size="14" fill="#64748b">🏦 Mis Cuentas</text>
+  
+  <rect x="20" y="200" width="210" height="40" rx="8" fill="transparent"/>
+  <text x="35" y="225" font-family="Arial, sans-serif" font-size="14" fill="#64748b">💳 Mis Tarjetas</text>
+  
+  <rect x="20" y="250" width="210" height="40" rx="8" fill="#3b82f6"/>
+  <text x="35" y="275" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">💰 Billetera</text>
+  
+  <rect x="20" y="300" width="210" height="40" rx="8" fill="transparent"/>
+  <text x="35" y="325" font-family="Arial, sans-serif" font-size="14" fill="#64748b">📈 Reportes</text>
+  
+  <rect x="20" y="350" width="210" height="40" rx="8" fill="transparent"/>
+  <text x="35" y="375" font-family="Arial, sans-serif" font-size="14" fill="#64748b">🤖 Chatbot</text>
+  
+  <!-- Main Content Area -->
+  <rect x="270" y="90" width="910" height="690" fill="white" rx="12"/>
+  
+  <!-- Page Title -->
+  <text x="300" y="130" font-family="Arial, sans-serif" font-size="28" font-weight="bold" fill="#1e293b">Mi Billetera Digital</text>
+  <text x="300" y="155" font-family="Arial, sans-serif" font-size="16" fill="#64748b">Gestiona tu dinero digital de forma segura</text>
+  
+  <!-- Main Content -->
+  <g id="main-content">
+    <!-- Title -->
+    <text x="300" y="190" font-family="Arial, sans-serif" font-size="20" fill="#1f2937" font-weight="bold">Billeteras Virtuales</text>
+    
+    <!-- Total Balance Card -->
+    <rect x="280" y="200" width="680" height="80" rx="12" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+    <text x="300" y="225" font-family="Arial, sans-serif" font-size="14" fill="#6b7280" font-weight="500">Saldo Total Consolidado</text>
+    <text x="300" y="255" font-family="Arial, sans-serif" font-size="32" fill="#1f2937" font-weight="bold">$342,860.25</text>
+    <text x="300" y="270" font-family="Arial, sans-serif" font-size="12" fill="#9ca3af">ARS - Actualizado hace 5 min</text>
+    
+    <!-- Wallet Cards Grid -->
+    <text x="300" y="315" font-family="Arial, sans-serif" font-size="16" fill="#1f2937" font-weight="600">Mis Billeteras</text>
+    
+    <!-- MercadoPago Wallet -->
+    <rect x="280" y="330" width="320" height="100" rx="12" fill="#00a8ff" stroke="none"/>
+    <circle cx="310" cy="355" r="15" fill="white"/>
+    <text x="305" y="360" font-family="Arial, sans-serif" font-size="12" fill="#00a8ff" font-weight="bold">MP</text>
+    <text x="340" y="355" font-family="Arial, sans-serif" font-size="14" fill="white" font-weight="600">MercadoPago</text>
+    <text x="340" y="370" font-family="Arial, sans-serif" font-size="10" fill="#b3e5fc">usuario@email.com</text>
+    <text x="340" y="400" font-family="Arial, sans-serif" font-size="18" fill="white" font-weight="bold">$156,430.50</text>
+    <text x="340" y="415" font-family="Arial, sans-serif" font-size="10" fill="#b3e5fc">Sincronizado</text>
+    
+    <!-- Ualá Wallet -->
+    <rect x="620" y="330" width="320" height="100" rx="12" fill="#ff6b6b" stroke="none"/>
+    <circle cx="650" cy="355" r="15" fill="white"/>
+    <text x="647" y="360" font-family="Arial, sans-serif" font-size="12" fill="#ff6b6b" font-weight="bold">U</text>
+    <text x="680" y="355" font-family="Arial, sans-serif" font-size="14" fill="white" font-weight="600">Ualá</text>
+    <text x="680" y="370" font-family="Arial, sans-serif" font-size="10" fill="#ffcccb">**** 1234</text>
+    <text x="680" y="400" font-family="Arial, sans-serif" font-size="18" fill="white" font-weight="bold">$89,230.75</text>
+    <text x="680" y="415" font-family="Arial, sans-serif" font-size="10" fill="#ffcccb">Hace 2 horas</text>
+    
+    <!-- Brubank Wallet -->
+    <rect x="280" y="450" width="320" height="100" rx="12" fill="#4ecdc4" stroke="none"/>
+    <circle cx="310" cy="475" r="15" fill="white"/>
+    <text x="306" y="480" font-family="Arial, sans-serif" font-size="12" fill="#4ecdc4" font-weight="bold">B</text>
+    <text x="340" y="475" font-family="Arial, sans-serif" font-size="14" fill="white" font-weight="600">Brubank</text>
+    <text x="340" y="490" font-family="Arial, sans-serif" font-size="10" fill="#b8f2ef">**** 5678</text>
+    <text x="340" y="520" font-family="Arial, sans-serif" font-size="18" fill="white" font-weight="bold">$97,199.00</text>
+    <text x="340" y="535" font-family="Arial, sans-serif" font-size="10" fill="#b8f2ef">Hace 1 hora</text>
+    
+    <!-- Add Wallet Button -->
+    <rect x="620" y="450" width="320" height="100" rx="12" fill="#f3f4f6" stroke="#d1d5db" stroke-width="2" stroke-dasharray="5,5"/>
+    <circle cx="780" cy="500" r="20" fill="#6b7280"/>
+    <text x="775" y="505" font-family="Arial, sans-serif" font-size="20" fill="white" font-weight="bold">+</text>
+    <text x="720" y="525" font-family="Arial, sans-serif" font-size="14" fill="#6b7280" font-weight="500">Agregar Billetera</text>
+    <text x="710" y="540" font-family="Arial, sans-serif" font-size="10" fill="#9ca3af">Carga manual</text>
+  </g>
+  
+  <!-- Quick Actions -->
+  <text x="300" y="360" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="#1e293b">Acciones Rápidas</text>
+  
+  <!-- Action Buttons Row 1 -->
+  <rect x="300" y="380" width="180" height="80" rx="12" fill="#3b82f6"/>
+  <text x="320" y="405" font-family="Arial, sans-serif" font-size="24" fill="white">💸</text>
+  <text x="320" y="430" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white">Transferir</text>
+  <text x="320" y="450" font-family="Arial, sans-serif" font-size="12" fill="#bfdbfe">Enviar dinero</text>
+  
+  <rect x="500" y="380" width="180" height="80" rx="12" fill="#10b981"/>
+  <text x="520" y="405" font-family="Arial, sans-serif" font-size="24" fill="white">💳</text>
+  <text x="520" y="430" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white">Cargar Saldo</text>
+  <text x="520" y="450" font-family="Arial, sans-serif" font-size="12" fill="#a7f3d0">Desde tarjeta</text>
+  
+  <rect x="700" y="380" width="180" height="80" rx="12" fill="#f59e0b"/>
+  <text x="720" y="405" font-family="Arial, sans-serif" font-size="24" fill="white">🏦</text>
+  <text x="720" y="430" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white">Retirar</text>
+  <text x="720" y="450" font-family="Arial, sans-serif" font-size="12" fill="#fbbf24">A cuenta bancaria</text>
+  
+  <rect x="900" y="380" width="180" height="80" rx="12" fill="#8b5cf6"/>
+  <text x="920" y="405" font-family="Arial, sans-serif" font-size="24" fill="white">🔄</text>
+  <text x="920" y="430" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white">Convertir</text>
+  <text x="920" y="450" font-family="Arial, sans-serif" font-size="12" fill="#c4b5fd">USD ⇄ ARS</text>
+  
+  <!-- Transfer Form -->
+  <rect x="300" y="480" width="450" height="280" rx="12" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  
+  <text x="320" y="510" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#1e293b">💸 Nueva Transferencia</text>
+  
+  <!-- Recipient Field -->
+  <text x="320" y="540" font-family="Arial, sans-serif" font-size="14" fill="#374151">Destinatario</text>
+  <rect x="320" y="550" width="400" height="35" rx="6" fill="white" stroke="#d1d5db" stroke-width="1"/>
+  <text x="330" y="572" font-family="Arial, sans-serif" font-size="14" fill="#9ca3af">Email del destinatario</text>
+  
+  <!-- Amount Field -->
+  <text x="320" y="605" font-family="Arial, sans-serif" font-size="14" fill="#374151">Monto</text>
+  <rect x="320" y="615" width="250" height="35" rx="6" fill="white" stroke="#d1d5db" stroke-width="1"/>
+  <text x="330" y="637" font-family="Arial, sans-serif" font-size="14" fill="#9ca3af">$0.00</text>
+  
+  <!-- Currency Selector -->
+  <rect x="580" y="615" width="80" height="35" rx="6" fill="white" stroke="#d1d5db" stroke-width="1"/>
+  <text x="600" y="637" font-family="Arial, sans-serif" font-size="14" fill="#374151">ARS ▼</text>
+  
+  <!-- Description Field -->
+  <text x="320" y="670" font-family="Arial, sans-serif" font-size="14" fill="#374151">Descripción (opcional)</text>
+  <rect x="320" y="680" width="400" height="35" rx="6" fill="white" stroke="#d1d5db" stroke-width="1"/>
+  <text x="330" y="702" font-family="Arial, sans-serif" font-size="14" fill="#9ca3af">Concepto de la transferencia</text>
+  
+  <!-- Transfer Button -->
+  <rect x="320" y="730" width="120" height="40" rx="8" fill="#3b82f6"/>
+  <text x="365" y="755" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">Transferir</text>
+  
+  <!-- Cancel Button -->
+  <rect x="450" y="730" width="100" height="40" rx="8" fill="#6b7280"/>
+  <text x="485" y="755" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">Cancelar</text>
+  
+  <!-- Recent Activity -->
+  <rect x="770" y="480" width="390" height="280" rx="12" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  
+  <text x="790" y="510" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#1e293b">📊 Actividad Reciente</text>
+  
+  <!-- Activity Items -->
+  <!-- Item 1 -->
+  <rect x="790" y="530" width="350" height="50" rx="8" fill="white"/>
+  <circle cx="810" cy="555" r="12" fill="#10b981"/>
+  <text x="805" y="560" font-family="Arial, sans-serif" font-size="12" fill="white">↗</text>
+  
+  <text x="835" y="545" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#374151">Recibido de Carlos López</text>
+  <text x="835" y="565" font-family="Arial, sans-serif" font-size="12" fill="#6b7280">Hace 2 horas • ARS</text>
+  
+  <text x="1080" y="555" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#10b981">+$25,000</text>
+  
+  <!-- Item 2 -->
+  <rect x="790" y="590" width="350" height="50" rx="8" fill="white"/>
+  <circle cx="810" cy="615" r="12" fill="#dc2626"/>
+  <text x="805" y="620" font-family="Arial, sans-serif" font-size="12" fill="white">↙</text>
+  
+  <text x="835" y="605" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#374151">Enviado a María García</text>
+  <text x="835" y="625" font-family="Arial, sans-serif" font-size="12" fill="#6b7280">Ayer • ARS</text>
+  
+  <text x="1080" y="615" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#dc2626">-$15,000</text>
+  
+  <!-- Item 3 -->
+  <rect x="790" y="650" width="350" height="50" rx="8" fill="white"/>
+  <circle cx="810" cy="675" r="12" fill="#3b82f6"/>
+  <text x="805" y="680" font-family="Arial, sans-serif" font-size="12" fill="white">💳</text>
+  
+  <text x="835" y="665" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#374151">Carga desde tarjeta</text>
+  <text x="835" y="685" font-family="Arial, sans-serif" font-size="12" fill="#6b7280">13/01 • Visa *4532</text>
+  
+  <text x="1080" y="675" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#10b981">+$50,000</text>
+  
+  <!-- Item 4 -->
+  <rect x="790" y="710" width="350" height="50" rx="8" fill="white"/>
+  <circle cx="810" cy="735" r="12" fill="#8b5cf6"/>
+  <text x="805" y="740" font-family="Arial, sans-serif" font-size="12" fill="white">🔄</text>
+  
+  <text x="835" y="725" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#374151">Conversión USD → ARS</text>
+  <text x="835" y="745" font-family="Arial, sans-serif" font-size="12" fill="#6b7280">12/01 • Tipo cambio: $1,200</text>
+  
+  <text x="1070" y="735" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#8b5cf6">$100→$120K</text>
+  
+  <!-- Security Notice -->
+  <rect x="300" y="770" width="860" height="30" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="1"/>
+  <text x="320" y="790" font-family="Arial, sans-serif" font-size="12" fill="#92400e">🔒 Todas las transacciones están protegidas con cifrado de extremo a extremo y autenticación de dos factores</text>
+  
+  <!-- Chatbot Button -->
+  <circle cx="1100" cy="700" r="30" fill="#3b82f6" stroke="white" stroke-width="3"/>
+  <text x="1090" y="708" font-family="Arial, sans-serif" font-size="20" fill="white">💬</text>
+</svg>
