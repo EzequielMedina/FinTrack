@@ -6,6 +6,12 @@ import { environment } from '../../environments/environment';
 export interface LoginResponse {
   accessToken: string;
   refreshToken?: string;
+  user: {
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+  };
 }
 
 export interface RegisterRequest {
@@ -51,10 +57,11 @@ export class AuthService {
       })
       .pipe(
         tap((res) => {
+          // Usar los campos en camelCase que envía el backend
           this.setToken(res.accessToken, res.refreshToken);
+          this.setUser(res.user);
           this.isAuthenticatedSig.set(true);
-          // Obtener datos del usuario después del login
-          this.loadUserProfile();
+          this.currentUserSig.set(res.user);
         })
       );
   }
