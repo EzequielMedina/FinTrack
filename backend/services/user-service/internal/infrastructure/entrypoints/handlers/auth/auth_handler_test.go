@@ -105,12 +105,26 @@ func TestRegister_Success(t *testing.T) {
 	if w.Code != http.StatusCreated {
 		t.Fatalf("expected 201, got %d", w.Code)
 	}
-	var resp map[string]string
+	type userInfo struct {
+		ID        string `json:"id"`
+		Email     string `json:"email"`
+		FirstName string `json:"firstName"`
+		LastName  string `json:"lastName"`
+	}
+	type response struct {
+		AccessToken  string   `json:"accessToken"`
+		RefreshToken string   `json:"refreshToken"`
+		User         userInfo `json:"user"`
+	}
+	var resp response
 	if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
 		t.Fatalf("json: %v", err)
 	}
-	if resp["accessToken"] == "" || resp["refreshToken"] == "" {
+	if resp.AccessToken == "" || resp.RefreshToken == "" {
 		t.Fatalf("expected tokens in response")
+	}
+	if resp.User.Email != "new@user.com" {
+		t.Fatalf("expected user email in response")
 	}
 }
 
@@ -142,11 +156,25 @@ func TestLogin_Success(t *testing.T) {
 	if w.Code != http.StatusOK {
 		t.Fatalf("expected 200, got %d", w.Code)
 	}
-	var resp map[string]string
+	type userInfo struct {
+		ID        string `json:"id"`
+		Email     string `json:"email"`
+		FirstName string `json:"firstName"`
+		LastName  string `json:"lastName"`
+	}
+	type response struct {
+		AccessToken  string   `json:"accessToken"`
+		RefreshToken string   `json:"refreshToken"`
+		User         userInfo `json:"user"`
+	}
+	var resp response
 	if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
 		t.Fatalf("json: %v", err)
 	}
-	if resp["accessToken"] == "" || resp["refreshToken"] == "" {
+	if resp.AccessToken == "" || resp.RefreshToken == "" {
 		t.Fatalf("expected tokens in response")
+	}
+	if resp.User.Email != "ok@user.com" {
+		t.Fatalf("expected user email in response")
 	}
 }

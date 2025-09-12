@@ -21,7 +21,7 @@ func (h *Handler) Register(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	_, at, rt, err := h.auth.Register(req.Email, req.Password, req.FirstName, req.LastName)
+	user, at, rt, err := h.auth.Register(req.Email, req.Password, req.FirstName, req.LastName)
 	if err != nil {
 		status := http.StatusInternalServerError
 		if err == domerrors.ErrEmailAlreadyExists {
@@ -30,7 +30,15 @@ func (h *Handler) Register(c *gin.Context) {
 		c.JSON(status, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusCreated, dto.AuthResponse{AccessToken: at, RefreshToken: rt})
+	c.JSON(http.StatusCreated, dto.AuthResponse{
+		AccessToken:  at,
+		RefreshToken: rt,
+		User: dto.UserInfo{
+			Email:     user.Email,
+			FirstName: user.FirstName,
+			LastName:  user.LastName,
+		},
+	})
 }
 
 func (h *Handler) Login(c *gin.Context) {
@@ -39,7 +47,7 @@ func (h *Handler) Login(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	_, at, rt, err := h.auth.Login(req.Email, req.Password)
+	user, at, rt, err := h.auth.Login(req.Email, req.Password)
 	if err != nil {
 		status := http.StatusUnauthorized
 		if err != domerrors.ErrInvalidCredentials {
@@ -48,5 +56,13 @@ func (h *Handler) Login(c *gin.Context) {
 		c.JSON(status, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, dto.AuthResponse{AccessToken: at, RefreshToken: rt})
+	c.JSON(http.StatusOK, dto.AuthResponse{
+		AccessToken:  at,
+		RefreshToken: rt,
+		User: dto.UserInfo{
+			Email:     user.Email,
+			FirstName: user.FirstName,
+			LastName:  user.LastName,
+		},
+	})
 }
