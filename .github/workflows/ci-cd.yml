@@ -1,240 +1,76 @@
-name: FinTrack CI/CD Pipeline
+name: FinTrack Minimal CI (user-service)
 
 on:
   push:
     branches: [main, develop]
   pull_request:
-    branches: [main,develop]
+    branches: [main, develop]
 
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  detect-changes:
+  changes:
     runs-on: ubuntu-latest
     outputs:
-      frontend: ${{ steps.changes.outputs.frontend }}
-      user-service: ${{ steps.changes.outputs.user-service }}
-      account-service: ${{ steps.changes.outputs.account-service }}
-      transaction-service: ${{ steps.changes.outputs.transaction-service }}
-      wallet-service: ${{ steps.changes.outputs.wallet-service }}
-      chatbot-service: ${{ steps.changes.outputs.chatbot-service }}
-      exchange-service: ${{ steps.changes.outputs.exchange-service }}
-      notification-service: ${{ steps.changes.outputs.notification-service }}
-      report-service: ${{ steps.changes.outputs.report-service }}
-      shared: ${{ steps.changes.outputs.shared }}
-      database: ${{ steps.changes.outputs.database }}
+      user_service: ${{ steps.filter.outputs.user_service }}
     steps:
       - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v3
-        id: changes
+      - id: filter
+        uses: dorny/paths-filter@v3
         with:
           filters: |
-            frontend:
-              - 'frontend/**'
-            user-service:
+            user_service:
               - 'backend/services/user-service/**'
               - 'backend/shared/**'
-            account-service:
-              - 'backend/services/account-service/**'
-              - 'backend/shared/**'
-            transaction-service:
-              - 'backend/services/transaction-service/**'
-              - 'backend/shared/**'
-            wallet-service:
-              - 'backend/services/wallet-service/**'
-              - 'backend/shared/**'
-            chatbot-service:
-              - 'backend/services/chatbot-service/**'
-              - 'backend/shared/**'
-            exchange-service:
-              - 'backend/services/exchange-service/**'
-              - 'backend/shared/**'
-            notification-service:
-              - 'backend/services/notification-service/**'
-              - 'backend/shared/**'
-            report-service:
-              - 'backend/services/report-service/**'
-              - 'backend/shared/**'
-            shared:
-              - 'backend/shared/**'
-            database:
-              - 'database/**'
-              - 'docker-compose.yml'
 
-  test-frontend:
-    needs: detect-changes
-    if: needs.detect-changes.outputs.frontend == 'true'
+  test-user-service:
+    needs: changes
+    if: needs.changes.outputs.user_service == 'true'
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: 'npm'
-          cache-dependency-path: frontend/package-lock.json
-      - name: Install dependencies
-        run: cd frontend && npm ci
-      - name: Run linting
-        run: cd frontend && npm run lint
-      - name: Run unit tests
-        run: cd frontend && npm run test:ci
-      - name: Run build
-        run: cd frontend && npm run build
-      - name: Upload coverage reports
-        uses: codecov/codecov-action@v4
-        with:
-          file: frontend/coverage/lcov.info
-          flags: frontend
-
-  test-backend:
-    needs: detect-changes
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        service: [
-          { name: user-service, condition: needs.detect-changes.outputs.user-service },
-          { name: account-service, condition: needs.detect-changes.outputs.account-service },
-          { name: transaction-service, condition: needs.detect-changes.outputs.transaction-service },
-          { name: wallet-service, condition: needs.detect-changes.outputs.wallet-service },
-          { name: chatbot-service, condition: needs.detect-changes.outputs.chatbot-service },
-          { name: exchange-service, condition: needs.detect-changes.outputs.exchange-service },
-          { name: notification-service, condition: needs.detect-changes.outputs.notification-service },
-          { name: report-service, condition: needs.detect-changes.outputs.report-service }
-        ]
-    if: matrix.service.condition == 'true'
     steps:
       - uses: actions/checkout@v4
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
           go-version: '1.24'
-          cache-dependency-path: backend/go.sum
-      - name: Setup MySQL for testing
-        uses: mirromutth/mysql-action@v1.1
-        with:
-          mysql version: '8.0'
-          mysql database: 'fintrack_test'
-          mysql root password: 'test_password'
-      - name: Run tests
+          cache: true
+      - name: Run unit tests
+        working-directory: backend/services/user-service
         run: |
-          cd backend/services/${{ matrix.service.name }}
-          go test -v -race -coverprofile=coverage.out ./...
-        env:
-          DB_HOST: localhost
-          DB_PORT: 3306
-          DB_NAME: fintrack_test
-          DB_USER: root
-          DB_PASSWORD: test_password
-      - name: Upload coverage
-        uses: codecov/codecov-action@v4
-        with:
-          file: backend/services/${{ matrix.service.name }}/coverage.out
-          flags: ${{ matrix.service.name }}
+          go mod download
+          go test -v ./...
 
-  test-database:
-    needs: detect-changes
-    if: needs.detect-changes.outputs.database == 'true'
-    runs-on: ubuntu-latest
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: test_password
-          MYSQL_DATABASE: fintrack_test
-        ports:
-          - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
-    steps:
-      - uses: actions/checkout@v4
-      - name: Wait for MySQL
-        run: |
-          while ! mysqladmin ping -h"127.0.0.1" --silent; do
-            sleep 1
-          done
-      - name: Run database migrations
-        run: |
-          cd database
-          mysql -h 127.0.0.1 -u root -ptest_password fintrack_test < schemas/init.sql
-      - name: Test database connectivity
-        run: |
-          mysql -h 127.0.0.1 -u root -ptest_password -e "SHOW DATABASES;"
-
-  security-scan:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: 'fs'
-          scan-ref: '.'
-          format: 'sarif'
-          output: 'trivy-results.sarif'
-      - name: Upload Trivy scan results
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: 'trivy-results.sarif'
-
-  build-images:
-    needs: [test-frontend, test-backend, test-database]
-    if: always() && (needs.test-frontend.result == 'success' || needs.test-frontend.result == 'skipped') && (needs.test-backend.result == 'success' || needs.test-backend.result == 'skipped') && (needs.test-database.result == 'success' || needs.test-database.result == 'skipped')
+  build-and-push-user-service:
+    needs: test-user-service
+    if: needs.changes.outputs.user_service == 'true' && github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
-    strategy:
-      matrix:
-        component: [frontend, user-service, account-service, transaction-service, wallet-service, chatbot-service, exchange-service, notification-service, report-service]
     steps:
       - uses: actions/checkout@v4
-      - name: Log in to Container Registry
+      - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Extract metadata
+      - name: Extract Docker metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${{ matrix.component }}
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/user-service
           tags: |
             type=ref,event=branch
-            type=ref,event=pr
-            type=sha,prefix={{branch}}-
+            type=sha
             type=raw,value=latest,enable={{is_default_branch}}
-      - name: Build and push Docker image
+      - name: Build and push
         uses: docker/build-push-action@v5
         with:
-          context: .
-          file: ${{ matrix.component == 'frontend' && 'frontend/Dockerfile' || format('backend/services/{0}/Dockerfile', matrix.component) }}
+          context: ./backend/services/user-service
+          file: ./backend/services/user-service/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-
-  deploy-staging:
-    needs: build-images
-    if: github.ref == 'refs/heads/develop'
-    runs-on: ubuntu-latest
-    environment: staging
-    steps:
-      - uses: actions/checkout@v4
-      - name: Deploy to staging
-        run: |
-          echo "Deploying to staging environment"
-          # Aquí irían los comandos de deployment a staging
-
-  deploy-production:
-    needs: build-images
-    if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    environment: production
-    steps:
-      - uses: actions/checkout@v4
-      - name: Deploy to production
-        run: |
-          echo "Deploying to production environment"
-          # Aquí irían los comandos de deployment a producción
