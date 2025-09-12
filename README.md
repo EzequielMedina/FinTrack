@@ -1,7 +1,5 @@
 # FinTrack - Plataforma de Gestión Financiera Personal
 
-![FinTrack Logo](docs/dashboard_principal.svg)
-
 ## 📋 Descripción
 
 FinTrack es una plataforma completa de gestión financiera personal desarrollada con arquitectura de microservicios. Permite a los usuarios gestionar sus finanzas personales, realizar transacciones, obtener reportes detallados y recibir asistencia a través de un chatbot inteligente.
