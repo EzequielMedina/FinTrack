@@ -1,0 +1,139 @@
+ .login-wrapper {
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   min-height: calc(100vh - 64px);
+   padding: 1rem;
+   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+ }
+
+ @media (max-width: 600px) {
+   .login-card {
+     padding: 1rem;
+     max-width: 100vw;
+     border-radius: 0;
+   }
+   .login-wrapper {
+     padding: 0.5rem;
+   }
+   .login-form {
+     gap: 0.75rem;
+   }
+   .login-button {
+     font-size: 0.95rem;
+     height: 40px;
+   }
+ }
+
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  padding: 2rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+}
+
+.card-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.card-header h2 {
+  margin: 0 0 0.5rem 0;
+  color: var(--brand);
+  font-size: 1.75rem;
+  font-weight: 600;
+}
+
+.subtitle {
+  margin: 0;
+  color: #666;
+  font-size: 0.95rem;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.login-button {
+  height: 48px;
+  font-size: 1rem;
+  font-weight: 500;
+  border-radius: 8px;
+  background: var(--brand);
+  margin-top: 0.5rem;
+}
+
+.login-button:disabled {
+  opacity: 0.6;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+  margin-right: 0.5rem;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #d32f2f;
+  background: #ffebee;
+  padding: 0.75rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  border-left: 4px solid #d32f2f;
+}
+
+.card-footer {
+  text-align: center;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e0e0e0;
+}
+
+.card-footer p {
+  margin: 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.register-link {
+  color: var(--brand);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.register-link:hover {
+  color: #0a5d75;
+  text-decoration: underline;
+}
+
+/* Responsive design */
+@media (max-width: 480px) {
+  .login-wrapper {
+    padding: 0.5rem;
+  }
+  
+  .login-card {
+    padding: 1.5rem;
+  }
+  
+  .card-header h2 {
+    font-size: 1.5rem;
+  }
+}

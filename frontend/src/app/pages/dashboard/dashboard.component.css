@@ -1,0 +1,172 @@
+.dashboard-container {
+  padding: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.dashboard-header {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.dashboard-header h1 {
+  color: var(--brand);
+  font-size: 2rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+}
+
+.user-email {
+  color: #666;
+  font-size: 1rem;
+  margin: 0;
+}
+
+ .dashboard-content {
+   display: flex;
+   flex-direction: column;
+   gap: 2rem;
+ }
+
+ @media (max-width: 900px) {
+   .dashboard-grid {
+     display: flex !important;
+     flex-direction: column !important;
+     gap: 1rem;
+   }
+   .dashboard-card {
+     min-height: 180px;
+   }
+ }
+
+ @media (max-width: 600px) {
+   .dashboard-header h1 {
+     font-size: 1.3rem;
+   }
+   .dashboard-container {
+     padding: 0.5rem;
+   }
+   .dashboard-card {
+     padding: 0.5rem;
+     min-height: 120px;
+   }
+ }
+
+.dashboard-grid {
+  width: 100%;
+}
+
+.dashboard-card {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 20px;
+}
+
+.card-icon.accounts {
+  background: linear-gradient(45deg, #4CAF50, #45a049);
+}
+
+.card-icon.transactions {
+  background: linear-gradient(45deg, #2196F3, #1976D2);
+}
+
+.card-icon.wallet {
+  background: linear-gradient(45deg, #FF9800, #F57C00);
+}
+
+.card-icon.reports {
+  background: linear-gradient(45deg, #9C27B0, #7B1FA2);
+}
+
+.card-stats {
+  text-align: center;
+  padding: 1rem 0;
+}
+
+.stat-number {
+  display: block;
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: var(--brand);
+  margin-bottom: 0.25rem;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.quick-actions {
+  margin-top: 1rem;
+}
+
+.quick-actions h3 {
+  color: var(--brand);
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.actions-grid {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.action-button {
+  min-width: 180px;
+  height: 48px;
+  font-weight: 500;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .dashboard-grid {
+    /* On mobile, stack cards vertically */
+    grid-template-columns: 1fr !important;
+  }
+  
+  .dashboard-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .actions-grid {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .action-button {
+    width: 100%;
+    max-width: 280px;
+  }
+}
+
+@media (max-width: 600px) {
+  .dashboard-container {
+    padding: 0.5rem;
+  }
+  
+  .stat-number {
+    font-size: 1.5rem;
+  }
+}
