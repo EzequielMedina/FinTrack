@@ -1,0 +1,36 @@
+<mat-toolbar color="primary" class="app-toolbar">
+  <span class="app-title">FinTrack</span>
+  
+  @if (isAuthenticated()) {
+    <div class="toolbar-spacer"></div>
+    <div class="user-menu">
+      @if (currentUser(); as user) {
+        <span class="user-greeting">Hola {{ user.firstName }}</span>
+      } @else {
+        <span class="user-greeting">Hola</span>
+      }
+      <button mat-icon-button [matMenuTriggerFor]="userMenu" aria-label="Menú de usuario">
+        <mat-icon>account_circle</mat-icon>
+      </button>
+      <mat-menu #userMenu="matMenu">
+        <button mat-menu-item disabled>
+          <mat-icon>person</mat-icon>
+          <span>Mi Perfil</span>
+        </button>
+        <button mat-menu-item disabled>
+          <mat-icon>settings</mat-icon>
+          <span>Configuración</span>
+        </button>
+        <mat-divider></mat-divider>
+        <button mat-menu-item (click)="logout()">
+          <mat-icon>logout</mat-icon>
+          <span>Cerrar sesión</span>
+        </button>
+      </mat-menu>
+    </div>
+  }
+</mat-toolbar>
+
+<main class="app-main">
+  <router-outlet></router-outlet>
+</main>

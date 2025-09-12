@@ -1,0 +1,43 @@
+.app-main { 
+  padding: 1rem; 
+  min-height: calc(100vh - 64px);
+}
+
+.app-toolbar {
+  display: flex;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.app-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: white;
+}
+
+.toolbar-spacer {
+  flex: 1 1 auto;
+}
+
+.user-menu {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.user-greeting {
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* Responsive design */
+@media (max-width: 600px) {
+  .user-greeting {
+    display: none;
+  }
+  
+  .app-main {
+    padding: 0.5rem;
+  }
+}
