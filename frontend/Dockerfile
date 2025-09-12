@@ -8,13 +8,15 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci --only=production
+# Install all dependencies (dev dependencies required for build)
+RUN npm ci
 
 # Copy source code
 COPY . .
 
 # Build the application
-RUN npm run build --prod
+# Angular 17+ uses configuration flag
+RUN npm run build:prod
 
 # Production stage
 FROM nginx:alpine
@@ -23,7 +25,8 @@ FROM nginx:alpine
 COPY nginx.conf /etc/nginx/nginx.conf
 
 # Copy built application
-COPY --from=builder /app/dist/fintrack /usr/share/nginx/html
+# Copy Angular browser build output
+COPY --from=builder /app/dist/fintrack/browser /usr/share/nginx/html
 
 # Add non-root user
 RUN addgroup -g 1001 -S nodejs

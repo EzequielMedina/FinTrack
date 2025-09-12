@@ -2,11 +2,11 @@
 
 ## 📋 Descripción
 
-Interfaz de usuario web para la plataforma FinTrack, desarrollada con Angular y optimizada para producción con Nginx.
+Interfaz de usuario web para la plataforma FinTrack, desarrollada con Angular 20 (standalone) y optimizada para producción con Nginx.
 
 ## 🛠️ Tecnologías
 
-- **Framework**: Angular 17+
+- **Framework**: Angular 20 (standalone)
 - **Runtime**: Node.js 22+
 - **Servidor Web**: Nginx (Alpine)
 - **Contenedor**: Docker multi-stage
@@ -33,7 +33,7 @@ Interfaz de usuario web para la plataforma FinTrack, desarrollada con Angular y 
 
 - Node.js 22+
 - npm 10+
-- Angular CLI 17+
+- Angular CLI 20+
 
 ### Instalación
 
@@ -63,7 +63,7 @@ ng serve
 npm run build
 
 # Build de producción
-npm run build --prod
+npm run build:prod
 
 # Tests unitarios
 npm test
@@ -252,7 +252,7 @@ npm run lighthouse
 npm run build --prod
 
 # Verificar archivos generados
-ls -la dist/fintrack/
+dir dist/fintrack/browser
 ```
 
 ### Docker Production
