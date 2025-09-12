@@ -56,4 +56,4 @@ fi
 
 # Start MySQL
 echo "Starting MySQL server..."
-exec mysqld "$@"
+exec "$@"
