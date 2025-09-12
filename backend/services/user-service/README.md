@@ -45,7 +45,40 @@ internal/
 └── app/                         # Contenedor de dependencias
 ```
 
-## 🔗 API Endpoints
+## � Documentación de la API (Swagger)
+
+### 🌐 Interfaz Interactiva
+La API cuenta con documentación completa y interactiva utilizando **Swagger/OpenAPI 3.0**:
+
+**🔗 http://localhost:8080/swagger/index.html**
+
+### ✨ Características de la Documentación
+- **Interfaz interactiva** para probar endpoints en tiempo real
+- **Esquemas completos** con ejemplos y validaciones
+- **Autenticación Bearer JWT** integrada
+- **Códigos de respuesta** detallados (200, 201, 400, 401, 403, 404, 500)
+- **Modelos de datos** con descripciones y ejemplos
+- **Paginación** documentada
+- **Enumeraciones** para roles de usuario
+
+### 📁 Archivos de Documentación
+- `docs/swagger.json` - Especificación OpenAPI 3.0 en JSON
+- `docs/swagger.yaml` - Especificación OpenAPI 3.0 en YAML
+- `docs/docs.go` - Documentación Go generada
+
+### 🔄 Regenerar Documentación
+Para actualizar la documentación después de cambios en la API:
+```bash
+go run github.com/swaggo/swag/cmd/swag@latest init -g cmd/api/main.go --output docs
+```
+
+### 🔐 Usar Autenticación en Swagger
+1. Obtener token JWT desde `/api/auth/login`
+2. Hacer clic en "Authorize" en Swagger UI
+3. Ingresar: `Bearer <tu_jwt_token>`
+4. Probar endpoints protegidos
+
+## �🔗 API Endpoints
 
 ### Autenticación (Públicos)
 ```bash
@@ -173,7 +206,21 @@ user       (Nivel 1) → Acceso básico, solo su propia información
 - **Jerarquía**: Los roles superiores pueden gestionar roles inferiores
 - **Emails únicos**: No se permiten emails duplicados en el sistema
 
-## 🗃️ Base de Datos
+## � Dependencias
+
+### Core Dependencies
+- `github.com/gin-gonic/gin` - Framework web HTTP
+- `github.com/go-sql-driver/mysql` - Driver MySQL
+- `github.com/golang-jwt/jwt/v5` - Autenticación JWT
+- `github.com/google/uuid` - Generación de UUIDs
+- `golang.org/x/crypto` - Criptografía y hashing
+
+### Documentation
+- `github.com/swaggo/gin-swagger` - Integración Swagger con Gin
+- `github.com/swaggo/files` - Archivos estáticos de Swagger UI
+- `github.com/swaggo/swag` - Generador de documentación OpenAPI
+
+## �🗃️ Base de Datos
 
 ### Esquema Principal (V1)
 ```sql
@@ -281,6 +328,12 @@ go run ./cmd/api/main.go
 ```bash
 curl http://localhost:8081/health
 # Respuesta: {"status": "ok"}
+```
+
+### Documentación de la API
+Una vez que el servicio esté ejecutándose, la documentación interactiva estará disponible en:
+```
+http://localhost:8080/swagger/index.html
 ```
 
 ## 📋 Estructura de Respuestas

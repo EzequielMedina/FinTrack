@@ -151,7 +151,7 @@ func TestHandler_CreateUser(t *testing.T) {
 				Password:  "password123",
 				FirstName: "Test",
 				LastName:  "User",
-				Role:      domuser.RoleUser,
+				Role:      string(domuser.RoleUser),
 			},
 			currentUser:    adminUser,
 			expectedStatus: http.StatusCreated,
@@ -163,7 +163,7 @@ func TestHandler_CreateUser(t *testing.T) {
 				Password:  "password123",
 				FirstName: "Test",
 				LastName:  "User",
-				Role:      domuser.RoleUser,
+				Role:      string(domuser.RoleUser),
 			},
 			currentUser:    adminUser,
 			expectedStatus: http.StatusBadRequest,
@@ -175,7 +175,7 @@ func TestHandler_CreateUser(t *testing.T) {
 				Password:  "password123",
 				FirstName: "Test",
 				LastName:  "User",
-				Role:      domuser.RoleUser,
+				Role:      string(domuser.RoleUser),
 			},
 			currentUser:    nil,
 			expectedStatus: http.StatusUnauthorized,
@@ -300,4 +300,12 @@ func TestHandler_GetCurrentUser(t *testing.T) {
 			}
 		})
 	}
+}
+
+type CreateUserRequest struct {
+	Email     string       `json:"email" binding:"required,email"`
+	Password  string       `json:"password" binding:"required"`
+	FirstName string       `json:"firstName" binding:"required"`
+	LastName  string       `json:"lastName" binding:"required"`
+	Role      domuser.Role `json:"role" binding:"required"`
 }

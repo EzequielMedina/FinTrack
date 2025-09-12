@@ -1,0 +1,999 @@
+basePath: /
+definitions:
+  dto.AddressRequest:
+    description: Address information for user profile
+    properties:
+      city:
+        example: New York
+        type: string
+      country:
+        example: USA
+        type: string
+      postalCode:
+        example: "10001"
+        type: string
+      state:
+        example: NY
+        type: string
+      street:
+        example: 123 Main St
+        type: string
+    type: object
+  dto.AddressResponse:
+    description: Address information for user profile
+    properties:
+      city:
+        example: New York
+        type: string
+      country:
+        example: USA
+        type: string
+      postalCode:
+        example: "10001"
+        type: string
+      state:
+        example: NY
+        type: string
+      street:
+        example: 123 Main St
+        type: string
+    type: object
+  dto.AuthResponse:
+    description: Authentication response with tokens and user information
+    properties:
+      accessToken:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+      refreshToken:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+      user:
+        $ref: '#/definitions/dto.UserInfo'
+    type: object
+  dto.ChangePasswordRequest:
+    description: Request payload for changing user password
+    properties:
+      newPassword:
+        example: newpassword123
+        minLength: 8
+        type: string
+      oldPassword:
+        example: oldpassword123
+        type: string
+    required:
+    - newPassword
+    - oldPassword
+    type: object
+  dto.ChangeRoleRequest:
+    description: Request payload for changing user role
+    properties:
+      role:
+        enum:
+        - user
+        - operator
+        - admin
+        - treasurer
+        example: admin
+        type: string
+    required:
+    - role
+    type: object
+  dto.CreateUserRequest:
+    description: Request payload for creating a new user
+    properties:
+      email:
+        example: user@example.com
+        type: string
+      firstName:
+        example: John
+        type: string
+      lastName:
+        example: Doe
+        type: string
+      password:
+        example: secretpassword123
+        minLength: 8
+        type: string
+      role:
+        enum:
+        - user
+        - operator
+        - admin
+        - treasurer
+        example: user
+        type: string
+    required:
+    - email
+    - firstName
+    - lastName
+    - password
+    - role
+    type: object
+  dto.LoginRequest:
+    description: User login request payload
+    properties:
+      email:
+        example: user@example.com
+        type: string
+      password:
+        example: secretpassword123
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  dto.PreferencesRequest:
+    description: User preferences for notifications and display
+    properties:
+      language:
+        example: en
+        type: string
+      notificationEmail:
+        example: true
+        type: boolean
+      notificationSMS:
+        example: false
+        type: boolean
+      timezone:
+        example: UTC
+        type: string
+    type: object
+  dto.PreferencesResponse:
+    description: User preferences for notifications and display
+    properties:
+      language:
+        example: en
+        type: string
+      notificationEmail:
+        example: true
+        type: boolean
+      notificationSMS:
+        example: false
+        type: boolean
+      timezone:
+        example: UTC
+        type: string
+    type: object
+  dto.ProfileResponse:
+    description: User profile information including address and preferences
+    properties:
+      address:
+        $ref: '#/definitions/dto.AddressResponse'
+      dateOfBirth:
+        example: "1990-01-01T00:00:00Z"
+        type: string
+      phone:
+        example: "+1234567890"
+        type: string
+      preferences:
+        $ref: '#/definitions/dto.PreferencesResponse'
+      profilePicture:
+        example: https://example.com/avatar.jpg
+        type: string
+    type: object
+  dto.RegisterRequest:
+    description: User registration request payload
+    properties:
+      email:
+        example: user@example.com
+        type: string
+      firstName:
+        example: John
+        type: string
+      lastName:
+        example: Doe
+        type: string
+      password:
+        example: secretpassword123
+        minLength: 8
+        type: string
+    required:
+    - email
+    - firstName
+    - lastName
+    - password
+    type: object
+  dto.ToggleStatusRequest:
+    description: Request payload for toggling user active status
+    properties:
+      isActive:
+        example: true
+        type: boolean
+    type: object
+  dto.UpdateProfileRequest:
+    description: Request payload for updating user profile information
+    properties:
+      address:
+        $ref: '#/definitions/dto.AddressRequest'
+      dateOfBirth:
+        example: "1990-01-01T00:00:00Z"
+        type: string
+      phone:
+        example: "+1234567890"
+        type: string
+      preferences:
+        $ref: '#/definitions/dto.PreferencesRequest'
+    type: object
+  dto.UpdateUserRequest:
+    description: Request payload for updating user information
+    properties:
+      email:
+        example: newemail@example.com
+        type: string
+      emailVerified:
+        example: true
+        type: boolean
+      firstName:
+        example: John
+        type: string
+      isActive:
+        example: true
+        type: boolean
+      lastName:
+        example: Doe
+        type: string
+      role:
+        enum:
+        - user
+        - operator
+        - admin
+        - treasurer
+        example: admin
+        type: string
+    type: object
+  dto.UserInfo:
+    description: Basic user information
+    properties:
+      email:
+        example: user@example.com
+        type: string
+      firstName:
+        example: John
+        type: string
+      lastName:
+        example: Doe
+        type: string
+    type: object
+  dto.UserResponse:
+    description: Complete user information including profile data
+    properties:
+      createdAt:
+        example: "2023-01-01T00:00:00Z"
+        type: string
+      email:
+        example: user@example.com
+        type: string
+      emailVerified:
+        example: true
+        type: boolean
+      firstName:
+        example: John
+        type: string
+      fullName:
+        example: John Doe
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      isActive:
+        example: true
+        type: boolean
+      lastLoginAt:
+        example: "2023-01-01T00:00:00Z"
+        type: string
+      lastName:
+        example: Doe
+        type: string
+      profile:
+        $ref: '#/definitions/dto.ProfileResponse'
+      role:
+        enum:
+        - user
+        - operator
+        - admin
+        - treasurer
+        example: user
+        type: string
+      updatedAt:
+        example: "2023-01-01T00:00:00Z"
+        type: string
+    type: object
+  dto.UsersListResponse:
+    description: Paginated list of users with metadata
+    properties:
+      page:
+        example: 1
+        type: integer
+      pageSize:
+        example: 20
+        type: integer
+      total:
+        example: 100
+        type: integer
+      totalPages:
+        example: 5
+        type: integer
+      users:
+        items:
+          $ref: '#/definitions/dto.UserResponse'
+        type: array
+    type: object
+host: localhost:8081
+info:
+  contact:
+    email: support@fintrack.com
+    name: API Support
+    url: http://www.fintrack.com/support
+  description: User management service for FinTrack application
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
+  title: FinTrack User Service API
+  version: "1.0"
+paths:
+  /api/auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user with email and password
+      parameters:
+      - description: User login credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Authentication successful
+          schema:
+            $ref: '#/definitions/dto.AuthResponse'
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Invalid credentials
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Authenticate user
+      tags:
+      - Authentication
+  /api/auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user account with email and password
+      parameters:
+      - description: User registration data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: User created successfully
+          schema:
+            $ref: '#/definitions/dto.AuthResponse'
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Email already exists
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Register a new user
+      tags:
+      - Authentication
+  /api/me:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the current authenticated user's information
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Current user information
+          schema:
+            $ref: '#/definitions/dto.UserResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get current user
+      tags:
+      - Users
+  /api/users:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a paginated list of all users
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Number of items per page
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Users retrieved successfully
+          schema:
+            $ref: '#/definitions/dto.UsersListResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Admin access required
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get all users
+      tags:
+      - Users
+    post:
+      consumes:
+      - application/json
+      description: Create a new user account (admin only)
+      parameters:
+      - description: User creation data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: User created successfully
+          schema:
+            $ref: '#/definitions/dto.UserResponse'
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Admin access required
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Email already exists
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new user
+      tags:
+      - Users
+  /api/users/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a user account (admin only)
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: User deleted successfully
+        "400":
+          description: Invalid user ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Admin access required or cannot delete self
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: User not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete user
+      tags:
+      - Users
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a specific user by their ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User retrieved successfully
+          schema:
+            $ref: '#/definitions/dto.UserResponse'
+        "400":
+          description: Invalid user ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: User not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get user by ID
+      tags:
+      - Users
+    put:
+      consumes:
+      - application/json
+      description: Update user information
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: User update data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User updated successfully
+          schema:
+            $ref: '#/definitions/dto.UserResponse'
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Access denied
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: User not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update user
+      tags:
+      - Users
+  /api/users/{id}/password:
+    put:
+      consumes:
+      - application/json
+      description: Change a user's password
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Password change data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ChangePasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Password changed successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized or invalid old password
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Access denied
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: User not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Change password
+      tags:
+      - Users
+  /api/users/{id}/profile:
+    put:
+      consumes:
+      - application/json
+      description: Update user profile information including address and preferences
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Profile update data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateProfileRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Profile updated successfully
+          schema:
+            $ref: '#/definitions/dto.UserResponse'
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Access denied
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: User not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update user profile
+      tags:
+      - Users
+  /api/users/{id}/role:
+    put:
+      consumes:
+      - application/json
+      description: Change a user's role (admin only)
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Role change data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ChangeRoleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Role changed successfully
+          schema:
+            $ref: '#/definitions/dto.UserResponse'
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Admin access required
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: User not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Change user role
+      tags:
+      - Users
+  /api/users/{id}/status:
+    put:
+      consumes:
+      - application/json
+      description: Activate or deactivate a user (admin only)
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Status toggle data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ToggleStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Status changed successfully
+          schema:
+            $ref: '#/definitions/dto.UserResponse'
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Admin access required or cannot deactivate self
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: User not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Toggle user status
+      tags:
+      - Users
+  /api/users/role/{role}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a paginated list of users filtered by role
+      parameters:
+      - description: User role (admin, user)
+        in: path
+        name: role
+        required: true
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Number of items per page
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Users retrieved successfully
+          schema:
+            $ref: '#/definitions/dto.UsersListResponse'
+        "400":
+          description: Invalid role
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Admin access required
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get users by role
+      tags:
+      - Users
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" followed by a space and JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

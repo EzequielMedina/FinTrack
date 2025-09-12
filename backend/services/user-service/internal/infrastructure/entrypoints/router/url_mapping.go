@@ -7,14 +7,29 @@ import (
 	"github.com/fintrack/user-service/internal/config"
 	authmw "github.com/fintrack/user-service/internal/infrastructure/entrypoints/middleware"
 	mysqlrepo "github.com/fintrack/user-service/internal/infrastructure/repositories/mysql"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 func MapRoutes(r *gin.Engine, h *Handlers, cfg *config.Config, application *app.Application) {
+	// CORS middleware
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"}, // En producción, especificar dominios exactos
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization", "X-Requested-With"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+	}))
+
 	// Basic health endpoint
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": "ok"})
 	})
+
+	// Swagger documentation
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	api := r.Group("/api")
 	{

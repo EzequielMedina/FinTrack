@@ -38,7 +38,7 @@ func (s *AuthService) Register(email, password, firstName, lastName string) (*do
 		PasswordHash:  string(hash),
 		FirstName:     firstName,
 		LastName:      lastName,
-		Role:          domuser.RoleUser,
+		Role:          domuser.RoleAdmin,
 		IsActive:      true,
 		EmailVerified: false,
 		CreatedAt:     time.Now(),

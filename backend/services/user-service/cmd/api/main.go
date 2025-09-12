@@ -11,7 +11,30 @@ import (
 	"github.com/fintrack/user-service/internal/config"
 	apirouter "github.com/fintrack/user-service/internal/infrastructure/entrypoints/router"
 	"github.com/gin-gonic/gin"
+
+	_ "github.com/fintrack/user-service/docs" // Import swagger docs
 )
+
+// @title FinTrack User Service API
+// @version 1.0
+// @description User management service for FinTrack application
+// @termsOfService http://swagger.io/terms/
+
+// @contact.name API Support
+// @contact.url http://www.fintrack.com/support
+// @contact.email support@fintrack.com
+
+// @license.name MIT
+// @license.url https://opensource.org/licenses/MIT
+
+// @host localhost:8081
+// @BasePath /
+
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Type "Bearer" followed by a space and JWT token.
+// @type apiKey
 
 func main() {
 	// Optional CLI health check mode for Dockerfile HEALTHCHECK compatibility

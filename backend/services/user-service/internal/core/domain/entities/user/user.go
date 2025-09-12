@@ -6,13 +6,15 @@ import (
 	"time"
 )
 
+// Role represents user roles in the system
+// @Description User role enumeration
 type Role string
 
 const (
-	RoleUser      Role = "user"
-	RoleOperator  Role = "operator"
-	RoleAdmin     Role = "admin"
-	RoleTreasurer Role = "treasurer"
+	RoleUser      Role = "user"      // @Description Regular user role
+	RoleOperator  Role = "operator"  // @Description Operator role
+	RoleAdmin     Role = "admin"     // @Description Administrator role
+	RoleTreasurer Role = "treasurer" // @Description Treasurer role
 )
 
 // User represents the main user entity with authentication and profile information

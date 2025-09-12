@@ -23,7 +23,20 @@ func New(userService service.UserServiceInterface) *Handler {
 }
 
 // CreateUser creates a new user
-// POST /api/users
+// @Summary Create a new user
+// @Description Create a new user account (admin only)
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param request body dto.CreateUserRequest true "User creation data"
+// @Success 201 {object} dto.UserResponse "User created successfully"
+// @Failure 400 {object} map[string]string "Invalid request data"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Admin access required"
+// @Failure 409 {object} map[string]string "Email already exists"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Router /api/users [post]
 func (h *Handler) CreateUser(c *gin.Context) {
 	var req dto.CreateUserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -37,7 +50,7 @@ func (h *Handler) CreateUser(c *gin.Context) {
 		return
 	}
 
-	user, err := h.userService.CreateUser(req.Email, req.Password, req.FirstName, req.LastName, req.Role, currentUser)
+	user, err := h.userService.CreateUser(req.Email, req.Password, req.FirstName, req.LastName, domuser.Role(req.Role), currentUser)
 	if err != nil {
 		status := h.getErrorStatus(err)
 		c.JSON(status, gin.H{"error": err.Error()})
@@ -49,7 +62,19 @@ func (h *Handler) CreateUser(c *gin.Context) {
 }
 
 // GetUser retrieves a user by ID
-// GET /api/users/:id
+// @Summary Get user by ID
+// @Description Retrieve a specific user by their ID
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path string true "User ID"
+// @Success 200 {object} dto.UserResponse "User retrieved successfully"
+// @Failure 400 {object} map[string]string "Invalid user ID"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 404 {object} map[string]string "User not found"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Router /api/users/{id} [get]
 func (h *Handler) GetUser(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
@@ -75,7 +100,16 @@ func (h *Handler) GetUser(c *gin.Context) {
 }
 
 // GetCurrentUser retrieves the current authenticated user's information
-// GET /api/users/me
+// @Summary Get current user
+// @Description Retrieve the current authenticated user's information
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} dto.UserResponse "Current user information"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Router /api/me [get]
 func (h *Handler) GetCurrentUser(c *gin.Context) {
 	currentUser := h.getCurrentUser(c)
 	if currentUser == nil {
@@ -96,7 +130,19 @@ func (h *Handler) GetCurrentUser(c *gin.Context) {
 }
 
 // GetAllUsers retrieves all users with pagination
-// GET /api/users?page=1&pageSize=20
+// @Summary Get all users
+// @Description Retrieve a paginated list of all users
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param page query int false "Page number" default(1)
+// @Param pageSize query int false "Number of items per page" default(20)
+// @Success 200 {object} dto.UsersListResponse "Users retrieved successfully"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Admin access required"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Router /api/users [get]
 func (h *Handler) GetAllUsers(c *gin.Context) {
 	currentUser := h.getCurrentUser(c)
 	if currentUser == nil {
@@ -119,7 +165,21 @@ func (h *Handler) GetAllUsers(c *gin.Context) {
 }
 
 // GetUsersByRole retrieves users by role with pagination
-// GET /api/users/role/:role?page=1&pageSize=20
+// @Summary Get users by role
+// @Description Retrieve a paginated list of users filtered by role
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param role path string true "User role (admin, user)"
+// @Param page query int false "Page number" default(1)
+// @Param pageSize query int false "Number of items per page" default(20)
+// @Success 200 {object} dto.UsersListResponse "Users retrieved successfully"
+// @Failure 400 {object} map[string]string "Invalid role"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Admin access required"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Router /api/users/role/{role} [get]
 func (h *Handler) GetUsersByRole(c *gin.Context) {
 	roleParam := c.Param("role")
 	if roleParam == "" {
@@ -154,7 +214,21 @@ func (h *Handler) GetUsersByRole(c *gin.Context) {
 }
 
 // UpdateUser updates user information
-// PUT /api/users/:id
+// @Summary Update user
+// @Description Update user information
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path string true "User ID"
+// @Param request body dto.UpdateUserRequest true "User update data"
+// @Success 200 {object} dto.UserResponse "User updated successfully"
+// @Failure 400 {object} map[string]string "Invalid request data"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Access denied"
+// @Failure 404 {object} map[string]string "User not found"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Router /api/users/{id} [put]
 func (h *Handler) UpdateUser(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
@@ -187,7 +261,21 @@ func (h *Handler) UpdateUser(c *gin.Context) {
 }
 
 // UpdateUserProfile updates user profile information
-// PUT /api/users/:id/profile
+// @Summary Update user profile
+// @Description Update user profile information including address and preferences
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path string true "User ID"
+// @Param request body dto.UpdateProfileRequest true "Profile update data"
+// @Success 200 {object} dto.UserResponse "Profile updated successfully"
+// @Failure 400 {object} map[string]string "Invalid request data"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Access denied"
+// @Failure 404 {object} map[string]string "User not found"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Router /api/users/{id}/profile [put]
 func (h *Handler) UpdateUserProfile(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
@@ -228,7 +316,21 @@ func (h *Handler) UpdateUserProfile(c *gin.Context) {
 }
 
 // ChangeUserRole changes a user's role
-// PUT /api/users/:id/role
+// @Summary Change user role
+// @Description Change a user's role (admin only)
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path string true "User ID"
+// @Param request body dto.ChangeRoleRequest true "Role change data"
+// @Success 200 {object} dto.UserResponse "Role changed successfully"
+// @Failure 400 {object} map[string]string "Invalid request data"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Admin access required"
+// @Failure 404 {object} map[string]string "User not found"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Router /api/users/{id}/role [put]
 func (h *Handler) ChangeUserRole(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
@@ -248,7 +350,7 @@ func (h *Handler) ChangeUserRole(c *gin.Context) {
 		return
 	}
 
-	user, err := h.userService.ChangeUserRole(id, req.Role, currentUser)
+	user, err := h.userService.ChangeUserRole(id, domuser.Role(req.Role), currentUser)
 	if err != nil {
 		status := h.getErrorStatus(err)
 		c.JSON(status, gin.H{"error": err.Error()})
@@ -260,7 +362,21 @@ func (h *Handler) ChangeUserRole(c *gin.Context) {
 }
 
 // ToggleUserStatus activates or deactivates a user
-// PUT /api/users/:id/status
+// @Summary Toggle user status
+// @Description Activate or deactivate a user (admin only)
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path string true "User ID"
+// @Param request body dto.ToggleStatusRequest true "Status toggle data"
+// @Success 200 {object} dto.UserResponse "Status changed successfully"
+// @Failure 400 {object} map[string]string "Invalid request data"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Admin access required or cannot deactivate self"
+// @Failure 404 {object} map[string]string "User not found"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Router /api/users/{id}/status [put]
 func (h *Handler) ToggleUserStatus(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
@@ -292,7 +408,20 @@ func (h *Handler) ToggleUserStatus(c *gin.Context) {
 }
 
 // DeleteUser deletes a user
-// DELETE /api/users/:id
+// @Summary Delete user
+// @Description Delete a user account (admin only)
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path string true "User ID"
+// @Success 204 "User deleted successfully"
+// @Failure 400 {object} map[string]string "Invalid user ID"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Admin access required or cannot delete self"
+// @Failure 404 {object} map[string]string "User not found"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Router /api/users/{id} [delete]
 func (h *Handler) DeleteUser(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
@@ -317,7 +446,21 @@ func (h *Handler) DeleteUser(c *gin.Context) {
 }
 
 // ChangePassword changes a user's password
-// PUT /api/users/:id/password
+// @Summary Change password
+// @Description Change a user's password
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path string true "User ID"
+// @Param request body dto.ChangePasswordRequest true "Password change data"
+// @Success 200 {object} map[string]string "Password changed successfully"
+// @Failure 400 {object} map[string]string "Invalid request data"
+// @Failure 401 {object} map[string]string "Unauthorized or invalid old password"
+// @Failure 403 {object} map[string]string "Access denied"
+// @Failure 404 {object} map[string]string "User not found"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Router /api/users/{id}/password [put]
 func (h *Handler) ChangePassword(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
