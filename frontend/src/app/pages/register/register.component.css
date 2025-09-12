@@ -1,4 +1,4 @@
-.login-wrapper {
+.register-wrapper {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -7,9 +7,9 @@
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 }
 
-.login-card {
+.register-card {
   width: 100%;
-  max-width: 420px;
+  max-width: 480px;
   padding: 2rem;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   border-radius: 16px;
@@ -35,17 +35,53 @@
   font-size: 0.95rem;
 }
 
-.login-form {
+.register-form {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+}
+
+.name-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.half-width {
+  flex: 1;
 }
 
 .full-width {
   width: 100%;
 }
 
-.login-button {
+.terms-section {
+  margin: 0.5rem 0;
+}
+
+.terms-section mat-checkbox {
+  font-size: 0.9rem;
+}
+
+.terms-link {
+  color: var(--brand);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.terms-link:hover {
+  color: #0a5d75;
+  text-decoration: underline;
+}
+
+.terms-error {
+  color: #d32f2f;
+  font-size: 0.75rem;
+  margin-top: 0.5rem;
+  display: block;
+}
+
+.register-button {
   height: 48px;
   font-size: 1rem;
   font-weight: 500;
@@ -54,7 +90,7 @@
   margin-top: 0.5rem;
 }
 
-.login-button:disabled {
+.register-button:disabled {
   opacity: 0.6;
 }
 
@@ -93,29 +129,39 @@
   font-size: 0.9rem;
 }
 
-.register-link {
+.login-link {
   color: var(--brand);
   text-decoration: none;
   font-weight: 500;
   transition: color 0.2s ease;
 }
 
-.register-link:hover {
+.login-link:hover {
   color: #0a5d75;
   text-decoration: underline;
 }
 
 /* Responsive design */
-@media (max-width: 480px) {
-  .login-wrapper {
+@media (max-width: 600px) {
+  .register-wrapper {
     padding: 0.5rem;
   }
   
-  .login-card {
+  .register-card {
     padding: 1.5rem;
+    max-width: 100%;
   }
   
   .card-header h2 {
     font-size: 1.5rem;
+  }
+  
+  .name-row {
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+  
+  .half-width {
+    width: 100%;
   }
 }

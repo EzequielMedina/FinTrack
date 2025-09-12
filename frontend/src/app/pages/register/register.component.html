@@ -1,0 +1,122 @@
+<div class="register-wrapper">
+  <mat-card class="register-card">
+    <div class="card-header">
+      <h2>Crear cuenta en FinTrack</h2>
+      <p class="subtitle">Únete para comenzar a gestionar tus finanzas de manera inteligente</p>
+    </div>
+    
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="register-form">
+      <div class="name-row">
+        <mat-form-field appearance="outline" class="half-width">
+          <mat-label>Nombre</mat-label>
+          <input matInput formControlName="firstName" type="text" autocomplete="given-name" />
+          <mat-icon matSuffix>person</mat-icon>
+          <mat-error *ngIf="firstNameControl?.touched && firstNameControl?.invalid">
+            {{ getFirstNameErrorMessage() }}
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="half-width">
+          <mat-label>Apellido</mat-label>
+          <input matInput formControlName="lastName" type="text" autocomplete="family-name" />
+          <mat-icon matSuffix>person_outline</mat-icon>
+          <mat-error *ngIf="lastNameControl?.touched && lastNameControl?.invalid">
+            {{ getLastNameErrorMessage() }}
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Email</mat-label>
+        <input matInput formControlName="email" type="email" autocomplete="email" />
+        <mat-icon matSuffix>email</mat-icon>
+        <mat-error *ngIf="emailControl?.touched && emailControl?.invalid">
+          {{ getEmailErrorMessage() }}
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Contraseña</mat-label>
+        <input 
+          matInput 
+          formControlName="password" 
+          [type]="hidePassword() ? 'password' : 'text'"
+          autocomplete="new-password" 
+        />
+        <button 
+          mat-icon-button 
+          matSuffix 
+          type="button"
+          (click)="togglePasswordVisibility()"
+          [attr.aria-label]="'Ocultar contraseña'"
+          [attr.aria-pressed]="hidePassword()"
+        >
+          <mat-icon>{{ hidePassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
+        <mat-error *ngIf="passwordControl?.touched && passwordControl?.invalid">
+          {{ getPasswordErrorMessage() }}
+        </mat-error>
+        <mat-hint>Mínimo 8 caracteres: mayúscula, minúscula, número y símbolo (@$!%*?&)</mat-hint>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Confirmar contraseña</mat-label>
+        <input 
+          matInput 
+          formControlName="confirmPassword" 
+          [type]="hideConfirmPassword() ? 'password' : 'text'"
+          autocomplete="new-password" 
+        />
+        <button 
+          mat-icon-button 
+          matSuffix 
+          type="button"
+          (click)="toggleConfirmPasswordVisibility()"
+          [attr.aria-label]="'Ocultar contraseña'"
+          [attr.aria-pressed]="hideConfirmPassword()"
+        >
+          <mat-icon>{{ hideConfirmPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
+        <mat-error *ngIf="confirmPasswordControl?.touched && (confirmPasswordControl?.invalid || registerForm.hasError('passwordMismatch'))">
+          {{ getConfirmPasswordErrorMessage() }}
+        </mat-error>
+      </mat-form-field>
+
+      <div class="terms-section">
+        <mat-checkbox formControlName="acceptTerms" color="primary">
+          Acepto los <a href="/terms" target="_blank" class="terms-link">términos y condiciones</a> 
+          y la <a href="/privacy" target="_blank" class="terms-link">política de privacidad</a>
+        </mat-checkbox>
+        <mat-error *ngIf="acceptTermsControl?.touched && acceptTermsControl?.invalid" class="terms-error">
+          Debes aceptar los términos y condiciones
+        </mat-error>
+      </div>
+
+      <button 
+        mat-raised-button 
+        color="primary" 
+        type="submit"
+        class="register-button"
+        [disabled]="loading() || registerForm.invalid"
+      >
+        @if (loading()) {
+          <mat-icon class="spinner">refresh</mat-icon>
+          Creando cuenta...
+        } @else {
+          Crear cuenta
+        }
+      </button>
+
+      @if (error()) {
+        <div class="error-message">
+          <mat-icon>error</mat-icon>
+          {{ error() }}
+        </div>
+      }
+    </form>
+
+    <div class="card-footer">
+      <p>¿Ya tienes una cuenta? <a routerLink="/login" class="login-link">Inicia sesión aquí</a></p>
+    </div>
+  </mat-card>
+</div>

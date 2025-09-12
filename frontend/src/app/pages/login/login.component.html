@@ -1,19 +1,68 @@
 <div class="login-wrapper">
   <mat-card class="login-card">
-    <h2>Iniciar sesión</h2>
-    <form (ngSubmit)="onSubmit()" #f="ngForm">
-      <mat-form-field appearance="outline" class="full">
+    <div class="card-header">
+      <h2>Iniciar sesión en FinTrack</h2>
+      <p class="subtitle">Accede a tu cuenta para gestionar tus finanzas</p>
+    </div>
+    
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+      <mat-form-field appearance="outline" class="full-width">
         <mat-label>Email</mat-label>
-        <input matInput name="email" required [(ngModel)]="email" type="email" />
+        <input matInput formControlName="email" type="email" autocomplete="email" />
+        <mat-icon matSuffix>email</mat-icon>
+        <mat-error *ngIf="emailControl?.touched && emailControl?.invalid">
+          {{ getEmailErrorMessage() }}
+        </mat-error>
       </mat-form-field>
-      <mat-form-field appearance="outline" class="full">
-        <mat-label>Password</mat-label>
-        <input matInput name="password" required [(ngModel)]="password" type="password" />
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Contraseña</mat-label>
+        <input 
+          matInput 
+          formControlName="password" 
+          [type]="hidePassword() ? 'password' : 'text'"
+          autocomplete="current-password" 
+        />
+        <button 
+          mat-icon-button 
+          matSuffix 
+          type="button"
+          (click)="togglePasswordVisibility()"
+          [attr.aria-label]="'Ocultar contraseña'"
+          [attr.aria-pressed]="hidePassword()"
+        >
+          <mat-icon>{{ hidePassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
+        <mat-error *ngIf="passwordControl?.touched && passwordControl?.invalid">
+          {{ getPasswordErrorMessage() }}
+        </mat-error>
       </mat-form-field>
-      <button mat-raised-button color="primary" [disabled]="loading" type="submit">
-        Entrar
+
+      <button 
+        mat-raised-button 
+        color="primary" 
+        type="submit"
+        class="login-button"
+        [disabled]="loading() || loginForm.invalid"
+      >
+        @if (loading()) {
+          <mat-icon class="spinner">refresh</mat-icon>
+          Iniciando sesión...
+        } @else {
+          Iniciar sesión
+        }
       </button>
-      <p class="error" *ngIf="error">{{ error }}</p>
+
+      @if (error()) {
+        <div class="error-message">
+          <mat-icon>error</mat-icon>
+          {{ error() }}
+        </div>
+      }
     </form>
+
+    <div class="card-footer">
+      <p>¿No tienes una cuenta? <a routerLink="/register" class="register-link">Regístrate aquí</a></p>
+    </div>
   </mat-card>
 </div>
