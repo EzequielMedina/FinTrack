@@ -23,6 +23,51 @@ type mockRepo struct {
 	createErr  error
 }
 
+// Delete implements userprovider.Repository.
+func (m *mockRepo) Delete(id string) error {
+	panic("unimplemented")
+}
+
+// ExistsByEmail implements userprovider.Repository.
+func (m *mockRepo) ExistsByEmail(email string) (bool, error) {
+	panic("unimplemented")
+}
+
+// ExistsByID implements userprovider.Repository.
+func (m *mockRepo) ExistsByID(id string) (bool, error) {
+	panic("unimplemented")
+}
+
+// GetActiveUsers implements userprovider.Repository.
+func (m *mockRepo) GetActiveUsers(limit int, offset int) ([]*domuser.User, int, error) {
+	panic("unimplemented")
+}
+
+// GetAll implements userprovider.Repository.
+func (m *mockRepo) GetAll(limit int, offset int) ([]*domuser.User, int, error) {
+	panic("unimplemented")
+}
+
+// GetByRole implements userprovider.Repository.
+func (m *mockRepo) GetByRole(role domuser.Role, limit int, offset int) ([]*domuser.User, int, error) {
+	panic("unimplemented")
+}
+
+// ToggleActiveStatus implements userprovider.Repository.
+func (m *mockRepo) ToggleActiveStatus(id string, isActive bool) error {
+	panic("unimplemented")
+}
+
+// Update implements userprovider.Repository.
+func (m *mockRepo) Update(u *domuser.User) error {
+	panic("unimplemented")
+}
+
+// UpdateLastLogin implements userprovider.Repository.
+func (m *mockRepo) UpdateLastLogin(id string) error {
+	panic("unimplemented")
+}
+
 func (m *mockRepo) GetByEmail(email string) (*domuser.User, error) { return m.byEmail, m.byEmailErr }
 func (m *mockRepo) GetByID(id string) (*domuser.User, error)       { return nil, nil }
 func (m *mockRepo) Create(u *domuser.User) error                   { return m.createErr }
