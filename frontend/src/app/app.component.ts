@@ -1,22 +1,28 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { RouterOutlet, Router } from '@angular/router';
+import { RouterOutlet, Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { AuthService } from './services/auth.service';
+import { PermissionService } from './services/permission.service';
+import { HasPermissionDirective, HasRoleDirective } from './shared';
+import { Permission, UserRole } from './models';
 
 @Component({
   selector: 'app-root',
   standalone: true,
   imports: [
     CommonModule,
-    RouterOutlet, 
+    RouterOutlet,
+    RouterModule,
     MatToolbarModule,
     MatButtonModule,
     MatIconModule,
-    MatMenuModule
+    MatMenuModule,
+    HasPermissionDirective,
+    HasRoleDirective
   ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
@@ -25,6 +31,11 @@ import { AuthService } from './services/auth.service';
 export class AppComponent {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly permissionService = inject(PermissionService);
+
+  // Expose enums for template
+  Permission = Permission;
+  UserRole = UserRole;
 
   get isAuthenticated() {
     return this.auth.isAuthenticatedSig;
@@ -34,8 +45,16 @@ export class AppComponent {
     return this.auth.currentUserSig;
   }
 
+  canAccessAdminPanel(): boolean {
+    return this.permissionService.canAccessAdminPanel();
+  }
+
   logout(): void {
     this.auth.logout();
     this.router.navigateByUrl('/login');
+  }
+
+  navigateTo(route: string): void {
+    this.router.navigateByUrl(route);
   }
 }

@@ -1,43 +1,14 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { Observable, tap, switchMap } from 'rxjs';
 import { environment } from '../../environments/environment';
-
-export interface LoginResponse {
-  accessToken: string;
-  refreshToken?: string;
-  user: {
-    id: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-  };
-}
-
-export interface RegisterRequest {
-  email: string;
-  password: string;
-  firstName: string;
-  lastName: string;
-}
-
-export interface RegisterResponse {
-  accessToken: string;
-  refreshToken?: string;
-  user: {
-    id: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-  };
-}
-
-export interface User {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-}
+import { 
+  User, 
+  AuthResponse, 
+  LoginRequest, 
+  RegisterRequest,
+  UserRole 
+} from '../models';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -49,32 +20,41 @@ export class AuthService {
   isAuthenticatedSig = signal<boolean>(this.hasToken());
   currentUserSig = signal<User | null>(this.getCurrentUser());
 
-  login(email: string, password: string): Observable<LoginResponse> {
+  login(email: string, password: string): Observable<User> {
     return this.http
-      .post<LoginResponse>(`${environment.apiUrl}/auth/login`, {
+      .post<AuthResponse>(`${environment.apiUrl}/auth/login`, {
         email,
         password
       })
       .pipe(
-        tap((res) => {
-          // Usar los campos en camelCase que envía el backend
+        switchMap((res) => {
+          // Guardar solo los tokens del login
           this.setToken(res.accessToken, res.refreshToken);
-          this.setUser(res.user);
+          
+          // Llamar a /api/me para obtener información completa del usuario
+          return this.loadUserProfile();
+        }),
+        tap((user) => {
           this.isAuthenticatedSig.set(true);
-          this.currentUserSig.set(res.user);
+          this.currentUserSig.set(user);
         })
       );
   }
 
-  register(registerData: RegisterRequest): Observable<RegisterResponse> {
+  register(registerData: RegisterRequest): Observable<User> {
     return this.http
-      .post<RegisterResponse>(`${environment.apiUrl}/auth/register`, registerData)
+      .post<AuthResponse>(`${environment.apiUrl}/auth/register`, registerData)
       .pipe(
-        tap((res) => {
+        switchMap((res) => {
+          // Guardar solo los tokens del registro
           this.setToken(res.accessToken, res.refreshToken);
-          this.setUser(res.user);
+          
+          // Llamar a /api/me para obtener información completa del usuario
+          return this.loadUserProfile();
+        }),
+        tap((user) => {
           this.isAuthenticatedSig.set(true);
-          this.currentUserSig.set(res.user);
+          this.currentUserSig.set(user);
         })
       );
   }
@@ -116,5 +96,19 @@ export class AuthService {
 
   private hasToken(): boolean {
     return !!localStorage.getItem(this.tokenKey);
+  }
+
+  // Métodos adicionales para el sistema de roles
+  hasRole(role: UserRole): boolean {
+    const currentUser = this.getCurrentUser();
+    return currentUser?.role === role;
+  }
+
+  isAdmin(): boolean {
+    return this.hasRole(UserRole.ADMIN);
+  }
+
+  isUser(): boolean {
+    return this.hasRole(UserRole.USER);
   }
 }

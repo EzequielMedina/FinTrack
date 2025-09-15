@@ -94,6 +94,7 @@
     <section class="quick-actions">
       <h3>Acciones Rápidas</h3>
       <div class="actions-grid">
+        <!-- Acciones para todos los usuarios -->
         <button mat-fab extended color="primary" class="action-button">
           <mat-icon>add</mat-icon>
           Nueva Transacción
@@ -106,7 +107,60 @@
           <mat-icon>file_download</mat-icon>
           Exportar Datos
         </button>
+        
+        <!-- Acciones exclusivas para administradores -->
+        <button mat-fab extended color="warn" class="action-button" 
+                [routerLink]="['/admin']"
+                *appHasPermission="Permission.ADMIN_PANEL_ACCESS">
+          <mat-icon>admin_panel_settings</mat-icon>
+          Panel de Administración
+        </button>
+        
+        <button mat-fab extended color="warn" class="action-button"
+                [routerLink]="['/admin/users']"
+                *appHasPermission="Permission.USER_READ">
+          <mat-icon>people</mat-icon>
+          Gestionar Usuarios
+        </button>
       </div>
+    </section>
+    
+    <!-- Sección especial para Administradores -->
+    <section class="admin-section" *appHasRole="UserRole.ADMIN">
+      <h3>Funciones de Administrador</h3>
+      <mat-grid-list cols="3" rowHeight="150px" gutterSize="16px" class="admin-grid">
+        <mat-grid-tile>
+          <mat-card class="admin-card" [routerLink]="['/admin/users']">
+            <mat-card-header>
+              <mat-icon mat-card-avatar class="admin-icon">people</mat-icon>
+              <mat-card-title>Usuarios</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <p>Crear, editar y gestionar usuarios del sistema</p>
+            </mat-card-content>
+          </mat-card>
+        </mat-grid-tile>
+        
+        <mat-grid-tile>
+          <mat-card class="admin-card" [routerLink]="['/admin']">
+            <mat-icon mat-card-avatar class="admin-icon">dashboard</mat-icon>
+            <mat-card-title>Panel Admin</mat-card-title>
+            <mat-card-content>
+              <p>Dashboard completo de administración</p>
+            </mat-card-content>
+          </mat-card>
+        </mat-grid-tile>
+        
+        <mat-grid-tile>
+          <mat-card class="admin-card" *appHasPermission="Permission.REPORTS_VIEW">
+            <mat-icon mat-card-avatar class="admin-icon">analytics</mat-icon>
+            <mat-card-title>Reportes Avanzados</mat-card-title>
+            <mat-card-content>
+              <p>Análisis y reportes del sistema</p>
+            </mat-card-content>
+          </mat-card>
+        </mat-grid-tile>
+      </mat-grid-list>
     </section>
   </div>
 </div>

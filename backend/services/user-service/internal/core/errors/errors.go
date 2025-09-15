@@ -14,6 +14,7 @@ var (
 	ErrCannotDeleteSelf     = errors.New("cannot delete yourself")
 	ErrCannotDeactivateSelf = errors.New("cannot deactivate yourself")
 	ErrAdminRequired        = errors.New("admin role required for this operation")
+	ErrCannotCreateAdmin    = errors.New("admins cannot create other admin users")
 
 	// Validation errors
 	ErrInvalidEmail    = errors.New("invalid email format")

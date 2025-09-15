@@ -29,6 +29,11 @@ func (s *UserService) CreateUser(email, password, firstName, lastName string, ro
 		return nil, domerrors.ErrAdminRequired
 	}
 
+	// Prevent admins from creating other admin users
+	if role == domuser.RoleAdmin {
+		return nil, domerrors.ErrCannotCreateAdmin
+	}
+
 	// Validate input
 	if err := s.validateUserData(email, firstName, lastName); err != nil {
 		return nil, err
@@ -112,12 +117,25 @@ func (s *UserService) GetAllUsers(limit, offset int, currentUser *domuser.User) 
 		offset = 0
 	}
 
-	users, total, err := s.repo.GetAll(limit, offset)
+	users, _, err := s.repo.GetAll(limit, offset)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	return users, total, nil
+	// Filter out other admin users - admins cannot see other admins
+	filteredUsers := make([]*domuser.User, 0)
+	for _, user := range users {
+		// Skip other admin users (but include the current admin user themselves)
+		if user.Role == domuser.RoleAdmin && user.ID != currentUser.ID {
+			continue
+		}
+		filteredUsers = append(filteredUsers, user)
+	}
+
+	// Adjust total count to reflect filtered results
+	filteredTotal := len(filteredUsers)
+
+	return filteredUsers, filteredTotal, nil
 }
 
 // GetUsersByRole retrieves users by role with pagination
@@ -142,6 +160,20 @@ func (s *UserService) GetUsersByRole(role domuser.Role, limit, offset int, curre
 	users, total, err := s.repo.GetByRole(role, limit, offset)
 	if err != nil {
 		return nil, 0, err
+	}
+
+	// Filter out other admin users if the role being requested is admin
+	// Admins cannot see other admins
+	if role == domuser.RoleAdmin {
+		filteredUsers := make([]*domuser.User, 0)
+		for _, user := range users {
+			// Only include the current admin user themselves, not other admins
+			if user.ID == currentUser.ID {
+				filteredUsers = append(filteredUsers, user)
+			}
+		}
+		filteredTotal := len(filteredUsers)
+		return filteredUsers, filteredTotal, nil
 	}
 
 	return users, total, nil

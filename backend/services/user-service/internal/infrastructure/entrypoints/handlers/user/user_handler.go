@@ -547,7 +547,7 @@ func (h *Handler) getErrorStatus(err error) int {
 		return http.StatusForbidden
 	case domerrors.ErrInvalidRole, domerrors.ErrInvalidEmail, domerrors.ErrPasswordTooWeak,
 		domerrors.ErrInvalidUserData, domerrors.ErrEmptyFirstName, domerrors.ErrEmptyLastName,
-		domerrors.ErrInvalidPagination:
+		domerrors.ErrInvalidPagination, domerrors.ErrCannotCreateAdmin:
 		return http.StatusBadRequest
 	case domerrors.ErrUserInactive:
 		return http.StatusForbidden

@@ -209,6 +209,16 @@ func TestUserService_CreateUser(t *testing.T) {
 			currentUser: adminUser,
 			wantErr:     domerrors.ErrInvalidRole,
 		},
+		{
+			name:        "admin cannot create other admin users",
+			email:       "admin2@example.com",
+			password:    "password123",
+			firstName:   "Another",
+			lastName:    "Admin",
+			role:        domuser.RoleAdmin,
+			currentUser: adminUser,
+			wantErr:     domerrors.ErrCannotCreateAdmin,
+		},
 	}
 
 	for _, tt := range tests {
@@ -420,6 +430,277 @@ func TestUserService_DeleteUser(t *testing.T) {
 			_, err = repo.GetByID(tt.userID)
 			if err != domerrors.ErrUserNotFound {
 				t.Error("DeleteUser() user was not deleted")
+			}
+		})
+	}
+}
+
+func TestUserService_GetAllUsers(t *testing.T) {
+	repo := NewMockUserRepository()
+	service := NewUserService(repo)
+
+	// Create multiple test users including two admins
+	admin1 := &domuser.User{
+		ID:        uuid.NewString(),
+		Email:     "admin1@test.com",
+		FirstName: "Admin",
+		LastName:  "One",
+		Role:      domuser.RoleAdmin,
+		IsActive:  true,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+	repo.Create(admin1)
+
+	admin2 := &domuser.User{
+		ID:        uuid.NewString(),
+		Email:     "admin2@test.com",
+		FirstName: "Admin",
+		LastName:  "Two",
+		Role:      domuser.RoleAdmin,
+		IsActive:  true,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+	repo.Create(admin2)
+
+	regularUser := &domuser.User{
+		ID:        uuid.NewString(),
+		Email:     "user@test.com",
+		FirstName: "Regular",
+		LastName:  "User",
+		Role:      domuser.RoleUser,
+		IsActive:  true,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+	repo.Create(regularUser)
+
+	operatorUser := &domuser.User{
+		ID:        uuid.NewString(),
+		Email:     "operator@test.com",
+		FirstName: "Operator",
+		LastName:  "User",
+		Role:      domuser.RoleOperator,
+		IsActive:  true,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+	repo.Create(operatorUser)
+
+	tests := []struct {
+		name          string
+		currentUser   *domuser.User
+		expectedCount int
+		shouldInclude []string // User IDs that should be included
+		shouldExclude []string // User IDs that should be excluded
+		wantErr       error
+	}{
+		{
+			name:          "admin1 sees only themselves and non-admin users",
+			currentUser:   admin1,
+			expectedCount: 3, // admin1, regularUser, operatorUser (not admin2)
+			shouldInclude: []string{admin1.ID, regularUser.ID, operatorUser.ID},
+			shouldExclude: []string{admin2.ID},
+			wantErr:       nil,
+		},
+		{
+			name:          "admin2 sees only themselves and non-admin users",
+			currentUser:   admin2,
+			expectedCount: 3, // admin2, regularUser, operatorUser (not admin1)
+			shouldInclude: []string{admin2.ID, regularUser.ID, operatorUser.ID},
+			shouldExclude: []string{admin1.ID},
+			wantErr:       nil,
+		},
+		{
+			name:        "non-admin cannot access GetAllUsers",
+			currentUser: regularUser,
+			wantErr:     domerrors.ErrAdminRequired,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			users, total, err := service.GetAllUsers(20, 0, tt.currentUser)
+
+			if tt.wantErr != nil {
+				if err != tt.wantErr {
+					t.Errorf("GetAllUsers() error = %v, wantErr %v", err, tt.wantErr)
+				}
+				return
+			}
+
+			if err != nil {
+				t.Errorf("GetAllUsers() unexpected error = %v", err)
+				return
+			}
+
+			if total != tt.expectedCount {
+				t.Errorf("GetAllUsers() total = %v, want %v", total, tt.expectedCount)
+			}
+
+			if len(users) != tt.expectedCount {
+				t.Errorf("GetAllUsers() users count = %v, want %v", len(users), tt.expectedCount)
+			}
+
+			// Check that expected users are included
+			foundUsers := make(map[string]bool)
+			for _, user := range users {
+				foundUsers[user.ID] = true
+			}
+
+			for _, expectedID := range tt.shouldInclude {
+				if !foundUsers[expectedID] {
+					t.Errorf("GetAllUsers() should include user %v but didn't", expectedID)
+				}
+			}
+
+			for _, excludedID := range tt.shouldExclude {
+				if foundUsers[excludedID] {
+					t.Errorf("GetAllUsers() should exclude user %v but included it", excludedID)
+				}
+			}
+		})
+	}
+}
+
+func TestUserService_GetUsersByRole(t *testing.T) {
+	repo := NewMockUserRepository()
+	service := NewUserService(repo)
+
+	// Create multiple test users including two admins
+	admin1 := &domuser.User{
+		ID:        uuid.NewString(),
+		Email:     "admin1@test.com",
+		FirstName: "Admin",
+		LastName:  "One",
+		Role:      domuser.RoleAdmin,
+		IsActive:  true,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+	repo.Create(admin1)
+
+	admin2 := &domuser.User{
+		ID:        uuid.NewString(),
+		Email:     "admin2@test.com",
+		FirstName: "Admin",
+		LastName:  "Two",
+		Role:      domuser.RoleAdmin,
+		IsActive:  true,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+	repo.Create(admin2)
+
+	user1 := &domuser.User{
+		ID:        uuid.NewString(),
+		Email:     "user1@test.com",
+		FirstName: "User",
+		LastName:  "One",
+		Role:      domuser.RoleUser,
+		IsActive:  true,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+	repo.Create(user1)
+
+	user2 := &domuser.User{
+		ID:        uuid.NewString(),
+		Email:     "user2@test.com",
+		FirstName: "User",
+		LastName:  "Two",
+		Role:      domuser.RoleUser,
+		IsActive:  true,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+	repo.Create(user2)
+
+	tests := []struct {
+		name          string
+		role          domuser.Role
+		currentUser   *domuser.User
+		expectedCount int
+		shouldInclude []string // User IDs that should be included
+		shouldExclude []string // User IDs that should be excluded
+		wantErr       error
+	}{
+		{
+			name:          "admin1 searches for admin role - only sees themselves",
+			role:          domuser.RoleAdmin,
+			currentUser:   admin1,
+			expectedCount: 1,
+			shouldInclude: []string{admin1.ID},
+			shouldExclude: []string{admin2.ID},
+			wantErr:       nil,
+		},
+		{
+			name:          "admin2 searches for admin role - only sees themselves",
+			role:          domuser.RoleAdmin,
+			currentUser:   admin2,
+			expectedCount: 1,
+			shouldInclude: []string{admin2.ID},
+			shouldExclude: []string{admin1.ID},
+			wantErr:       nil,
+		},
+		{
+			name:          "admin searches for user role - sees all users",
+			role:          domuser.RoleUser,
+			currentUser:   admin1,
+			expectedCount: 2,
+			shouldInclude: []string{user1.ID, user2.ID},
+			shouldExclude: []string{admin1.ID, admin2.ID},
+			wantErr:       nil,
+		},
+		{
+			name:        "non-admin cannot access GetUsersByRole",
+			role:        domuser.RoleUser,
+			currentUser: user1,
+			wantErr:     domerrors.ErrAdminRequired,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			users, total, err := service.GetUsersByRole(tt.role, 20, 0, tt.currentUser)
+
+			if tt.wantErr != nil {
+				if err != tt.wantErr {
+					t.Errorf("GetUsersByRole() error = %v, wantErr %v", err, tt.wantErr)
+				}
+				return
+			}
+
+			if err != nil {
+				t.Errorf("GetUsersByRole() unexpected error = %v", err)
+				return
+			}
+
+			if total != tt.expectedCount {
+				t.Errorf("GetUsersByRole() total = %v, want %v", total, tt.expectedCount)
+			}
+
+			if len(users) != tt.expectedCount {
+				t.Errorf("GetUsersByRole() users count = %v, want %v", len(users), tt.expectedCount)
+			}
+
+			// Check that expected users are included
+			foundUsers := make(map[string]bool)
+			for _, user := range users {
+				foundUsers[user.ID] = true
+			}
+
+			for _, expectedID := range tt.shouldInclude {
+				if !foundUsers[expectedID] {
+					t.Errorf("GetUsersByRole() should include user %v but didn't", expectedID)
+				}
+			}
+
+			for _, excludedID := range tt.shouldExclude {
+				if foundUsers[excludedID] {
+					t.Errorf("GetUsersByRole() should exclude user %v but included it", excludedID)
+				}
 			}
 		})
 	}
