@@ -1,6 +1,9 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './guards/auth.guard';
 import { guestGuard } from './guards/guest.guard';
+import { adminPanelGuard } from './guards/permission.guard';
+import { roleGuard } from './guards/role.guard';
+import { UserRole } from './models';
 
 export const routes: Routes = [
   {
@@ -16,12 +19,58 @@ export const routes: Routes = [
       import('./pages/register/register.component').then((m) => m.RegisterComponent)
   },
   {
-    path: '',
+    path: 'dashboard',
     canActivate: [authGuard],
     loadComponent: () =>
       import('./pages/dashboard/dashboard.component').then(
         (m) => m.DashboardComponent
       )
+  },
+  {
+    path: 'admin',
+    canActivate: [adminPanelGuard],
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import('./pages/admin/admin-panel.component').then(
+            (m) => m.AdminPanelComponent
+          )
+      },
+      {
+        path: 'users',
+        loadComponent: () =>
+          import('./pages/admin/user-management/user-management.component').then(
+            (m) => m.UserManagementComponent
+          )
+      },
+      {
+        path: 'roles',
+        loadComponent: () =>
+          import('./pages/admin/admin-panel.component').then(
+            (m) => m.AdminPanelComponent
+          )
+      },
+      {
+        path: 'reports',
+        loadComponent: () =>
+          import('./pages/admin/admin-panel.component').then(
+            (m) => m.AdminPanelComponent
+          )
+      },
+      {
+        path: 'settings',
+        loadComponent: () =>
+          import('./pages/admin/admin-panel.component').then(
+            (m) => m.AdminPanelComponent
+          )
+      }
+    ]
+  },
+  {
+    path: '',
+    redirectTo: '/dashboard',
+    pathMatch: 'full'
   },
   {
     path: '**',

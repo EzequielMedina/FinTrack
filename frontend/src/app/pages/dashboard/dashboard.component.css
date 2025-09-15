@@ -137,12 +137,66 @@
   min-width: 180px;
   height: 48px;
   font-weight: 500;
+  transition: transform 0.2s ease-in-out;
+}
+
+.action-button:hover {
+  transform: translateY(-2px);
+}
+
+/* Sección específica para administradores */
+.admin-section {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+  border-radius: 12px;
+  border-left: 4px solid #f44336;
+}
+
+.admin-section h3 {
+  color: #d32f2f;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+}
+
+.admin-section h3::before {
+  content: '👑';
+  margin-right: 8px;
+  font-size: 1.2em;
+}
+
+.admin-grid {
+  margin-top: 1rem;
+}
+
+.admin-card {
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.admin-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(244, 67, 54, 0.3);
+  border-color: #f44336;
+}
+
+.admin-icon {
+  background-color: #f44336 !important;
+  color: white !important;
 }
 
 /* Responsive design */
 @media (max-width: 768px) {
   .dashboard-grid {
     /* On mobile, stack cards vertically */
+    grid-template-columns: 1fr !important;
+  }
+  
+  .admin-grid {
     grid-template-columns: 1fr !important;
   }
   
