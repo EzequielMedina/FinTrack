@@ -117,7 +117,7 @@ func (s *UserService) GetAllUsers(limit, offset int, currentUser *domuser.User) 
 		offset = 0
 	}
 
-	users, total, err := s.repo.GetAll(limit, offset)
+	users, _, err := s.repo.GetAll(limit, offset)
 	if err != nil {
 		return nil, 0, err
 	}

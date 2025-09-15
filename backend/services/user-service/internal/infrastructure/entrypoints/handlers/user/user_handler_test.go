@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	domuser "github.com/fintrack/user-service/internal/core/domain/entities/user"
+	domerrors "github.com/fintrack/user-service/internal/core/errors"
 	"github.com/fintrack/user-service/internal/infrastructure/entrypoints/handlers/user/dto"
 	"github.com/google/uuid"
 )
@@ -27,6 +28,16 @@ func NewMockUserService() *MockUserService {
 }
 
 func (m *MockUserService) CreateUser(email, password, firstName, lastName string, role domuser.Role, currentUser *domuser.User) (*domuser.User, error) {
+	// Authorization check
+	if currentUser.Role != domuser.RoleAdmin {
+		return nil, domerrors.ErrAdminRequired
+	}
+
+	// Prevent admins from creating other admin users
+	if role == domuser.RoleAdmin {
+		return nil, domerrors.ErrCannotCreateAdmin
+	}
+
 	user := &domuser.User{
 		ID:        uuid.NewString(),
 		Email:     email,
@@ -179,6 +190,18 @@ func TestHandler_CreateUser(t *testing.T) {
 			},
 			currentUser:    nil,
 			expectedStatus: http.StatusUnauthorized,
+		},
+		{
+			name: "admin cannot create other admin users",
+			requestBody: dto.CreateUserRequest{
+				Email:     "admin2@example.com",
+				Password:  "password123",
+				FirstName: "Another",
+				LastName:  "Admin",
+				Role:      string(domuser.RoleAdmin),
+			},
+			currentUser:    adminUser,
+			expectedStatus: http.StatusBadRequest,
 		},
 	}
 
