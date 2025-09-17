@@ -2,7 +2,71 @@
 
 ## 📋 Descripción
 
-Microservicio encargado de la gestión de cuentas bancarias y financieras en la plataforma FinTrack. Maneja vinculación, verificación y operaciones con cuentas bancarias externas.
+Microservicio encargado de la gestión de cuentas virtuales y financieras en la plataforma FinTrack. Implementa operaciones CRUD para cuentas, maneja diferentes tipos de cuenta (corriente, ahorro, tarjetas, etc.) y soporta múltiples monedas (ARS, USD).
+
+## ✅ TASK-014 Implementación Completada
+
+Este microservicio implementa TASK-014 "Implementar microservicio de cuentas virtuales" con las siguientes características:
+
+### Funcionalidades Implementadas
+
+#### Tipos de Cuenta Soportados
+- **Cuenta Corriente** (`checking`)
+- **Caja de Ahorro** (`savings`) 
+- **Cuenta USD** (`usd`)
+- **Tarjeta de Crédito** (`credit_card`)
+- **Tarjeta de Débito** (`debit_card`)
+- **Billetera Virtual** (`wallet`)
+
+#### Monedas Soportadas
+- **ARS** (Peso Argentino)
+- **USD** (Dólar Estadounidense)
+
+#### Estados de Cuenta
+- **Activa** (`active`)
+- **Inactiva** (`inactive`)
+- **Congelada** (`frozen`)
+- **Cerrada** (`closed`)
+
+### Arquitectura Clean Architecture
+
+La implementación sigue los principios SOLID y Clean Architecture:
+
+- **Domain Layer** (`internal/domain/`): Entidades de negocio y reglas de dominio
+- **Application Layer** (`internal/application/services/`): Casos de uso y lógica de negocio
+- **Infrastructure Layer** (`internal/infrastructure/`): HTTP handlers, middleware, persistencia
+
+### Endpoints API REST
+
+```http
+# Gestión de Cuentas
+POST   /api/v1/users/{user_id}/accounts     # Crear cuenta
+GET    /api/v1/users/{user_id}/accounts     # Listar cuentas de usuario
+GET    /api/v1/accounts/{account_id}        # Obtener cuenta
+PUT    /api/v1/accounts/{account_id}        # Actualizar cuenta
+DELETE /api/v1/accounts/{account_id}        # Eliminar cuenta
+
+# Balance y Operaciones
+GET    /api/v1/accounts/{account_id}/balance # Consultar balance
+
+# Configuración
+GET    /api/v1/accounts/types              # Tipos y monedas disponibles
+```
+
+### Seguridad y Autorización
+
+- **JWT Authentication**: Autenticación requerida para todas las operaciones
+- **Role-based Authorization**: Roles jerárquicos (admin > treasurer > operator > user)
+- **Request ID Tracking**: Trazabilidad de requests para auditoría
+- **CORS Support**: Configuración CORS para frontend
+- **Input Validation**: Validación de entrada en todos los endpoints
+
+### Validaciones de Negocio
+
+- Límites de cuentas por usuario
+- Validación de tipos de cuenta y monedas
+- Verificación de permisos de usuario
+- Validación de nombres únicos de cuenta por usuario
 
 ## 🛠️ Tecnologías
 

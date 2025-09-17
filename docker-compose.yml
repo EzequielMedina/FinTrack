@@ -45,6 +45,34 @@ services:
       retries: 3
       start_period: 40s
 
+  # Account Service (Go)
+  account-service:
+    build:
+      context: ./backend/services/account-service
+      dockerfile: Dockerfile
+    container_name: fintrack-account-service
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: fintrack
+      DB_USER: fintrack_user
+      DB_PASSWORD: fintrack_password
+      JWT_SECRET: your-jwt-secret-key
+      PORT: 8080
+    ports:
+      - "8082:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - fintrack-network
+    healthcheck:
+      test: ["CMD", "/main", "health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
   # Frontend (Angular + Nginx)
   frontend:
     build:
@@ -57,6 +85,8 @@ services:
       mysql:
         condition: service_healthy
       user-service:
+        condition: service_healthy
+      account-service:
         condition: service_healthy
     networks:
       - fintrack-network
