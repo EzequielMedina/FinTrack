@@ -121,6 +121,17 @@ func (s *AccountService) DeleteAccount(accountID string) error {
 		return fmt.Errorf("account ID is required")
 	}
 
+	// Get existing account to check balance
+	account, err := s.accountRepo.GetByID(accountID)
+	if err != nil {
+		return fmt.Errorf("failed to get account: %w", err)
+	}
+
+	// Check if account has balance
+	if account.Balance > 0 {
+		return fmt.Errorf("cannot delete account with balance: current balance %.2f", account.Balance)
+	}
+
 	if err := s.accountRepo.Delete(accountID); err != nil {
 		return fmt.Errorf("failed to delete account: %w", err)
 	}
@@ -154,8 +165,16 @@ func (s *AccountService) UpdateAccountBalance(accountID string, amount float64) 
 		return 0, fmt.Errorf("failed to get account: %w", err)
 	}
 
+	// Calculate new balance
+	newBalance := account.Balance + amount
+
+	// Validate new balance is not negative
+	if newBalance < 0 {
+		return 0, fmt.Errorf("insufficient balance: current balance %.2f, requested change %.2f", account.Balance, amount)
+	}
+
 	// Update balance
-	account.Balance += amount
+	account.Balance = newBalance
 
 	// Save changes
 	if err := s.accountRepo.Update(account); err != nil {

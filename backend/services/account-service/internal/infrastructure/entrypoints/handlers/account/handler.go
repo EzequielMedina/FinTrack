@@ -192,7 +192,7 @@ func (h *Handler) DeleteAccount(c *gin.Context) {
 		return
 	}
 
-	c.Status(http.StatusNoContent)
+	c.JSON(http.StatusNoContent, nil)
 }
 
 // GetAccountsByUser retrieves accounts for a specific user
