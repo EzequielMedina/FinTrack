@@ -9,7 +9,6 @@ WORKDIR /app
 
 # Copy go mod files
 COPY go.mod go.sum ./
-COPY ../../shared ../shared
 
 # Download dependencies
 RUN go mod download
@@ -22,27 +21,38 @@ COPY . .
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
     -ldflags='-w -s -extldflags "-static"' \
     -a -installsuffix cgo \
-    -o main ./cmd/main.go
+    -o main ./cmd/api/main.go
 
 # Production stage
-FROM scratch
+FROM alpine:latest
 
-# Import from builder
-COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
+# Install ca-certificates and create app user
+RUN apk --no-cache add ca-certificates tzdata wget && \
+    addgroup -g 1001 appgroup && \
+    adduser -D -u 1001 -G appgroup appuser
+
+# Set working directory
+WORKDIR /app
 
 # Copy the binary
-COPY --from=builder /app/main /main
+COPY --from=builder /app/main .
 
-# Create non-root user
-USER 1001:1001
+# Change ownership
+RUN chown appuser:appgroup /app/main
+
+# Switch to non-root user
+USER appuser
 
 # Expose port
 EXPOSE 8080
 
+# Set environment variables
+ENV PORT=8080
+ENV ENVIRONMENT=production
+
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD ["./main", "health"] || exit 1
+  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1
 
 # Run the binary
-ENTRYPOINT ["/main"]
+CMD ["./main"]

@@ -1494,8 +1494,6 @@ var SwaggerInfo = &swag.Spec{
 	Description:      "User management service for FinTrack application",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
-	LeftDelim:        "{{",
-	RightDelim:       "}}",
 }
 
 func init() {
