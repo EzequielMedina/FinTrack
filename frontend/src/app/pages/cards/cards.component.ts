@@ -187,6 +187,11 @@ export class CardsComponent implements OnInit {
     }
   }
 
+  onCardStatusChanged(updatedCard: Card): void {
+    // Recargar la lista de tarjetas para reflejar el cambio de estado
+    this.loadUserCards();
+  }
+
   onTabChanged(index: number): void {
     this.selectedTabIndex.set(index);
   }

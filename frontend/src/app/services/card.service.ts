@@ -156,6 +156,27 @@ export class CardService {
     );
   }
 
+  // Métodos específicos para activar/desactivar tarjetas
+  activateCard(cardId: string): Observable<Card> {
+    const statusPayload = {
+      is_active: true
+    };
+    
+    return this.http.put<any>(`${this.apiUrl}/${cardId}/status`, statusPayload).pipe(
+      map(accountResponse => this.mapAccountToCard(accountResponse))
+    );
+  }
+
+  deactivateCard(cardId: string): Observable<Card> {
+    const statusPayload = {
+      is_active: false
+    };
+    
+    return this.http.put<any>(`${this.apiUrl}/${cardId}/status`, statusPayload).pipe(
+      map(accountResponse => this.mapAccountToCard(accountResponse))
+    );
+  }
+
   // Validation Methods
   validateCardNumber(cardNumber: string): CardValidationResult {
     const errors: CardValidationError[] = [];

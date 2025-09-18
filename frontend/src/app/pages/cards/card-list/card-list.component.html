@@ -42,9 +42,18 @@
                 </button>
               }
               @if (card.status === CardStatus.ACTIVE) {
+                <button mat-menu-item (click)="onChangeStatus(card)">
+                  <mat-icon>toggle_off</mat-icon>
+                  <span>Desactivar</span>
+                </button>
                 <button mat-menu-item (click)="onBlock(card)">
                   <mat-icon>block</mat-icon>
                   <span>Bloquear</span>
+                </button>
+              } @else if (card.status === CardStatus.INACTIVE) {
+                <button mat-menu-item (click)="onChangeStatus(card)">
+                  <mat-icon>toggle_on</mat-icon>
+                  <span>Activar</span>
                 </button>
               } @else if (card.status === CardStatus.BLOCKED) {
                 <button mat-menu-item (click)="onBlock(card)">
@@ -102,6 +111,17 @@
               <button mat-button color="primary" (click)="onSetDefault(card)">
                 <mat-icon>star</mat-icon>
                 Por defecto
+              </button>
+            }
+            @if (card.status === CardStatus.ACTIVE) {
+              <button mat-button color="warn" (click)="onChangeStatus(card)">
+                <mat-icon>toggle_off</mat-icon>
+                Desactivar
+              </button>
+            } @else if (card.status === CardStatus.INACTIVE) {
+              <button mat-button color="primary" (click)="onChangeStatus(card)">
+                <mat-icon>toggle_on</mat-icon>
+                Activar
               </button>
             }
           </mat-card-actions>

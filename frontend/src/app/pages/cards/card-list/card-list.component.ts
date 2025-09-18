@@ -6,8 +6,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { Card, CardType, CardStatus, CardBrand } from '../../../models';
 import { CardService } from '../../../services/card.service';
+import { CardStatusDialogComponent } from '../card-status-dialog/card-status-dialog.component';
 
 @Component({
   selector: 'app-card-list',
@@ -27,12 +30,15 @@ import { CardService } from '../../../services/card.service';
 })
 export class CardListComponent {
   private readonly cardService = inject(CardService);
+  private readonly dialog = inject(MatDialog);
+  private readonly snackBar = inject(MatSnackBar);
 
   @Input() cards: Card[] = [];
   @Output() editCard = new EventEmitter<Card>();
   @Output() deleteCard = new EventEmitter<Card>();
   @Output() setDefaultCard = new EventEmitter<Card>();
   @Output() blockCard = new EventEmitter<Card>();
+  @Output() cardStatusChanged = new EventEmitter<Card>();
 
   // Exponer enums para usar en el template
   readonly CardType = CardType;
@@ -51,7 +57,46 @@ export class CardListComponent {
     this.setDefaultCard.emit(card);
   }
 
+  onChangeStatus(card: Card): void {
+    const action = card.status === CardStatus.ACTIVE ? 'deactivate' : 'activate';
+    
+    const dialogRef = this.dialog.open(CardStatusDialogComponent, {
+      width: '500px',
+      data: { card, action }
+    });
+
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (confirmed) {
+        this.performStatusChange(card, action);
+      }
+    });
+  }
+
+  private performStatusChange(card: Card, action: 'activate' | 'deactivate'): void {
+    const operation = action === 'activate' 
+      ? this.cardService.activateCard(card.accountId || card.id)
+      : this.cardService.deactivateCard(card.accountId || card.id);
+
+    operation.subscribe({
+      next: (updatedCard) => {
+        this.cardStatusChanged.emit(updatedCard);
+        const message = action === 'activate' 
+          ? 'Tarjeta activada exitosamente' 
+          : 'Tarjeta desactivada exitosamente';
+        this.snackBar.open(message, 'Cerrar', { duration: 3000 });
+      },
+      error: (error) => {
+        console.error('Error changing card status:', error);
+        const message = action === 'activate' 
+          ? 'Error al activar la tarjeta' 
+          : 'Error al desactivar la tarjeta';
+        this.snackBar.open(message, 'Cerrar', { duration: 3000 });
+      }
+    });
+  }
+
   onBlock(card: Card): void {
+    // Mantener el método existente para bloqueo/desbloqueo
     this.blockCard.emit(card);
   }
 
