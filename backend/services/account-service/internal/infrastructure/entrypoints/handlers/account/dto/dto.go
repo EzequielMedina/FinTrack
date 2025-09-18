@@ -14,12 +14,28 @@ type CreateAccountRequest struct {
 	Description    string  `json:"description"`
 	Currency       string  `json:"currency" binding:"required"`
 	InitialBalance float64 `json:"initial_balance" binding:"min=0"`
+
+	// Credit card specific fields
+	CreditLimit *float64   `json:"credit_limit,omitempty" binding:"omitempty,min=0"`
+	ClosingDate *time.Time `json:"closing_date,omitempty"`
+	DueDate     *time.Time `json:"due_date,omitempty"`
+
+	// Personal identification (for virtual wallets)
+	DNI *string `json:"dni,omitempty" binding:"omitempty,min=7,max=20"`
 }
 
 // UpdateAccountRequest represents the request to update an account
 type UpdateAccountRequest struct {
 	Name        string `json:"name" binding:"required"`
 	Description string `json:"description"`
+
+	// Credit card specific fields
+	CreditLimit *float64   `json:"credit_limit,omitempty" binding:"omitempty,min=0"`
+	ClosingDate *time.Time `json:"closing_date,omitempty"`
+	DueDate     *time.Time `json:"due_date,omitempty"`
+
+	// Personal identification (for virtual wallets)
+	DNI *string `json:"dni,omitempty" binding:"omitempty,min=7,max=20"`
 }
 
 // UpdateBalanceRequest represents the request to update account balance
@@ -30,6 +46,39 @@ type UpdateBalanceRequest struct {
 // UpdateStatusRequest represents the request to update account status
 type UpdateStatusRequest struct {
 	IsActive bool `json:"is_active"`
+}
+
+// AddFundsRequest represents the request to add funds to a wallet
+type AddFundsRequest struct {
+	Amount      float64 `json:"amount" binding:"required,gt=0"`
+	Description string  `json:"description" binding:"required,min=3,max=255"`
+	Reference   string  `json:"reference,omitempty" binding:"max=50"`
+}
+
+// WithdrawFundsRequest represents the request to withdraw funds from a wallet
+type WithdrawFundsRequest struct {
+	Amount      float64 `json:"amount" binding:"required,gt=0"`
+	Description string  `json:"description" binding:"required,min=3,max=255"`
+	Reference   string  `json:"reference,omitempty" binding:"max=50"`
+}
+
+// UpdateCreditLimitRequest represents the request to update credit limit
+type UpdateCreditLimitRequest struct {
+	CreditLimit float64 `json:"credit_limit" binding:"min=0"`
+}
+
+// UpdateCreditDatesRequest represents the request to update credit card dates
+type UpdateCreditDatesRequest struct {
+	ClosingDate *time.Time `json:"closing_date,omitempty"`
+	DueDate     *time.Time `json:"due_date,omitempty"`
+}
+
+// AvailableCreditResponse represents the response for available credit operations
+type AvailableCreditResponse struct {
+	AccountID       string  `json:"account_id"`
+	CreditLimit     float64 `json:"credit_limit"`
+	UsedCredit      float64 `json:"used_credit"`
+	AvailableCredit float64 `json:"available_credit"`
 }
 
 // AccountResponse represents the response for account operations
@@ -44,6 +93,14 @@ type AccountResponse struct {
 	IsActive    bool      `json:"is_active"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
+
+	// Credit card specific fields
+	CreditLimit *float64   `json:"credit_limit,omitempty"`
+	ClosingDate *time.Time `json:"closing_date,omitempty"`
+	DueDate     *time.Time `json:"due_date,omitempty"`
+
+	// Personal identification (for virtual wallets)
+	DNI *string `json:"dni,omitempty"`
 }
 
 // BalanceResponse represents the response for balance operations
@@ -79,6 +136,10 @@ func ToAccountResponse(account *entities.Account) AccountResponse {
 		IsActive:    account.IsActive,
 		CreatedAt:   account.CreatedAt,
 		UpdatedAt:   account.UpdatedAt,
+		CreditLimit: account.CreditLimit,
+		ClosingDate: account.ClosingDate,
+		DueDate:     account.DueDate,
+		DNI:         account.DNI,
 	}
 }
 

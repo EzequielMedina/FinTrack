@@ -41,6 +41,15 @@ func MapRoutes(r *gin.Engine, h *Handlers, cfg *config.Config, application *app.
 			// Status management
 			accounts.PUT("/:id/status", h.Account.UpdateStatus) // PUT /api/accounts/:id/status
 
+			// Wallet operations
+			accounts.POST("/:id/add-funds", h.Account.AddFunds)           // POST /api/accounts/:id/add-funds
+			accounts.POST("/:id/withdraw-funds", h.Account.WithdrawFunds) // POST /api/accounts/:id/withdraw-funds
+
+			// Credit card operations
+			accounts.PUT("/:id/credit-limit", h.Account.UpdateCreditLimit)      // PUT /api/accounts/:id/credit-limit
+			accounts.PUT("/:id/credit-dates", h.Account.UpdateCreditDates)      // PUT /api/accounts/:id/credit-dates
+			accounts.GET("/:id/available-credit", h.Account.GetAvailableCredit) // GET /api/accounts/:id/available-credit
+
 			// User-specific routes
 			accounts.GET("/user/:userId", h.Account.GetAccountsByUser) // GET /api/accounts/user/:userId
 		}
