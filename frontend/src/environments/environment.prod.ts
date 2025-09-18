@@ -1,5 +1,7 @@
 export const environment = {
   production: true,
   apiUrl: '/api',
-  wsUrl: '/ws'
+  wsUrl: '/ws',
+  accountServiceUrl: '/api/accounts',
+  userServiceUrl: '/api/users'
 };
