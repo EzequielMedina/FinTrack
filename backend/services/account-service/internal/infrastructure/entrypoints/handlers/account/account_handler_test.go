@@ -763,11 +763,11 @@ func TestAddFunds(t *testing.T) {
 	createdAccount, _ := service.CreateAccount(account)
 
 	tests := []struct {
-		name           string
-		accountID      string
-		requestBody    dto.AddFundsRequest
-		expectedStatus int
-		expectError    bool
+		name            string
+		accountID       string
+		requestBody     dto.AddFundsRequest
+		expectedStatus  int
+		expectError     bool
 		expectedBalance float64
 	}{
 		{
@@ -885,11 +885,11 @@ func TestWithdrawFunds(t *testing.T) {
 	createdAccount, _ := service.CreateAccount(account)
 
 	tests := []struct {
-		name           string
-		accountID      string
-		requestBody    dto.WithdrawFundsRequest
-		expectedStatus int
-		expectError    bool
+		name            string
+		accountID       string
+		requestBody     dto.WithdrawFundsRequest
+		expectedStatus  int
+		expectError     bool
 		expectedBalance float64
 	}{
 		{
@@ -1129,8 +1129,8 @@ func TestUpdateCreditDates(t *testing.T) {
 	}
 	createdAccount, _ := service.CreateAccount(account)
 
-	closingDate := time.Now().AddDate(0, 1, 0)   // Next month
-	dueDate := time.Now().AddDate(0, 1, 15)      // Next month + 15 days
+	closingDate := time.Now().AddDate(0, 1, 0) // Next month
+	dueDate := time.Now().AddDate(0, 1, 15)    // Next month + 15 days
 
 	tests := []struct {
 		name           string
@@ -1255,12 +1255,12 @@ func TestGetAvailableCredit(t *testing.T) {
 	createdWalletAccount, _ := service.CreateAccount(accountNoCreditLimit)
 
 	tests := []struct {
-		name             string
-		accountID        string
-		expectedStatus   int
-		expectError      bool
-		expectedCredit   float64
-		expectedUsed     float64
+		name              string
+		accountID         string
+		expectedStatus    int
+		expectError       bool
+		expectedCredit    float64
+		expectedUsed      float64
 		expectedAvailable float64
 	}{
 		{
