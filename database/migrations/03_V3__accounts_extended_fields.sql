@@ -3,8 +3,8 @@ USE fintrack;
 
 -- First, create the accounts table if it doesn't exist (baseline)
 CREATE TABLE IF NOT EXISTS accounts (
-    id CHAR(36) PRIMARY KEY,
-    user_id CHAR(36) NOT NULL,
+    id VARCHAR(36) PRIMARY KEY,
+    user_id VARCHAR(36) NOT NULL,
     account_type VARCHAR(20) NOT NULL,
     name VARCHAR(100) NOT NULL,
     description TEXT,

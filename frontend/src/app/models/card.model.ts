@@ -21,34 +21,41 @@ export enum CardStatus {
 
 export interface Card {
   id: string;
-  accountId?: string;          // Opcional por compatibilidad
-  userId: string;
+  accountId: string;             // REQUIRED: Always linked to an account
   cardType: CardType;
   cardBrand: CardBrand;
-  lastFourDigits: string;      // Solo mostramos los últimos 4 dígitos
-  maskedNumber: string;        // Número enmascarado: **** **** **** 1234
+  lastFourDigits: string;        // Only show last 4 digits
+  maskedNumber: string;          // Masked number: **** **** **** 1234
   holderName: string;
-  expirationMonth: number;     // 1-12
-  expirationYear: number;      // YYYY
+  expirationMonth: number;       // 1-12
+  expirationYear: number;        // YYYY
   status: CardStatus;
-  isDefault: boolean;          // Tarjeta predeterminada
-  nickname?: string;           // Nombre personalizado para la tarjeta
-  currency: string;            // Moneda (ARS, USD)
-  balance: number;             // Balance disponible
+  isDefault: boolean;            // Default card for the account
+  nickname?: string;             // Custom name for the card
+  
+  // Credit card specific fields
+  creditLimit?: number;
+  closingDate?: string;
+  dueDate?: string;
+  
   createdAt: string;
   updatedAt: string;
 }
 
 export interface CreateCardRequest {
-  userId: string;              // ID del usuario propietario
+  accountId: string;           // REQUIRED: ID of the parent account
   cardType: CardType;
-  cardNumber: string;          // Número completo encriptado en el frontend
+  cardNumber: string;          // Full number (encrypted on frontend)
   holderName: string;
   expirationMonth: number;
   expirationYear: number;
-  cvv: string;                 // CVV para validación inicial
+  cvv: string;                 // CVV for initial validation
   nickname?: string;
-  currency?: string;           // Moneda de la cuenta (ARS, USD)
+  
+  // Credit card specific fields
+  creditLimit?: number;
+  closingDate?: string;
+  dueDate?: string;
 }
 
 export interface UpdateCardRequest {
@@ -86,7 +93,7 @@ export interface CardsListResponse {
 
 // Tipos para formularios reactivos
 export interface CardFormData {
-  userId: string;              // Cambiado de accountId a userId
+  accountId: string;           // REQUIRED: Parent account ID
   cardType: CardType;
   cardNumber: string;
   holderName: string;
@@ -94,7 +101,11 @@ export interface CardFormData {
   expirationYear: number;
   cvv: string;
   nickname: string;
-  currency: string;            // Añadido campo currency
+  
+  // Credit card specific fields
+  creditLimit?: number;
+  closingDate?: string;
+  dueDate?: string;
 }
 
 export interface CardFormErrors {
@@ -103,6 +114,8 @@ export interface CardFormErrors {
   expirationMonth?: string;
   expirationYear?: string;
   cvv?: string;
-  userId?: string;             // Cambiado de accountId a userId
-  currency?: string;           // Añadido currency
+  accountId?: string;
+  creditLimit?: string;
+  closingDate?: string;
+  dueDate?: string;
 }

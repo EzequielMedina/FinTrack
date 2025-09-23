@@ -48,7 +48,7 @@ func (h *Handler) CreateAccount(c *gin.Context) {
 		Description: req.Description,
 		Currency:    entities.Currency(req.Currency),
 		Balance:     req.InitialBalance,
-		IsActive:    true,
+		IsActive:    getActiveStatus(req.IsActive),
 		CreditLimit: req.CreditLimit,
 		ClosingDate: req.ClosingDate,
 		DueDate:     req.DueDate,
@@ -625,4 +625,12 @@ func (h *Handler) GetAvailableCredit(c *gin.Context) {
 		AvailableCredit: availableCredit,
 	}
 	c.JSON(http.StatusOK, response)
+}
+
+// getActiveStatus returns the account active status, defaulting to true if not specified
+func getActiveStatus(isActive *bool) bool {
+	if isActive == nil {
+		return true // Default to active if not specified
+	}
+	return *isActive
 }

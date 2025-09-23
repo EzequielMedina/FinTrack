@@ -8,87 +8,125 @@
   </div>
 
   <div class="dashboard-content">
-    <mat-grid-list cols="2" rowHeight="200px" gutterSize="16px" class="dashboard-grid">
-      <!-- Resumen de Cuentas -->
-      <mat-grid-tile>
-        <mat-card class="dashboard-card">
+    @if (loading()) {
+      <div class="loading-container">
+        <mat-spinner></mat-spinner>
+        <p>Cargando información del dashboard...</p>
+      </div>
+    } @else {
+      <!-- Resumen Financiero Principal -->
+      <div class="financial-summary">
+        <div class="summary-cards">
+          <mat-card class="balance-card ars-card" appearance="outlined">
+            <mat-card-content>
+              <div class="balance-header">
+                <mat-icon class="balance-icon">account_balance_wallet</mat-icon>
+                <div>
+                  <h3>Billeteras ARS</h3>
+                  <p>Saldo total en pesos</p>
+                </div>
+              </div>
+              <div class="balance-amount">
+                <span class="amount">{{ totalWalletBalance() | currency:'ARS':'symbol':'1.2-2' }}</span>
+              </div>
+              <mat-card-actions align="end">
+                <button mat-stroked-button color="primary" [routerLink]="['/accounts']">
+                  <mat-icon>visibility</mat-icon>
+                  Ver detalle
+                </button>
+              </mat-card-actions>
+            </mat-card-content>
+          </mat-card>
+
+          <mat-card class="balance-card usd-card" appearance="outlined">
+            <mat-card-content>
+              <div class="balance-header">
+                <mat-icon class="balance-icon">attach_money</mat-icon>
+                <div>
+                  <h3>Billeteras USD</h3>
+                  <p>Saldo total en dólares</p>
+                </div>
+              </div>
+              <div class="balance-amount">
+                <span class="amount">{{ totalWalletBalanceUSD() | currency:'USD':'symbol':'1.2-2' }}</span>
+              </div>
+              <mat-card-actions align="end">
+                <button mat-stroked-button color="accent" [routerLink]="['/accounts']">
+                  <mat-icon>visibility</mat-icon>
+                  Ver detalle
+                </button>
+              </mat-card-actions>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </div>
+
+      <!-- Tarjetas de Información -->
+      <div class="info-cards">
+        <mat-card class="info-card accounts-info" appearance="outlined">
           <mat-card-header>
-            <mat-icon mat-card-avatar class="card-icon accounts">account_balance</mat-icon>
+            <div mat-card-avatar class="card-avatar accounts-avatar">
+              <mat-icon>account_balance</mat-icon>
+            </div>
             <mat-card-title>Mis Cuentas</mat-card-title>
-            <mat-card-subtitle>Gestiona tus cuentas bancarias</mat-card-subtitle>
+            <mat-card-subtitle>{{ activeAccountsCount() }} cuentas activas</mat-card-subtitle>
           </mat-card-header>
           <mat-card-content>
-            <div class="card-stats">
-              <span class="stat-number">0</span>
-              <span class="stat-label">Cuentas activas</span>
+            <div class="info-content">
+              <p>Gestiona todas tus cuentas bancarias y billeteras digitales desde un solo lugar.</p>
             </div>
           </mat-card-content>
           <mat-card-actions>
-            <button mat-button color="primary">Ver Cuentas</button>
+            <button mat-flat-button color="primary" [routerLink]="['/accounts']">
+              <mat-icon>settings</mat-icon>
+              Gestionar Cuentas
+            </button>
           </mat-card-actions>
         </mat-card>
-      </mat-grid-tile>
 
-      <!-- Transacciones Recientes -->
-      <mat-grid-tile>
-        <mat-card class="dashboard-card">
+        <mat-card class="info-card credit-info" appearance="outlined">
           <mat-card-header>
-            <mat-icon mat-card-avatar class="card-icon transactions">swap_horiz</mat-icon>
+            <div mat-card-avatar class="card-avatar credit-avatar">
+              <mat-icon>credit_card</mat-icon>
+            </div>
+            <mat-card-title>Límite de Crédito</mat-card-title>
+            <mat-card-subtitle>{{ totalCreditLimit() | currency:'ARS':'symbol':'1.0-0' }} disponible</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="info-content">
+              <p>Tu límite total de crédito disponible en todas tus tarjetas.</p>
+            </div>
+          </mat-card-content>
+          <mat-card-actions>
+            <button mat-flat-button color="accent" [routerLink]="['/cards']">
+              <mat-icon>credit_card</mat-icon>
+              Ver Tarjetas
+            </button>
+          </mat-card-actions>
+        </mat-card>
+
+        <mat-card class="info-card transactions-info" appearance="outlined">
+          <mat-card-header>
+            <div mat-card-avatar class="card-avatar transactions-avatar">
+              <mat-icon>swap_horiz</mat-icon>
+            </div>
             <mat-card-title>Transacciones</mat-card-title>
-            <mat-card-subtitle>Historial de movimientos</mat-card-subtitle>
+            <mat-card-subtitle>{{ transactionsCount() }} este mes</mat-card-subtitle>
           </mat-card-header>
           <mat-card-content>
-            <div class="card-stats">
-              <span class="stat-number">0</span>
-              <span class="stat-label">Este mes</span>
+            <div class="info-content">
+              <p>Revisa tu historial de transacciones y movimientos recientes.</p>
             </div>
           </mat-card-content>
           <mat-card-actions>
-            <button mat-button color="primary">Ver Transacciones</button>
+            <button mat-flat-button color="warn">
+              <mat-icon>history</mat-icon>
+              Ver Historial
+            </button>
           </mat-card-actions>
         </mat-card>
-      </mat-grid-tile>
-
-      <!-- Billetera Digital -->
-      <mat-grid-tile>
-        <mat-card class="dashboard-card">
-          <mat-card-header>
-            <mat-icon mat-card-avatar class="card-icon wallet">account_balance_wallet</mat-icon>
-            <mat-card-title>Billetera Digital</mat-card-title>
-            <mat-card-subtitle>Saldo disponible</mat-card-subtitle>
-          </mat-card-header>
-          <mat-card-content>
-            <div class="card-stats">
-              <span class="stat-number">$0.00</span>
-              <span class="stat-label">ARS</span>
-            </div>
-          </mat-card-content>
-          <mat-card-actions>
-            <button mat-button color="primary">Gestionar</button>
-          </mat-card-actions>
-        </mat-card>
-      </mat-grid-tile>
-
-      <!-- Reportes -->
-      <mat-grid-tile>
-        <mat-card class="dashboard-card">
-          <mat-card-header>
-            <mat-icon mat-card-avatar class="card-icon reports">assessment</mat-icon>
-            <mat-card-title>Reportes</mat-card-title>
-            <mat-card-subtitle>Análisis financiero</mat-card-subtitle>
-          </mat-card-header>
-          <mat-card-content>
-            <div class="card-stats">
-              <span class="stat-number">0</span>
-              <span class="stat-label">Reportes generados</span>
-            </div>
-          </mat-card-content>
-          <mat-card-actions>
-            <button mat-button color="primary">Ver Reportes</button>
-          </mat-card-actions>
-        </mat-card>
-      </mat-grid-tile>
-    </mat-grid-list>
+      </div>
+    }
 
     <!-- Quick Actions -->
     <section class="quick-actions">
@@ -98,6 +136,10 @@
         <button mat-fab extended color="primary" class="action-button">
           <mat-icon>add</mat-icon>
           Nueva Transacción
+        </button>
+        <button mat-fab extended color="accent" class="action-button" [routerLink]="['/accounts']">
+          <mat-icon>account_balance</mat-icon>
+          Gestionar Cuentas
         </button>
         <button mat-fab extended color="accent" class="action-button" [routerLink]="['/cards']">
           <mat-icon>credit_card</mat-icon>

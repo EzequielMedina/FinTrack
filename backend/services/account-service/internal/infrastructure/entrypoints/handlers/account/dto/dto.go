@@ -14,6 +14,7 @@ type CreateAccountRequest struct {
 	Description    string  `json:"description"`
 	Currency       string  `json:"currency" binding:"required"`
 	InitialBalance float64 `json:"initial_balance" binding:"min=0"`
+	IsActive       *bool   `json:"is_active,omitempty"`
 
 	// Credit card specific fields
 	CreditLimit *float64   `json:"credit_limit,omitempty" binding:"omitempty,min=0"`

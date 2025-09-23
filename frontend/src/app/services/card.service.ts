@@ -30,11 +30,10 @@ export class CardService {
       switchMap(encryptedData => {
         // Mapear Card a Account para el backend
         const accountPayload = {
-          user_id: cardData.userId,
+          user_id: cardData.accountId, // Usar accountId en lugar de userId
           account_type: cardData.cardType, // 'credit' o 'debit'
           name: cardData.nickname || `Tarjeta ${cardData.cardType === CardType.CREDIT ? 'de Crédito' : 'de Débito'}`,
           description: `${cardData.holderName} - **** **** **** ${cardData.cardNumber.slice(-4)} - Exp: ${cardData.expirationMonth.toString().padStart(2, '0')}/${cardData.expirationYear}`,
-          currency: cardData.currency || 'ARS',
           initial_balance: 0.0
         };
 
@@ -75,14 +74,30 @@ export class CardService {
     console.log('CardService: Getting cards for user', userId);
     
     // Obtener cuentas por usuario y filtrar tarjetas desde account-service
-    return this.http.get<any[]>(`${this.apiUrl}/user/${userId}`).pipe(
-      map(accounts => {
-        console.log('CardService: Received accounts from backend:', accounts);
+    return this.http.get<any>(`${this.apiUrl}/accounts/user/${userId}`).pipe(
+      map(response => {
+        console.log('CardService: Received response from backend:', response);
+        
+        // Manejar diferentes formatos de respuesta del backend
+        let accounts: any[] = [];
+        
+        if (Array.isArray(response)) {
+          accounts = response;
+        } else if (response && Array.isArray(response.accounts)) {
+          accounts = response.accounts;
+        } else if (response && Array.isArray(response.data)) {
+          accounts = response.data;
+        } else {
+          console.log('CardService: No accounts found or invalid response format');
+          accounts = [];
+        }
+        
+        console.log('CardService: Processed accounts:', accounts);
         
         // Filtrar solo cuentas de tipo credit y debit
         const cardAccounts = accounts.filter((account: any) => 
           account.account_type === 'credit' || account.account_type === 'debit'
-        ) || [];
+        );
         
         console.log('CardService: Filtered card accounts:', cardAccounts);
         
@@ -96,6 +111,17 @@ export class CardService {
           pageSize: pageSize,
           totalPages: Math.ceil(cardAccounts.length / pageSize)
         };
+      }),
+      catchError(error => {
+        console.error('CardService: Error getting cards by user:', error);
+        // Retornar respuesta vacía en caso de error
+        return of({
+          cards: [],
+          total: 0,
+          page: page,
+          pageSize: pageSize,
+          totalPages: 0
+        });
       })
     );
   }
@@ -340,7 +366,6 @@ export class CardService {
     return {
       id: account.id,
       accountId: account.id, // Usar el ID de la cuenta como accountId
-      userId: account.user_id,
       cardType: account.account_type === 'credit' ? CardType.CREDIT : CardType.DEBIT,
       cardBrand: cardBrand,
       lastFourDigits: lastFourDigits,
@@ -351,8 +376,6 @@ export class CardService {
       status: account.is_active ? CardStatus.ACTIVE : CardStatus.INACTIVE,
       isDefault: false, // Por ahora no manejamos tarjeta predeterminada
       nickname: account.name,
-      currency: account.currency || 'ARS',
-      balance: account.balance || 0,
       createdAt: account.created_at,
       updatedAt: account.updated_at
     };

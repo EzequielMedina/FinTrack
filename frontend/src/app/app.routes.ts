@@ -35,6 +35,14 @@ export const routes: Routes = [
       )
   },
   {
+    path: 'accounts',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/accounts/accounts.component').then(
+        (m) => m.AccountsComponent
+      )
+  },
+  {
     path: 'admin',
     canActivate: [adminPanelGuard],
     children: [

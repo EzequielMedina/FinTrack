@@ -16,6 +16,8 @@ const (
 	AccountTypeCredit   AccountType = "credit"
 	AccountTypeDebit    AccountType = "debit"
 	AccountTypeWallet   AccountType = "wallet"
+	// New integrated types
+	AccountTypeBankAccount AccountType = "bank_account" // Can have multiple cards
 )
 
 // Currency represents the currency type
@@ -25,6 +27,36 @@ const (
 	CurrencyUSD Currency = "USD"
 	CurrencyARS Currency = "ARS"
 	CurrencyEUR Currency = "EUR"
+)
+
+// CardType represents the type of card
+type CardType string
+
+const (
+	CardTypeCredit CardType = "credit"
+	CardTypeDebit  CardType = "debit"
+)
+
+// CardBrand represents the card brand
+type CardBrand string
+
+const (
+	CardBrandVisa       CardBrand = "visa"
+	CardBrandMastercard CardBrand = "mastercard"
+	CardBrandAmex       CardBrand = "amex"
+	CardBrandDiscover   CardBrand = "discover"
+	CardBrandDiners     CardBrand = "diners"
+	CardBrandOther      CardBrand = "other"
+)
+
+// CardStatus represents the status of a card
+type CardStatus string
+
+const (
+	CardStatusActive   CardStatus = "active"
+	CardStatusInactive CardStatus = "inactive"
+	CardStatusBlocked  CardStatus = "blocked"
+	CardStatusExpired  CardStatus = "expired"
 )
 
 // Account represents a financial account in the system
@@ -37,7 +69,10 @@ type Account struct {
 	Currency    Currency    `gorm:"type:varchar(3);not null;index" json:"currency"`
 	Balance     float64     `gorm:"type:decimal(15,2);not null;default:0" json:"balance"`
 
-	// Credit card specific fields
+	// Cards relationship (optional - only for bank_account type)
+	Cards []Card `gorm:"foreignKey:AccountID;constraint:OnDelete:CASCADE" json:"cards,omitempty"`
+
+	// Credit card specific fields (legacy - for backward compatibility)
 	CreditLimit *float64   `gorm:"type:decimal(15,2);null" json:"credit_limit,omitempty"`
 	ClosingDate *time.Time `gorm:"type:date;null" json:"closing_date,omitempty"`
 	DueDate     *time.Time `gorm:"type:date;null" json:"due_date,omitempty"`
@@ -51,9 +86,46 @@ type Account struct {
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"deleted_at,omitempty"`
 }
 
+// Card represents a payment card associated with an account
+type Card struct {
+	ID              string     `gorm:"type:char(36);primaryKey" json:"id"`
+	AccountID       string     `gorm:"type:char(36);not null;index" json:"account_id"`
+	CardType        CardType   `gorm:"type:varchar(10);not null" json:"card_type"`
+	CardBrand       CardBrand  `gorm:"type:varchar(20);not null" json:"card_brand"`
+	LastFourDigits  string     `gorm:"type:varchar(4);not null" json:"last_four_digits"`
+	MaskedNumber    string     `gorm:"type:varchar(19);not null" json:"masked_number"` // **** **** **** 1234
+	HolderName      string     `gorm:"type:varchar(100);not null" json:"holder_name"`
+	ExpirationMonth int        `gorm:"type:int;not null" json:"expiration_month"`
+	ExpirationYear  int        `gorm:"type:int;not null" json:"expiration_year"`
+	Status          CardStatus `gorm:"type:varchar(20);not null;default:'active'" json:"status"`
+	IsDefault       bool       `gorm:"not null;default:false" json:"is_default"`
+	Nickname        string     `gorm:"type:varchar(50)" json:"nickname"`
+
+	// Credit card specific fields
+	CreditLimit *float64   `gorm:"type:decimal(15,2);null" json:"credit_limit,omitempty"`
+	ClosingDate *time.Time `gorm:"type:date;null" json:"closing_date,omitempty"`
+	DueDate     *time.Time `gorm:"type:date;null" json:"due_date,omitempty"`
+
+	// Security - encrypted fields (stored separately for security)
+	EncryptedNumber string `gorm:"type:text;not null" json:"-"` // Never expose in JSON
+	KeyFingerprint  string `gorm:"type:varchar(64);not null" json:"-"`
+
+	CreatedAt time.Time      `gorm:"autoCreateTime" json:"created_at"`
+	UpdatedAt time.Time      `gorm:"autoUpdateTime" json:"updated_at"`
+	DeletedAt gorm.DeletedAt `gorm:"index" json:"deleted_at,omitempty"`
+
+	// Relationship back to account
+	Account Account `gorm:"foreignKey:AccountID" json:"-"`
+}
+
 // TableName returns the table name for the Account model
 func (Account) TableName() string {
 	return "accounts"
+}
+
+// TableName returns the table name for the Card model
+func (Card) TableName() string {
+	return "cards"
 }
 
 // BeforeCreate is called before creating a new account
@@ -67,7 +139,8 @@ func (a *Account) BeforeCreate(tx *gorm.DB) error {
 // IsValidAccountType checks if the account type is valid
 func IsValidAccountType(accountType AccountType) bool {
 	switch accountType {
-	case AccountTypeChecking, AccountTypeSavings, AccountTypeCredit, AccountTypeDebit, AccountTypeWallet:
+	case AccountTypeChecking, AccountTypeSavings, AccountTypeCredit, AccountTypeDebit,
+		AccountTypeWallet, AccountTypeBankAccount:
 		return true
 	default:
 		return false
@@ -98,7 +171,127 @@ func (a *Account) Validate() error {
 	if !IsValidCurrency(a.Currency) {
 		return &ValidationError{Field: "currency", Message: "invalid currency"}
 	}
+
+	// Validate based on account type
+	if a.AccountType == AccountTypeWallet && a.DNI == nil {
+		return &ValidationError{Field: "dni", Message: "DNI is required for virtual wallets"}
+	}
+
 	return nil
+}
+
+// IsValidCardType checks if the card type is valid
+func IsValidCardType(cardType CardType) bool {
+	switch cardType {
+	case CardTypeCredit, CardTypeDebit:
+		return true
+	default:
+		return false
+	}
+}
+
+// IsValidCardBrand checks if the card brand is valid
+func IsValidCardBrand(brand CardBrand) bool {
+	switch brand {
+	case CardBrandVisa, CardBrandMastercard, CardBrandAmex, CardBrandDiscover, CardBrandDiners, CardBrandOther:
+		return true
+	default:
+		return false
+	}
+}
+
+// IsValidCardStatus checks if the card status is valid
+func IsValidCardStatus(status CardStatus) bool {
+	switch status {
+	case CardStatusActive, CardStatusInactive, CardStatusBlocked, CardStatusExpired:
+		return true
+	default:
+		return false
+	}
+}
+
+// Validate validates the card data
+func (c *Card) Validate() error {
+	if c.AccountID == "" {
+		return &ValidationError{Field: "account_id", Message: "account ID is required"}
+	}
+	if c.HolderName == "" {
+		return &ValidationError{Field: "holder_name", Message: "holder name is required"}
+	}
+	if !IsValidCardType(c.CardType) {
+		return &ValidationError{Field: "card_type", Message: "invalid card type"}
+	}
+	if !IsValidCardBrand(c.CardBrand) {
+		return &ValidationError{Field: "card_brand", Message: "invalid card brand"}
+	}
+	if !IsValidCardStatus(c.Status) {
+		return &ValidationError{Field: "status", Message: "invalid card status"}
+	}
+	if c.ExpirationMonth < 1 || c.ExpirationMonth > 12 {
+		return &ValidationError{Field: "expiration_month", Message: "expiration month must be between 1 and 12"}
+	}
+	if c.ExpirationYear < time.Now().Year() {
+		return &ValidationError{Field: "expiration_year", Message: "expiration year cannot be in the past"}
+	}
+	if len(c.LastFourDigits) != 4 {
+		return &ValidationError{Field: "last_four_digits", Message: "last four digits must be exactly 4 characters"}
+	}
+
+	// Validate credit card specific fields
+	if c.CardType == CardTypeCredit && c.CreditLimit == nil {
+		return &ValidationError{Field: "credit_limit", Message: "credit limit is required for credit cards"}
+	}
+
+	return nil
+}
+
+// IsWallet checks if the account is a virtual wallet
+func (a *Account) IsWallet() bool {
+	return a.AccountType == AccountTypeWallet
+}
+
+// IsBankAccount checks if the account is a bank account (can have cards)
+func (a *Account) IsBankAccount() bool {
+	return a.AccountType == AccountTypeBankAccount
+}
+
+// CanHaveCards checks if the account type supports cards
+func (a *Account) CanHaveCards() bool {
+	return a.IsBankAccount() || a.AccountType == AccountTypeChecking ||
+		a.AccountType == AccountTypeSavings || a.AccountType == AccountTypeCredit ||
+		a.AccountType == AccountTypeDebit
+}
+
+// GetDefaultCard returns the default card for the account
+func (a *Account) GetDefaultCard() *Card {
+	for _, card := range a.Cards {
+		if card.IsDefault && card.Status == CardStatusActive {
+			return &card
+		}
+	}
+	return nil
+}
+
+// HasActiveCards checks if the account has any active cards
+func (a *Account) HasActiveCards() bool {
+	for _, card := range a.Cards {
+		if card.Status == CardStatusActive {
+			return true
+		}
+	}
+	return false
+}
+
+// IsExpired checks if the card is expired
+func (c *Card) IsExpired() bool {
+	now := time.Now()
+	expiry := time.Date(c.ExpirationYear, time.Month(c.ExpirationMonth), 1, 0, 0, 0, 0, time.UTC)
+	return now.After(expiry)
+}
+
+// IsActive checks if the card is active and not expired
+func (c *Card) IsActive() bool {
+	return c.Status == CardStatusActive && !c.IsExpired()
 }
 
 // ValidationError represents a validation error

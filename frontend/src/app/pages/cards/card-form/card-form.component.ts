@@ -13,7 +13,8 @@ import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
 import { CardService } from '../../../services/card.service';
 import { UserService } from '../../../services/user.service';
 import { AuthService } from '../../../services/auth.service';
-import { Card, CardType, CardBrand, CreateCardRequest, UpdateCardRequest, CardFormData, CardFormErrors } from '../../../models';
+import { AccountService } from '../../../services/account.service';
+import { Card, CardType, CardBrand, CreateCardRequest, UpdateCardRequest, CardFormData, CardFormErrors, Account, AccountsListResponse } from '../../../models';
 
 interface DialogData {
   mode: 'create' | 'edit';
@@ -44,6 +45,7 @@ export class CardFormComponent implements OnInit, OnDestroy {
   private readonly cardService = inject(CardService);
   private readonly userService = inject(UserService);
   private readonly authService = inject(AuthService);
+  private readonly accountService = inject(AccountService);
   private readonly snackBar = inject(MatSnackBar);
   private readonly dialogRef = inject(MatDialogRef<CardFormComponent>);
   private readonly destroy$ = new Subject<void>();
@@ -52,6 +54,8 @@ export class CardFormComponent implements OnInit, OnDestroy {
   saving = signal(false);
   detectedBrand = signal<CardBrand | null>(null);
   formErrors = signal<CardFormErrors>({});
+  availableAccounts = signal<Account[]>([]);
+  loadingAccounts = signal(false);
 
   // Formulario reactivo
   cardForm!: FormGroup;
@@ -79,6 +83,7 @@ export class CardFormComponent implements OnInit, OnDestroy {
   constructor(@Inject(MAT_DIALOG_DATA) public data: DialogData) {}
 
   ngOnInit(): void {
+    this.loadUserAccounts();
     this.initializeForm();
     this.setupFormValidation();
   }
@@ -90,15 +95,14 @@ export class CardFormComponent implements OnInit, OnDestroy {
 
   private initializeForm(): void {
     this.cardForm = this.fb.group({
-      userId: ['', [Validators.required]],
+      accountId: ['', [Validators.required]],
       cardType: [CardType.DEBIT, [Validators.required]],
       cardNumber: [''],
       holderName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
       expirationMonth: ['', [Validators.required]],
       expirationYear: ['', [Validators.required]],
       cvv: [''],
-      nickname: ['', [Validators.maxLength(30)]],
-      currency: ['ARS', [Validators.required]]
+      nickname: ['', [Validators.maxLength(30)]]
     });
 
     // Configurar validadores condicionales después de crear el formulario
@@ -128,9 +132,40 @@ export class CardFormComponent implements OnInit, OnDestroy {
     this.cardForm.get('cvv')?.updateValueAndValidity();
   }
 
+  private loadUserAccounts(): void {
+    const currentUser = this.authService.currentUserSig();
+    if (!currentUser) {
+      this.snackBar.open('Error: Usuario no autenticado', 'Cerrar', { duration: 3000 });
+      return;
+    }
+
+    this.loadingAccounts.set(true);
+    this.accountService.getAccountsByUser(currentUser.id).subscribe({
+      next: (response: AccountsListResponse) => {
+        // Filtrar solo cuentas que pueden tener tarjetas (no wallets)
+        const accountsWithCards = response.accounts.filter(account => 
+          account.accountType !== 'wallet' && account.isActive
+        );
+        this.availableAccounts.set(accountsWithCards);
+        this.loadingAccounts.set(false);
+        
+        // Si solo hay una cuenta, seleccionarla automáticamente
+        if (accountsWithCards.length === 1) {
+          this.cardForm.patchValue({ accountId: accountsWithCards[0].id });
+        }
+      },
+      error: (error) => {
+        console.error('Error loading accounts:', error);
+        this.snackBar.open('Error al cargar las cuentas', 'Cerrar', { duration: 3000 });
+        this.loadingAccounts.set(false);
+        this.availableAccounts.set([]);
+      }
+    });
+  }
+
   private populateFormForEdit(card: Card): void {
     this.cardForm.patchValue({
-      userId: card.userId,
+      accountId: card.accountId,
       cardType: card.cardType,
       holderName: card.holderName,
       expirationMonth: card.expirationMonth,
@@ -249,15 +284,14 @@ export class CardFormComponent implements OnInit, OnDestroy {
 
   private createCard(formData: CardFormData): void {
     const request: CreateCardRequest = {
-      userId: formData.userId,
+      accountId: formData.accountId,
       cardType: formData.cardType,
       cardNumber: formData.cardNumber,
       holderName: formData.holderName,
       expirationMonth: formData.expirationMonth,
       expirationYear: formData.expirationYear,
       cvv: formData.cvv,
-      nickname: formData.nickname,
-      currency: formData.currency
+      nickname: formData.nickname
     };
 
     this.cardService.createCard(request).subscribe({

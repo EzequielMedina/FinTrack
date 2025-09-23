@@ -14,6 +14,41 @@
 
   <form [formGroup]="cardForm" (ngSubmit)="onSubmit()" class="card-form">
       <div mat-dialog-content class="form-content">
+        <!-- Account Selection -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Cuenta asociada</mat-label>
+          <mat-select formControlName="accountId" required [disabled]="loadingAccounts()">
+            @if (loadingAccounts()) {
+              <mat-option disabled>
+                <mat-spinner diameter="20"></mat-spinner>
+                Cargando cuentas...
+              </mat-option>
+            } @else {
+              @if (availableAccounts().length === 0) {
+                <mat-option disabled>
+                  <mat-icon>warning</mat-icon>
+                  No hay cuentas disponibles
+                </mat-option>
+              } @else {
+                @for (account of availableAccounts(); track account.id) {
+                  <mat-option [value]="account.id">
+                    <div class="account-option">
+                      <span class="account-name">{{ account.name }}</span>
+                      <span class="account-details">
+                        {{ account.accountType | titlecase }} - {{ account.currency }} 
+                        ({{ account.balance | currency:'':'' }})
+                      </span>
+                    </div>
+                  </mat-option>
+                }
+              }
+            }
+          </mat-select>
+          <mat-icon matSuffix>account_balance</mat-icon>
+          <mat-hint>Selecciona la cuenta a la que se vinculará la tarjeta</mat-hint>
+          <mat-error>{{ getFieldError('accountId') }}</mat-error>
+        </mat-form-field>
+
         <!-- Card Type -->
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Tipo de tarjeta</mat-label>

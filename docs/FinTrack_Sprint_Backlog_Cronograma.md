@@ -111,7 +111,7 @@
   - Prioridad: Alta
   - Criterios de aceptación: CRUD cuentas, tipos de cuenta, saldos
 
-- [ ] **TASK-015** - Implementar gestión de tarjetas (sandbox)
+- [ ] **TASK-015** - Implementar gestión de tarjetas (Front)
   - Estimación: 4 días
   - Prioridad: Alta
   - Criterios de aceptación: Vinculación tarjetas, validaciones, encriptación

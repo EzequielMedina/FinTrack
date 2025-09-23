@@ -134,6 +134,37 @@
   }
 }
 
+/* Account Selector Styling */
+.account-option {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+  padding: 4px 0;
+
+  .account-name {
+    font-weight: 500;
+    color: #333;
+    font-size: 14px;
+  }
+
+  .account-details {
+    color: #666;
+    font-size: 12px;
+    margin-top: 2px;
+  }
+}
+
+.mat-mdc-option .mat-icon {
+  margin-right: 8px;
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+.mat-mdc-option .mat-mdc-progress-spinner {
+  margin-right: 8px;
+}
+
 /* Form Field Customizations */
 .mat-mdc-form-field {
   &.full-width .mat-mdc-text-field-wrapper {
