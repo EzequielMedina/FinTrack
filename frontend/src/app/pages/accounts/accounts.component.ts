@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -8,8 +8,9 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
+import { Subject, takeUntil, finalize } from 'rxjs';
 import { AccountService, AuthService } from '../../services';
-import { Account, AccountType, Currency, AccountsListResponse } from '../../models';
+import { Account, AccountType, Currency, AccountsListResponse, User } from '../../models';
 import { AccountListComponent } from './account-list/account-list.component';
 import { WalletDialogComponent } from './wallet-dialog/wallet-dialog.component';
 import { CreditDialogComponent } from './credit-dialog/credit-dialog.component';
@@ -31,553 +32,206 @@ import { AccountDeleteConfirmationComponent } from './account-delete-confirmatio
     MatDialogModule,
     AccountListComponent
   ],
-  template: `
-    <div class="accounts-container">
-      <div class="accounts-header">
-        <h1>Gestión de Cuentas</h1>
-        <div class="header-actions">
-          <button mat-fab extended color="primary" (click)="onAddAccount()">
-            <mat-icon>add</mat-icon>
-            Crear Cuenta
-          </button>
-        </div>
-      </div>
-
-      @if (loading()) {
-        <div class="loading-container">
-          <mat-spinner></mat-spinner>
-          <p>Cargando cuentas...</p>
-        </div>
-      } @else {
-        <div class="accounts-content">
-          <!-- Summary Cards -->
-          <div class="summary-grid">
-            <mat-card class="summary-card balance">
-              <mat-card-header>
-                <mat-icon mat-card-avatar class="summary-icon balance">account_balance</mat-icon>
-                <mat-card-title>Saldo Total (ARS)</mat-card-title>
-              </mat-card-header>
-              <mat-card-content>
-                <div class="summary-number">{{ getTotalBalance() | currency:'ARS':'symbol':'1.2-2':'es-AR' }}</div>
-              </mat-card-content>
-            </mat-card>
-
-            <mat-card class="summary-card credit">
-              <mat-card-header>
-                <mat-icon mat-card-avatar class="summary-icon credit">credit_card</mat-icon>
-                <mat-card-title>Límite de Crédito Total</mat-card-title>
-              </mat-card-header>
-              <mat-card-content>
-                <div class="summary-number">{{ getTotalCreditLimit() | currency:'ARS':'symbol':'1.2-2':'es-AR' }}</div>
-              </mat-card-content>
-            </mat-card>
-
-            <mat-card class="summary-card usd">
-              <mat-card-header>
-                <mat-icon mat-card-avatar class="summary-icon usd">attach_money</mat-icon>
-                <mat-card-title>Saldo USD</mat-card-title>
-              </mat-card-header>
-              <mat-card-content>
-                <div class="summary-number">{{ getTotalUsdBalance() | currency:'USD':'symbol':'1.2-2':'en-US' }}</div>
-              </mat-card-content>
-            </mat-card>
-
-            <mat-card class="summary-card accounts">
-              <mat-card-header>
-                <mat-icon mat-card-avatar class="summary-icon accounts">account_balance_wallet</mat-icon>
-                <mat-card-title>Total de Cuentas</mat-card-title>
-              </mat-card-header>
-              <mat-card-content>
-                <div class="summary-number">{{ accounts().length }}</div>
-              </mat-card-content>
-            </mat-card>
-          </div>
-
-          <!-- Tabs for different views -->
-          <mat-card class="accounts-list-card">
-            <mat-tab-group (selectedTabChange)="onTabChanged($event.index)" [selectedIndex]="selectedTabIndex()">
-              <mat-tab label="Todas las Cuentas">
-                <div class="tab-content">
-                  @if (accounts().length === 0) {
-                    <div class="empty-state">
-                      <mat-icon class="empty-icon">account_balance_wallet</mat-icon>
-                      <h3>No tienes cuentas registradas</h3>
-                      <p>Crea tu primera cuenta para comenzar a gestionar tu dinero</p>
-                      <button mat-raised-button color="primary" (click)="onAddAccount()">
-                        <mat-icon>add</mat-icon>
-                        Crear Primera Cuenta
-                      </button>
-                    </div>
-                  } @else {
-                    <app-account-list 
-                      [accounts]="accounts()"
-                      (editAccount)="onEditAccount($event)"
-                      (deleteAccount)="onDeleteAccount($event)"
-                      (activateAccount)="onActivateAccount($event)"
-                      (manageWallet)="onManageWallet($event)"
-                      (manageCredit)="onManageCredit($event)"
-                      (accountStatusChanged)="onAccountStatusChanged($event)">
-                    </app-account-list>
-                  }
-                </div>
-              </mat-tab>
-
-              <mat-tab label="Cuentas de Ahorro">
-                <div class="tab-content">
-                  @if (savingsAccounts().length === 0) {
-                    <div class="empty-state">
-                      <mat-icon class="empty-icon">savings</mat-icon>
-                      <h3>No tienes cuentas de ahorro</h3>
-                      <p>Crea una cuenta de ahorro para empezar a ahorrar</p>
-                    </div>
-                  } @else {
-                    <app-account-list 
-                      [accounts]="savingsAccounts()"
-                      (editAccount)="onEditAccount($event)"
-                      (deleteAccount)="onDeleteAccount($event)"
-                      (activateAccount)="onActivateAccount($event)"
-                      (manageWallet)="onManageWallet($event)"
-                      (manageCredit)="onManageCredit($event)"
-                      (accountStatusChanged)="onAccountStatusChanged($event)">
-                    </app-account-list>
-                  }
-                </div>
-              </mat-tab>
-
-              <mat-tab label="Cuentas Corrientes">
-                <div class="tab-content">
-                  @if (checkingAccounts().length === 0) {
-                    <div class="empty-state">
-                      <mat-icon class="empty-icon">account_balance</mat-icon>
-                      <h3>No tienes cuentas corrientes</h3>
-                      <p>Crea una cuenta corriente para tus transacciones diarias</p>
-                    </div>
-                  } @else {
-                    <app-account-list 
-                      [accounts]="checkingAccounts()"
-                      (editAccount)="onEditAccount($event)"
-                      (deleteAccount)="onDeleteAccount($event)"
-                      (activateAccount)="onActivateAccount($event)"
-                      (manageWallet)="onManageWallet($event)"
-                      (manageCredit)="onManageCredit($event)"
-                      (accountStatusChanged)="onAccountStatusChanged($event)">
-                    </app-account-list>
-                  }
-                </div>
-              </mat-tab>
-
-              <mat-tab label="Tarjetas de Crédito">
-                <div class="tab-content">
-                  @if (creditCards().length === 0) {
-                    <div class="empty-state">
-                      <mat-icon class="empty-icon">credit_card</mat-icon>
-                      <h3>No tienes tarjetas de crédito</h3>
-                      <p>Solicita una tarjeta de crédito para realizar compras a crédito</p>
-                    </div>
-                  } @else {
-                    <app-account-list 
-                      [accounts]="creditCards()"
-                      (editAccount)="onEditAccount($event)"
-                      (deleteAccount)="onDeleteAccount($event)"
-                      (activateAccount)="onActivateAccount($event)"
-                      (manageWallet)="onManageWallet($event)"
-                      (manageCredit)="onManageCredit($event)"
-                      (accountStatusChanged)="onAccountStatusChanged($event)">
-                    </app-account-list>
-                  }
-                </div>
-              </mat-tab>
-
-              <mat-tab label="Cuentas USD">
-                <div class="tab-content">
-                  @if (usdAccounts().length === 0) {
-                    <div class="empty-state">
-                      <mat-icon class="empty-icon">attach_money</mat-icon>
-                      <h3>No tienes cuentas en dólares</h3>
-                      <p>Crea una cuenta en dólares para operaciones en moneda extranjera</p>
-                    </div>
-                  } @else {
-                    <app-account-list 
-                      [accounts]="usdAccounts()"
-                      (editAccount)="onEditAccount($event)"
-                      (deleteAccount)="onDeleteAccount($event)"
-                      (activateAccount)="onActivateAccount($event)"
-                      (manageWallet)="onManageWallet($event)"
-                      (manageCredit)="onManageCredit($event)"
-                      (accountStatusChanged)="onAccountStatusChanged($event)">
-                    </app-account-list>
-                  }
-                </div>
-              </mat-tab>
-
-              <mat-tab label="Activas">
-                <div class="tab-content">
-                  @if (activeAccounts().length === 0) {
-                    <div class="empty-state">
-                      <mat-icon class="empty-icon">check_circle</mat-icon>
-                      <h3>No tienes cuentas activas</h3>
-                      <p>Activa al menos una cuenta para comenzar a operar</p>
-                    </div>
-                  } @else {
-                    <app-account-list 
-                      [accounts]="activeAccounts()"
-                      (editAccount)="onEditAccount($event)"
-                      (deleteAccount)="onDeleteAccount($event)"
-                      (activateAccount)="onActivateAccount($event)"
-                      (manageWallet)="onManageWallet($event)"
-                      (manageCredit)="onManageCredit($event)"
-                      (accountStatusChanged)="onAccountStatusChanged($event)">
-                    </app-account-list>
-                  }
-                </div>
-              </mat-tab>
-
-              <mat-tab label="Inactivas">
-                <div class="tab-content">
-                  @if (inactiveAccounts().length === 0) {
-                    <div class="empty-state">
-                      <mat-icon class="empty-icon">cancel</mat-icon>
-                      <h3>No tienes cuentas inactivas</h3>
-                      <p>Todas tus cuentas están activas</p>
-                    </div>
-                  } @else {
-                    <app-account-list 
-                      [accounts]="inactiveAccounts()"
-                      (editAccount)="onEditAccount($event)"
-                      (deleteAccount)="onDeleteAccount($event)"
-                      (activateAccount)="onActivateAccount($event)"
-                      (manageWallet)="onManageWallet($event)"
-                      (manageCredit)="onManageCredit($event)"
-                      (accountStatusChanged)="onAccountStatusChanged($event)">
-                    </app-account-list>
-                  }
-                </div>
-              </mat-tab>
-            </mat-tab-group>
-          </mat-card>
-        </div>
-      }
-    </div>
-  `,
-  styles: [`
-    /* Accounts Component Styles */
-    .accounts-container {
-      padding: 20px;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-
-    /* Header */
-    .accounts-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 30px;
-      padding-bottom: 20px;
-      border-bottom: 1px solid #e0e0e0;
-    }
-
-    .accounts-header h1 {
-      color: #1f2937;
-      font-weight: 600;
-      margin: 0;
-      font-size: 2rem;
-    }
-
-    .header-actions {
-      display: flex;
-      gap: 15px;
-    }
-
-    /* Loading */
-    .loading-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 40px;
-      text-align: center;
-    }
-
-    .loading-container p {
-      margin-top: 20px;
-      color: #666;
-      font-size: 16px;
-    }
-
-    /* Summary Grid */
-    .summary-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 20px;
-      margin-bottom: 30px;
-    }
-
-    .summary-card {
-      transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .summary-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-
-    .summary-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 4px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    }
-
-    .summary-card.balance::before {
-      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-    }
-
-    .summary-card.credit::before {
-      background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-    }
-
-    .summary-card.usd::before {
-      background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-    }
-
-    .summary-card.accounts::before {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    }
-
-    /* Summary Icons */
-    .summary-icon {
-      border-radius: 50%;
-      color: white !important;
-      font-size: 24px !important;
-      width: 48px !important;
-      height: 48px !important;
-      display: flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-    }
-
-    .summary-icon.balance {
-      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-    }
-
-    .summary-icon.credit {
-      background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-    }
-
-    .summary-icon.usd {
-      background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-    }
-
-    .summary-icon.accounts {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    }
-
-    .summary-number {
-      font-size: 2rem;
-      font-weight: 700;
-      color: #1f2937;
-      margin-top: 10px;
-    }
-
-    /* Accounts List Card */
-    .accounts-list-card {
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      overflow: hidden;
-    }
-
-    /* Tab Content */
-    .tab-content {
-      padding: 20px;
-    }
-
-    /* Empty State */
-    .empty-state {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 60px 20px;
-      text-align: center;
-      color: #6b7280;
-    }
-
-    .empty-icon {
-      font-size: 64px !important;
-      width: 64px !important;
-      height: 64px !important;
-      color: #d1d5db !important;
-      margin-bottom: 20px;
-    }
-
-    .empty-state h3 {
-      color: #374151;
-      font-size: 1.5rem;
-      font-weight: 600;
-      margin: 0 0 10px 0;
-    }
-
-    .empty-state p {
-      color: #6b7280;
-      font-size: 1rem;
-      margin: 0 0 30px 0;
-      max-width: 400px;
-    }
-
-    .empty-state button {
-      margin-top: 10px;
-    }
-
-    /* Responsive Design */
-    @media (max-width: 768px) {
-      .accounts-container {
-        padding: 15px;
-      }
-
-      .accounts-header {
-        flex-direction: column;
-        gap: 20px;
-        align-items: stretch;
-      }
-
-      .accounts-header h1 {
-        font-size: 1.5rem;
-        text-align: center;
-      }
-
-      .header-actions {
-        justify-content: center;
-      }
-
-      .summary-grid {
-        grid-template-columns: 1fr;
-        gap: 15px;
-      }
-
-      .summary-number {
-        font-size: 1.5rem;
-      }
-
-      .tab-content {
-        padding: 15px;
-      }
-
-      .empty-icon {
-        font-size: 48px !important;
-        width: 48px !important;
-        height: 48px !important;
-      }
-
-      .empty-state h3 {
-        font-size: 1.25rem;
-      }
-
-      .empty-state p {
-        font-size: 0.9rem;
-      }
-    }
-
-    @media (max-width: 480px) {
-      .accounts-container {
-        padding: 10px;
-      }
-
-      .summary-grid {
-        gap: 10px;
-      }
-
-      .tab-content {
-        padding: 10px;
-      }
-    }
-  `]
+  templateUrl: './accounts.component.html',
+  styleUrls: ['./accounts.component.css']
 })
-export class AccountsComponent implements OnInit {
+export class AccountsComponent implements OnInit, OnDestroy {
+  // Services injection
   private readonly accountService = inject(AccountService);
   private readonly authService = inject(AuthService);
   private readonly snackBar = inject(MatSnackBar);
   private readonly dialog = inject(MatDialog);
 
-  // Signals para el estado del componente
-  accounts = signal<Account[]>([]);
-  loading = signal(false);
-  selectedTabIndex = signal(0);
+  // Component lifecycle management
+  private readonly destroy$ = new Subject<void>();
 
-  // Computed signals para filtrar cuentas
-  savingsAccounts = signal<Account[]>([]);
-  checkingAccounts = signal<Account[]>([]);
-  creditCards = signal<Account[]>([]);
-  usdAccounts = signal<Account[]>([]);
-  activeAccounts = signal<Account[]>([]);
-  inactiveAccounts = signal<Account[]>([]);
+  // Core state signals - Focused on user accounts loading
+  readonly accounts = signal<Account[]>([]);
+  readonly loading = signal(false);
+  readonly selectedTabIndex = signal(0);
+  readonly error = signal<string | null>(null);
 
+  // Simple getter instead of computed to avoid circular dependencies
   get currentUser() {
     return this.authService.currentUserSig();
   }
 
-  ngOnInit(): void {
-    this.loadUserAccounts();
+  get isUserAuthenticated(): boolean {
+    return !!this.currentUser?.id;
   }
 
-  private loadUserAccounts(): void {
-    const user = this.currentUser;
-    if (!user?.id) {
-      console.error('No hay usuario logueado');
-      this.snackBar.open('Error: No hay usuario logueado', 'Cerrar', {
-        duration: 3000
-      });
+  // SOLUCION: Formatear valores en el component para evitar pipes reactivos
+  
+  get savingsAccounts(): Account[] {
+    return this.accounts().filter(account => account.accountType === AccountType.SAVINGS);
+  }
+  
+  get checkingAccounts(): Account[] {
+    return this.accounts().filter(account => account.accountType === AccountType.CHECKING);
+  }
+  
+  get creditCards(): Account[] {
+    return this.accounts().filter(account => account.accountType === AccountType.CREDIT);
+  }
+  
+  get usdAccounts(): Account[] {
+    return this.accounts().filter(account => account.currency === Currency.USD);
+  }
+  
+  get activeAccounts(): Account[] {
+    return this.accounts().filter(account => account.isActive);
+  }
+  
+  get inactiveAccounts(): Account[] {
+    return this.accounts().filter(account => !account.isActive);
+  }
+
+  // Financial summary - valores ya formateados para evitar pipes
+  get totalBalance(): number {
+    return this.activeAccounts
+      .filter(account => account.currency === Currency.ARS && account.accountType !== AccountType.CREDIT)
+      .reduce((total, account) => total + account.balance, 0);
+  }
+
+  get totalBalanceFormatted(): string {
+    return new Intl.NumberFormat('es-AR', {
+      style: 'currency',
+      currency: 'ARS'
+    }).format(this.totalBalance);
+  }
+
+  get totalCreditLimit(): number {
+    return this.creditCards.reduce((total, account) => total + (account.creditLimit || 0), 0);
+  }
+
+  get totalCreditLimitFormatted(): string {
+    return new Intl.NumberFormat('es-AR', {
+      style: 'currency',
+      currency: 'ARS'
+    }).format(this.totalCreditLimit);
+  }
+
+  get totalUsdBalance(): number {
+    return this.usdAccounts.reduce((total, account) => total + account.balance, 0);
+  }
+
+  get totalUsdBalanceFormatted(): string {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(this.totalUsdBalance);
+  }
+
+  get accountsCount(): number {
+    return this.accounts().length;
+  }
+
+  ngOnInit(): void {
+    this.initializeUserAccounts();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  /**
+   * Initialize user accounts loading
+   * Main entry point for account data management
+   */
+  private initializeUserAccounts(): void {
+    if (!this.isUserAuthenticated) {
+      this.handleAuthenticationError();
       return;
     }
 
-    console.log('Loading accounts for user:', user.id);
-    this.loading.set(true);
+    // Load accounts immediately if user is available
+    this.loadUserAccounts();
+  }
+
+  /**
+   * Core method: Load user accounts from API
+   * Centralized account loading logic with proper error handling
+   */
+  private loadUserAccounts(): void {
+    const user = this.currentUser;
     
-    this.accountService.getAccountsByUser(user.id).subscribe({
-      next: (response: AccountsListResponse) => {
-        console.log('Accounts loaded successfully:', response);
-        this.accounts.set(response.accounts || []);
-        this.updateFilteredAccounts();
-        this.loading.set(false);
-      },
-      error: (error: any) => {
-        console.error('Error loading accounts:', error);
-        
-        // Inicializar con array vacío en caso de error
-        this.accounts.set([]);
-        this.updateFilteredAccounts();
-        this.loading.set(false);
-        
-        this.snackBar.open(
-          `Error al cargar las cuentas: ${error.message || 'Error desconocido'}`, 
-          'Cerrar', 
-          { duration: 5000 }
-        );
-      }
+    if (!user?.id) {
+      this.handleAuthenticationError();
+      return;
+    }
+
+    // Reset error state and start loading
+    this.error.set(null);
+    this.loading.set(true);
+
+    this.accountService.getAccountsByUser(user.id)
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => this.loading.set(false))
+      )
+      .subscribe({
+        next: (response: AccountsListResponse) => this.handleAccountsLoaded(response),
+        error: (error: any) => this.handleAccountsLoadError(error)
+      });
+  }
+
+  /**
+   * Handle successful accounts loading
+   */
+  private handleAccountsLoaded(response: AccountsListResponse): void {
+    const accounts = response.accounts || [];
+    this.accounts.set(accounts);
+    this.error.set(null);
+    
+    console.log(`Successfully loaded ${accounts.length} accounts for user`);
+  }
+
+  /**
+   * Handle accounts loading error
+   */
+  private handleAccountsLoadError(error: any): void {
+    const errorMessage = error.message || 'Error desconocido al cargar cuentas';
+    
+    this.accounts.set([]);
+    this.error.set(errorMessage);
+    
+    this.snackBar.open(
+      `Error al cargar las cuentas: ${errorMessage}`, 
+      'Cerrar', 
+      { duration: 5000, panelClass: ['error-snackbar'] }
+    );
+    
+    console.error('Failed to load user accounts:', error);
+  }
+
+  /**
+   * Handle authentication errors
+   */
+  private handleAuthenticationError(): void {
+    const message = 'Usuario no autenticado. Por favor, inicia sesión.';
+    this.error.set(message);
+    this.snackBar.open(message, 'Cerrar', { 
+      duration: 3000, 
+      panelClass: ['error-snackbar'] 
     });
   }
 
-  private updateFilteredAccounts(): void {
-    const allAccounts = this.accounts();
-    
-    this.savingsAccounts.set(allAccounts.filter(account => account.accountType === AccountType.SAVINGS));
-    this.checkingAccounts.set(allAccounts.filter(account => account.accountType === AccountType.CHECKING));
-    this.creditCards.set(allAccounts.filter(account => account.accountType === AccountType.CREDIT));
-    this.usdAccounts.set(allAccounts.filter(account => account.currency === Currency.USD));
-    this.activeAccounts.set(allAccounts.filter(account => account.isActive));
-    this.inactiveAccounts.set(allAccounts.filter(account => !account.isActive));
+  /**
+   * Refresh accounts data
+   * Public method to reload accounts when needed
+   */
+  refreshAccounts(): void {
+    this.loadUserAccounts();
   }
 
+  // =============================================================================
+  // UI EVENT HANDLERS - Account Management Actions
+  // =============================================================================
+
   onAddAccount(): void {
-    const user = this.currentUser;
-    if (!user) {
-      this.snackBar.open('Error: Usuario no autenticado', 'Cerrar', { duration: 3000 });
+    if (!this.isUserAuthenticated) {
+      this.handleAuthenticationError();
       return;
     }
 
@@ -586,21 +240,17 @@ export class AccountsComponent implements OnInit {
       maxWidth: '90vw',
       data: { 
         mode: 'create',
-        userId: user.id 
+        userId: this.currentUser!.id 
       } as AccountFormDialogData
     });
 
-    dialogRef.afterClosed().subscribe(newAccount => {
-      if (newAccount) {
-        // Recargar todas las cuentas desde la API para asegurar sincronización
-        this.loadUserAccounts();
-        
-        this.snackBar.open('Cuenta creada exitosamente', 'Cerrar', {
-          duration: 3000,
-          panelClass: ['success-snackbar']
-        });
-      }
-    });
+    dialogRef.afterClosed()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(newAccount => {
+        if (newAccount) {
+          this.handleAccountCreated();
+        }
+      });
   }
 
   onEditAccount(account: Account): void {
@@ -610,17 +260,13 @@ export class AccountsComponent implements OnInit {
       data: { account, mode: 'edit' } as AccountFormDialogData
     });
 
-    dialogRef.afterClosed().subscribe(updatedAccount => {
-      if (updatedAccount) {
-        // Recargar todas las cuentas desde la API para asegurar sincronización
-        this.loadUserAccounts();
-        
-        this.snackBar.open('Cuenta actualizada exitosamente', 'Cerrar', {
-          duration: 3000,
-          panelClass: ['success-snackbar']
-        });
-      }
-    });
+    dialogRef.afterClosed()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(updatedAccount => {
+        if (updatedAccount) {
+          this.handleAccountUpdated();
+        }
+      });
   }
 
   onDeleteAccount(account: Account): void {
@@ -629,39 +275,19 @@ export class AccountsComponent implements OnInit {
       data: { account }
     });
 
-    dialogRef.afterClosed().subscribe(confirmed => {
-      if (confirmed) {
-        this.accountService.deleteAccount(account.id).subscribe({
-          next: () => {
-            // Recargar todas las cuentas desde la API
-            this.loadUserAccounts();
-            
-            this.snackBar.open('Cuenta eliminada exitosamente', 'Cerrar', {
-              duration: 3000,
-              panelClass: ['success-snackbar']
-            });
-          },
-          error: (error) => {
-            console.error('Error deleting account:', error);
-            this.snackBar.open('Error al eliminar la cuenta. Inténtalo de nuevo.', 'Cerrar', {
-              duration: 5000,
-              panelClass: ['error-snackbar']
-            });
-          }
-        });
-      }
-    });
+    dialogRef.afterClosed()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(confirmed => {
+        if (confirmed) {
+          this.performAccountDeletion(account);
+        }
+      });
   }
 
   onActivateAccount(account: Account): void {
-    this.loading.set(true);
-    
-    // TODO: Implementar activación/desactivación de cuenta cuando esté disponible en el servicio
-    console.log('Cambiar estado de cuenta:', account);
-    
-    setTimeout(() => {
-      this.loadUserAccounts();
-    }, 1000);
+    // TODO: Implement when account activation API is available
+    console.log('Toggle account status:', account);
+    this.refreshAccounts();
   }
 
   onManageWallet(account: Account): void {
@@ -671,18 +297,13 @@ export class AccountsComponent implements OnInit {
       data: { account }
     });
 
-    dialogRef.afterClosed().subscribe(updatedAccount => {
-      if (updatedAccount) {
-        // Update the account in our list
-        const accounts = this.accounts();
-        const index = accounts.findIndex(acc => acc.id === updatedAccount.id);
-        if (index !== -1) {
-          accounts[index] = updatedAccount;
-          this.accounts.set([...accounts]);
-          this.updateFilteredAccounts();
+    dialogRef.afterClosed()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(updatedAccount => {
+        if (updatedAccount) {
+          this.updateAccountInList(updatedAccount);
         }
-      }
-    });
+      });
   }
 
   onManageCredit(account: Account): void {
@@ -692,54 +313,89 @@ export class AccountsComponent implements OnInit {
       data: { account }
     });
 
-    dialogRef.afterClosed().subscribe(updatedAccount => {
-      if (updatedAccount) {
-        // Update the account in our list
-        const accounts = this.accounts();
-        const index = accounts.findIndex(acc => acc.id === updatedAccount.id);
-        if (index !== -1) {
-          accounts[index] = updatedAccount;
-          this.accounts.set([...accounts]);
-          this.updateFilteredAccounts();
+    dialogRef.afterClosed()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(updatedAccount => {
+        if (updatedAccount) {
+          this.updateAccountInList(updatedAccount);
         }
-      }
-    });
+      });
   }
 
   onAccountStatusChanged(updatedAccount: Account): void {
-    const accounts = this.accounts();
-    const index = accounts.findIndex(acc => acc.id === updatedAccount.id);
-    if (index !== -1) {
-      accounts[index] = updatedAccount;
-      this.accounts.set([...accounts]);
-      this.updateFilteredAccounts();
-    }
+    this.updateAccountInList(updatedAccount);
   }
 
   onTabChanged(index: number): void {
     this.selectedTabIndex.set(index);
   }
 
-  // Métodos de utilidad para el template
-  getTotalBalance(): number {
-    return this.activeAccounts().reduce((total, account) => {
-      // Solo sumar cuentas en ARS para el balance total principal
-      if (account.currency === 'ARS' && account.accountType !== AccountType.CREDIT) {
-        return total + account.balance;
-      }
-      return total;
-    }, 0);
+  // =============================================================================
+  // PRIVATE HELPER METHODS - Business Logic Support
+  // =============================================================================
+
+  /**
+   * Handle successful account creation
+   */
+  private handleAccountCreated(): void {
+    this.refreshAccounts();
+    this.snackBar.open('Cuenta creada exitosamente', 'Cerrar', {
+      duration: 3000,
+      panelClass: ['success-snackbar']
+    });
   }
 
-  getTotalCreditLimit(): number {
-    return this.creditCards().reduce((total, account) => {
-      return total + (account.creditLimit || 0);
-    }, 0);
+  /**
+   * Handle successful account update
+   */
+  private handleAccountUpdated(): void {
+    this.refreshAccounts();
+    this.snackBar.open('Cuenta actualizada exitosamente', 'Cerrar', {
+      duration: 3000,
+      panelClass: ['success-snackbar']
+    });
   }
 
-  getTotalUsdBalance(): number {
-    return this.usdAccounts().reduce((total, account) => {
-      return total + account.balance;
-    }, 0);
+  /**
+   * Perform account deletion with proper error handling
+   */
+  private performAccountDeletion(account: Account): void {
+    this.accountService.deleteAccount(account.id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.refreshAccounts();
+          this.snackBar.open('Cuenta eliminada exitosamente', 'Cerrar', {
+            duration: 3000,
+            panelClass: ['success-snackbar']
+          });
+        },
+        error: (error) => {
+          console.error('Error deleting account:', error);
+          this.snackBar.open('Error al eliminar la cuenta. Inténtalo de nuevo.', 'Cerrar', {
+            duration: 5000,
+            panelClass: ['error-snackbar']
+          });
+        }
+      });
   }
+
+  /**
+   * Update a specific account in the local list
+   * Optimized update without full refresh for better UX
+   */
+  private updateAccountInList(updatedAccount: Account): void {
+    const currentAccounts = this.accounts();
+    const accountIndex = currentAccounts.findIndex(acc => acc.id === updatedAccount.id);
+    
+    if (accountIndex !== -1) {
+      const newAccounts = [...currentAccounts];
+      newAccounts[accountIndex] = updatedAccount;
+      this.accounts.set(newAccounts);
+    }
+  }
+
+  // =============================================================================
+  // REMOVED DEPRECATED METHODS - Now using direct getters for debugging
+  // =============================================================================
 }

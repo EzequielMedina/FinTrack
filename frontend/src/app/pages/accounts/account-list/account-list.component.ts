@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output, inject } from '@angular/core';
+import { Component, EventEmitter, Input, Output, inject, ChangeDetectorRef, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -466,13 +466,13 @@ import { AccountValidationService } from '../../../services';
         box-shadow: 0 0 0 0 rgba(252, 165, 165, 0);
       }
     }
-  `],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  `]
 })
-export class AccountListComponent {
+export class AccountListComponent implements OnChanges {
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
   private readonly validationService = inject(AccountValidationService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   @Input() accounts: Account[] = [];
   @Output() editAccount = new EventEmitter<Account>();
@@ -482,9 +482,21 @@ export class AccountListComponent {
   @Output() manageCredit = new EventEmitter<Account>();
   @Output() accountStatusChanged = new EventEmitter<Account>();
 
-  // Exponer enums para usar en el template
+  // Exponer enums para usar en el// Constants for template
   readonly AccountType = AccountType;
   readonly Currency = Currency;
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['accounts']) {
+      console.log('AccountListComponent - accounts changed:', changes['accounts'].currentValue);
+      this.cdr.detectChanges();
+    }
+  }
+
+  // TrackBy function para mejorar el rendimiento del @for
+  trackByAccountId(index: number, account: Account): string {
+    return account.id;
+  }
 
   onEdit(account: Account): void {
     this.editAccount.emit(account);
