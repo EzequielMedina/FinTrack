@@ -1,0 +1,223 @@
+<div class="wallet-dialog">
+  <mat-dialog-content>
+    <!-- Dialog Header -->
+    <div class="dialog-header">
+      <h2 mat-dialog-title>
+        <mat-icon>account_balance_wallet</mat-icon>
+        Gestionar Fondos
+      </h2>
+      <p class="account-info">{{ getAccountDisplayName() }}</p>
+      <div class="current-balance">
+        <span class="balance-label">Saldo Actual:</span>
+        <span class="balance-amount">{{ formattedBalance() }}</span>
+      </div>
+    </div>
+
+    <!-- Operation Tabs -->
+    <mat-tab-group (selectedTabChange)="onOperationChange($event.index === 0 ? 'add' : 'withdraw')">
+      <!-- Add Funds Tab -->
+      <mat-tab label="Agregar Fondos">
+        <div class="tab-content">
+          <form [formGroup]="addFundsForm" (ngSubmit)="onAddFunds()">
+            <!-- Amount Field -->
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Monto a Agregar</mat-label>
+              <input matInput
+                     type="number"
+                     placeholder="0.00"
+                     formControlName="amount"
+                     [min]="MIN_AMOUNT"
+                     [max]="MAX_AMOUNT"
+                     step="0.01">
+              <span matTextPrefix>$&nbsp;</span>
+              <span matTextSuffix>{{ data.account.currency }}</span>
+              <mat-error>{{ getAmountErrorMessage(addFundsForm) }}</mat-error>
+            </mat-form-field>
+
+            <!-- Quick Amount Buttons -->
+            <div class="quick-amounts">
+              <h4>Montos rápidos:</h4>
+              <div class="quick-amount-buttons">
+                @for (amount of getQuickAmounts(); track amount) {
+                  <button type="button" mat-stroked-button (click)="setQuickAmount(amount)">
+                    ${{ amount.toLocaleString() }}
+                  </button>
+                }
+              </div>
+            </div>
+
+            <!-- Description Field -->
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Descripción (Opcional)</mat-label>
+              <textarea matInput
+                        placeholder="Describe el motivo del depósito..."
+                        formControlName="description"
+                        rows="3"
+                        maxlength="200"></textarea>
+              <mat-hint align="end">{{ addFundsForm.get('description')?.value?.length || 0 }}/200</mat-hint>
+              <mat-error>{{ getDescriptionErrorMessage() }}</mat-error>
+            </mat-form-field>
+
+            <!-- Reference Field -->
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Referencia (Opcional)</mat-label>
+              <input matInput
+                     placeholder="Número de referencia o identificador..."
+                     formControlName="reference"
+                     maxlength="50">
+              <mat-hint align="end">{{ addFundsForm.get('reference')?.value?.length || 0 }}/50</mat-hint>
+              <mat-error>{{ getReferenceErrorMessage() }}</mat-error>
+            </mat-form-field>
+
+            <!-- Transaction Summary -->
+            @if (addFundsForm.get('amount')?.value > 0) {
+              <div class="transaction-summary add-funds">
+                <h4>Resumen de la Transacción</h4>
+                <div class="summary-line">
+                  <span>Monto a agregar:</span>
+                  <span>{{ validationService.formatCurrency(addFundsForm.get('amount')?.value || 0, data.account.currency) }}</span>
+                </div>
+                <div class="summary-line">
+                  <span>Comisión:</span>
+                  <span>{{ validationService.formatCurrency(0, data.account.currency) }}</span>
+                </div>
+                <div class="summary-line total">
+                  <span>Total a acreditar:</span>
+                  <span>{{ validationService.formatCurrency(addFundsForm.get('amount')?.value || 0, data.account.currency) }}</span>
+                </div>
+                <div class="summary-line new-balance">
+                  <span>Nuevo saldo:</span>
+                  <span>{{ validationService.formatCurrency(currentBalance() + (addFundsForm.get('amount')?.value || 0), data.account.currency) }}</span>
+                </div>
+              </div>
+            }
+          </form>
+        </div>
+      </mat-tab>
+
+      <!-- Withdraw Funds Tab -->
+      <mat-tab label="Retirar Fondos" [disabled]="!canWithdraw()">
+        <div class="tab-content">
+          @if (!canWithdraw()) {
+            <div class="insufficient-funds">
+              <mat-icon>warning</mat-icon>
+              <h3>Sin fondos disponibles</h3>
+              <p>No tienes fondos suficientes para realizar un retiro.</p>
+            </div>
+          } @else {
+            <form [formGroup]="withdrawFundsForm" (ngSubmit)="onWithdrawFunds()">
+              <!-- Amount Field -->
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Monto a Retirar</mat-label>
+                <input matInput
+                       type="number"
+                       placeholder="0.00"
+                       formControlName="amount"
+                       [min]="MIN_AMOUNT"
+                       [max]="currentBalance()"
+                       step="0.01">
+                <span matTextPrefix>$&nbsp;</span>
+                <span matTextSuffix>{{ data.account.currency }}</span>
+                <mat-error>{{ getAmountErrorMessage(withdrawFundsForm) }}</mat-error>
+              </mat-form-field>
+
+              <!-- Quick Amount Buttons -->
+              <div class="quick-amounts">
+                <h4>Montos rápidos:</h4>
+                <div class="quick-amount-buttons">
+                  @for (amount of getQuickAmounts(); track amount) {
+                    <button type="button" mat-stroked-button (click)="setQuickAmount(amount)">
+                      ${{ amount.toLocaleString() }}
+                    </button>
+                  }
+                  <button type="button" mat-stroked-button color="primary" (click)="setMaxWithdrawAmount()">
+                    Todo ({{ formattedBalance() }})
+                  </button>
+                </div>
+              </div>
+
+              <!-- Description Field -->
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Descripción (Opcional)</mat-label>
+                <textarea matInput
+                          placeholder="Describe el motivo del retiro..."
+                          formControlName="description"
+                          rows="3"
+                          maxlength="200"></textarea>
+                <mat-hint align="end">{{ withdrawFundsForm.get('description')?.value?.length || 0 }}/200</mat-hint>
+                <mat-error>{{ getDescriptionErrorMessage() }}</mat-error>
+              </mat-form-field>
+
+              <!-- Reference Field -->
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Referencia (Opcional)</mat-label>
+                <input matInput
+                       placeholder="Número de referencia o identificador..."
+                       formControlName="reference"
+                       maxlength="50">
+                <mat-hint align="end">{{ withdrawFundsForm.get('reference')?.value?.length || 0 }}/50</mat-hint>
+                <mat-error>{{ getReferenceErrorMessage() }}</mat-error>
+              </mat-form-field>
+
+              <!-- Transaction Summary -->
+              @if (withdrawFundsForm.get('amount')?.value > 0) {
+                <div class="transaction-summary withdraw-funds">
+                  <h4>Resumen de la Transacción</h4>
+                  <div class="summary-line">
+                    <span>Monto a retirar:</span>
+                    <span>{{ validationService.formatCurrency(withdrawFundsForm.get('amount')?.value || 0, data.account.currency) }}</span>
+                  </div>
+                  <div class="summary-line">
+                    <span>Comisión por retiro:</span>
+                    <span>{{ validationService.formatCurrency(calculateEstimatedFee(withdrawFundsForm.get('amount')?.value || 0), data.account.currency) }}</span>
+                  </div>
+                  <div class="summary-line total">
+                    <span>Total a debitar:</span>
+                    <span>{{ validationService.formatCurrency(getEstimatedTotal(), data.account.currency) }}</span>
+                  </div>
+                  <div class="summary-line new-balance">
+                    <span>Nuevo saldo:</span>
+                    <span>{{ validationService.formatCurrency(currentBalance() - getEstimatedTotal(), data.account.currency) }}</span>
+                  </div>
+                </div>
+              }
+            </form>
+          }
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  </mat-dialog-content>
+
+  <!-- Dialog Actions -->
+  <mat-dialog-actions align="end">
+    <button mat-button (click)="onCancel()" [disabled]="loading()">
+      Cancelar
+    </button>
+    
+    @if (selectedOperation() === 'add') {
+      <button mat-raised-button 
+              color="primary" 
+              (click)="onAddFunds()"
+              [disabled]="addFundsForm.invalid || loading()">
+        @if (loading()) {
+          <mat-spinner diameter="20"></mat-spinner>
+        } @else {
+          <mat-icon>add</mat-icon>
+        }
+        Agregar Fondos
+      </button>
+    } @else if (canWithdraw()) {
+      <button mat-raised-button 
+              color="warn" 
+              (click)="onWithdrawFunds()"
+              [disabled]="withdrawFundsForm.invalid || loading()">
+        @if (loading()) {
+          <mat-spinner diameter="20"></mat-spinner>
+        } @else {
+          <mat-icon>remove</mat-icon>
+        }
+        Retirar Fondos
+      </button>
+    }
+  </mat-dialog-actions>
+</div>

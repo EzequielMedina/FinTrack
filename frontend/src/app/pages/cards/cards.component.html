@@ -1,0 +1,148 @@
+<div class="cards-container">
+  <div class="cards-header">
+    <h1>Gestión de Tarjetas</h1>
+    <div class="header-actions">
+      <button mat-fab extended color="primary" (click)="onAddCard()">
+        <mat-icon>add</mat-icon>
+        Agregar Tarjeta
+      </button>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-container">
+      <mat-spinner></mat-spinner>
+      <p>Cargando tarjetas...</p>
+    </div>
+  } @else {
+    <div class="cards-content">
+      <!-- Summary Cards -->
+      <div class="summary-grid">
+        <mat-card class="summary-card">
+          <mat-card-header>
+            <mat-icon mat-card-avatar class="summary-icon credit">credit_card</mat-icon>
+            <mat-card-title>Tarjetas de Crédito</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="summary-number">{{ creditCards().length }}</div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="summary-card">
+          <mat-card-header>
+            <mat-icon mat-card-avatar class="summary-icon debit">payment</mat-icon>
+            <mat-card-title>Tarjetas de Débito</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="summary-number">{{ debitCards().length }}</div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="summary-card">
+          <mat-card-header>
+            <mat-icon mat-card-avatar class="summary-icon active">check_circle</mat-icon>
+            <mat-card-title>Tarjetas Activas</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="summary-number">{{ activeCards().length }}</div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="summary-card">
+          <mat-card-header>
+            <mat-icon mat-card-avatar class="summary-icon inactive">block</mat-icon>
+            <mat-card-title>Tarjetas Inactivas</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="summary-number">{{ inactiveCards().length }}</div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <!-- Tabs for different views -->
+      <mat-card class="cards-list-card">
+        <mat-tab-group (selectedTabChange)="onTabChanged($event.index)" [selectedIndex]="selectedTabIndex()">
+          <mat-tab label="Todas las Tarjetas">
+            <div class="tab-content">
+              @if (cards().length === 0) {
+                <div class="empty-state">
+                  <mat-icon class="empty-icon">credit_card_off</mat-icon>
+                  <h3>No tienes tarjetas registradas</h3>
+                  <p>Agrega tu primera tarjeta para comenzar a gestionar tus pagos</p>
+                  <button mat-raised-button color="primary" (click)="onAddCard()">
+                    <mat-icon>add</mat-icon>
+                    Agregar Primera Tarjeta
+                  </button>
+                </div>
+              } @else {
+                <app-card-list 
+                  [cards]="cards()"
+                  (editCard)="onEditCard($event)"
+                  (deleteCard)="onDeleteCard($event)"
+                  (setDefaultCard)="onSetDefaultCard($event)"
+                  (blockCard)="onBlockCard($event)"
+                  (cardStatusChanged)="onCardStatusChanged($event)">
+                </app-card-list>
+              }
+            </div>
+          </mat-tab>
+
+          <mat-tab label="Tarjetas de Crédito">
+            <div class="tab-content">
+              @if (creditCards().length === 0) {
+                <div class="empty-state">
+                  <mat-icon class="empty-icon">credit_card</mat-icon>
+                  <h3>No tienes tarjetas de crédito</h3>
+                  <p>Agrega una tarjeta de crédito para realizar compras y pagos</p>
+                </div>
+              } @else {
+                <app-card-list 
+                  [cards]="creditCards()"
+                  (editCard)="onEditCard($event)"
+                  (deleteCard)="onDeleteCard($event)"
+                  (setDefaultCard)="onSetDefaultCard($event)"
+                  (blockCard)="onBlockCard($event)"
+                  (cardStatusChanged)="onCardStatusChanged($event)">
+                </app-card-list>
+              }
+            </div>
+          </mat-tab>
+
+          <mat-tab label="Tarjetas de Débito">
+            <div class="tab-content">
+              @if (debitCards().length === 0) {
+                <div class="empty-state">
+                  <mat-icon class="empty-icon">payment</mat-icon>
+                  <h3>No tienes tarjetas de débito</h3>
+                  <p>Agrega una tarjeta de débito para acceder a tus fondos</p>
+                </div>
+              } @else {
+                <app-card-list 
+                  [cards]="debitCards()"
+                  (editCard)="onEditCard($event)"
+                  (deleteCard)="onDeleteCard($event)"
+                  (setDefaultCard)="onSetDefaultCard($event)"
+                  (blockCard)="onBlockCard($event)"
+                  (cardStatusChanged)="onCardStatusChanged($event)">
+                </app-card-list>
+              }
+            </div>
+          </mat-tab>
+
+          <mat-tab label="Tarjetas Activas">
+            <div class="tab-content">
+              <app-card-list 
+                [cards]="activeCards()"
+                (editCard)="onEditCard($event)"
+                (deleteCard)="onDeleteCard($event)"
+                (setDefaultCard)="onSetDefaultCard($event)"
+                (blockCard)="onBlockCard($event)"
+                (cardStatusChanged)="onCardStatusChanged($event)">
+              </app-card-list>
+            </div>
+          </mat-tab>
+        </mat-tab-group>
+      </mat-card>
+    </div>
+  }
+</div>

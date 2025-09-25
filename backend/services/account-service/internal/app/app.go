@@ -16,6 +16,7 @@ type Application struct {
 	Config         *config.Config
 	DB             *gorm.DB
 	AccountService *service.AccountService
+	CardService    *service.CardService
 }
 
 func New(cfg *config.Config) (*Application, error) {
@@ -39,20 +40,23 @@ func New(cfg *config.Config) (*Application, error) {
 	sqlDB.SetConnMaxLifetime(5 * time.Minute)
 
 	// Auto-migrate tables
-	if err := gormDB.AutoMigrate(&entities.Account{}); err != nil {
+	if err := gormDB.AutoMigrate(&entities.Account{}, &entities.Card{}); err != nil {
 		return nil, fmt.Errorf("failed to migrate tables: %w", err)
 	}
 
 	// repositories
 	accountRepo := mysqlrepo.NewAccountRepository(gormDB)
+	cardRepo := mysqlrepo.NewCardRepository(gormDB)
 
 	// services
 	accountSvc := service.NewAccountService(accountRepo)
+	cardSvc := service.NewCardService(cardRepo, accountRepo)
 
 	return &Application{
 		Config:         cfg,
 		DB:             gormDB,
 		AccountService: accountSvc,
+		CardService:    cardSvc,
 	}, nil
 }
 

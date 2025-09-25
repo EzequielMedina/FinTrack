@@ -1,0 +1,296 @@
+<div class="credit-dialog">
+  <mat-dialog-content>
+    <!-- Dialog Header -->
+    <div class="dialog-header">
+      <h2 mat-dialog-title>
+        <mat-icon>credit_card</mat-icon>
+        Gestión de Crédito
+      </h2>
+      <p class="account-info">{{ getAccountDisplayName() }}</p>
+      <div class="current-credit-info">
+        <div class="credit-limit">
+          <span class="credit-label">Límite de Crédito:</span>
+          <span class="credit-amount">{{ formattedCreditLimit() }}</span>
+        </div>
+        @if (availableCredit() && !loadingCredit()) {
+          <div class="credit-usage">
+            <span class="usage-label">Crédito Utilizado:</span>
+            <span class="usage-amount">{{ validationService.formatCurrency(availableCredit()!.usedCredit, data.account.currency) }}</span>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Operation Tabs -->
+    <mat-tab-group (selectedTabChange)="onOperationChange($event.index === 0 ? 'info' : $event.index === 1 ? 'limit' : 'dates')">
+      <!-- Credit Information Tab -->
+      <mat-tab label="Información de Crédito">
+        <div class="tab-content">
+          @if (loadingCredit()) {
+            <div class="loading-credit">
+              <mat-spinner diameter="40"></mat-spinner>
+              <p>Cargando información de crédito...</p>
+            </div>
+          } @else if (availableCredit()) {
+            <div class="credit-info-cards">
+              <!-- Available Credit Card -->
+              <mat-card class="info-card available-credit">
+                <mat-card-header>
+                  <mat-icon mat-card-avatar>account_balance</mat-icon>
+                  <mat-card-title>Crédito Disponible</mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+                  <div class="amount-display">
+                    {{ validationService.formatCurrency(availableCredit()!.availableCredit, data.account.currency) }}
+                  </div>
+                  <div class="percentage-display">
+                    {{ (100 - getCreditUtilizationPercentage()).toFixed(1) }}% disponible
+                  </div>
+                </mat-card-content>
+              </mat-card>
+
+              <!-- Credit Utilization Card -->
+              <mat-card class="info-card credit-usage">
+                <mat-card-header>
+                  <mat-icon mat-card-avatar>pie_chart</mat-icon>
+                  <mat-card-title>Utilización del Crédito</mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+                  <div class="utilization-percentage" [class]="getCreditUtilizationColor()">
+                    {{ getCreditUtilizationPercentage().toFixed(1) }}%
+                  </div>
+                  <div class="utilization-bar">
+                    <div class="progress-bar" 
+                         [style.width.%]="getCreditUtilizationPercentage()"
+                         [class]="getCreditUtilizationColor()">
+                    </div>
+                  </div>
+                </mat-card-content>
+              </mat-card>
+
+              <!-- Minimum Payment Card -->
+              <mat-card class="info-card minimum-payment">
+                <mat-card-header>
+                  <mat-icon mat-card-avatar>payment</mat-icon>
+                  <mat-card-title>Pago Mínimo Estimado</mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+                  <div class="amount-display">
+                    {{ validationService.formatCurrency(calculateMinimumPayment(), data.account.currency) }}
+                  </div>
+                  <div class="payment-note">
+                    3% del saldo utilizado
+                  </div>
+                </mat-card-content>
+              </mat-card>
+
+              <!-- Interest Rate Card -->
+              <mat-card class="info-card interest-rate">
+                <mat-card-header>
+                  <mat-icon mat-card-avatar>trending_up</mat-icon>
+                  <mat-card-title>Tasa de Interés Anual</mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+                  <div class="rate-display">
+                    {{ (calculateInterestRate() * 100).toFixed(2) }}%
+                  </div>
+                  <div class="rate-note">
+                    Basada en tu límite de crédito
+                  </div>
+                </mat-card-content>
+              </mat-card>
+            </div>
+
+            <!-- Credit Dates Information -->
+            <div class="credit-dates-info">
+              <h3>Fechas Importantes</h3>
+              <div class="dates-grid">
+                <div class="date-info">
+                  <mat-icon>event</mat-icon>
+                  <div>
+                    <span class="date-label">Próximo Cierre:</span>
+                    <span class="date-value">{{ formatDate(getNextClosingDate()) }}</span>
+                  </div>
+                </div>
+                <div class="date-info">
+                  <mat-icon>schedule</mat-icon>
+                  <div>
+                    <span class="date-label">Fecha de Vencimiento:</span>
+                    <span class="date-value">{{ formatDate(currentDueDate()) }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          } @else {
+            <div class="error-state">
+              <mat-icon>error</mat-icon>
+              <h3>Error al cargar información</h3>
+              <p>No se pudo obtener la información del crédito</p>
+              <button mat-button (click)="loadAvailableCredit()">
+                <mat-icon>refresh</mat-icon>
+                Reintentar
+              </button>
+            </div>
+          }
+        </div>
+      </mat-tab>
+
+      <!-- Update Credit Limit Tab -->
+      <mat-tab label="Actualizar Límite">
+        <div class="tab-content">
+          <form [formGroup]="creditLimitForm" (ngSubmit)="onUpdateCreditLimit()">
+            <!-- Current Limit Display -->
+            <div class="current-limit-display">
+              <h4>Límite Actual</h4>
+              <div class="current-amount">{{ formattedCreditLimit() }}</div>
+            </div>
+
+            <!-- New Credit Limit Field -->
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Nuevo Límite de Crédito</mat-label>
+              <input matInput
+                     type="number"
+                     placeholder="0"
+                     formControlName="creditLimit"
+                     [min]="MIN_CREDIT_LIMIT"
+                     [max]="MAX_CREDIT_LIMIT"
+                     [step]="CREDIT_LIMIT_STEP">
+              <span matTextPrefix>$&nbsp;</span>
+              <span matTextSuffix>{{ data.account.currency }}</span>
+              <mat-error>{{ getCreditLimitErrorMessage() }}</mat-error>
+            </mat-form-field>
+
+            <!-- Quick Limit Buttons -->
+            <div class="quick-limits">
+              <h4>Límites sugeridos:</h4>
+              <div class="quick-limit-buttons">
+                @for (limit of getQuickCreditLimits(); track limit) {
+                  <button type="button" mat-stroked-button (click)="setQuickCreditLimit(limit)">
+                    {{ validationService.formatCurrency(limit, data.account.currency) }}
+                  </button>
+                }
+              </div>
+            </div>
+
+            <!-- Limit Change Summary -->
+            @if (creditLimitForm.get('creditLimit')?.value !== currentCreditLimit()) {
+              <div class="limit-change-summary">
+                <h4>Resumen del Cambio</h4>
+                <div class="summary-line">
+                  <span>Límite actual:</span>
+                  <span>{{ formattedCreditLimit() }}</span>
+                </div>
+                <div class="summary-line">
+                  <span>Nuevo límite:</span>
+                  <span>{{ validationService.formatCurrency(creditLimitForm.get('creditLimit')?.value || 0, data.account.currency) }}</span>
+                </div>
+                <div class="summary-line difference">
+                  <span>Diferencia:</span>
+                  <span [class.positive]="(creditLimitForm.get('creditLimit')?.value || 0) > currentCreditLimit()"
+                        [class.negative]="(creditLimitForm.get('creditLimit')?.value || 0) < currentCreditLimit()">
+                    {{ validationService.formatCurrency((creditLimitForm.get('creditLimit')?.value || 0) - currentCreditLimit(), data.account.currency) }}
+                  </span>
+                </div>
+              </div>
+            }
+          </form>
+        </div>
+      </mat-tab>
+
+      <!-- Update Credit Dates Tab -->
+      <mat-tab label="Actualizar Fechas">
+        <div class="tab-content">
+          <form [formGroup]="creditDatesForm" (ngSubmit)="onUpdateCreditDates()">
+            <!-- Current Dates Display -->
+            <div class="current-dates-display">
+              <h4>Fechas Actuales</h4>
+              <div class="current-dates">
+                <div>
+                  <span class="date-label">Cierre:</span>
+                  <span>{{ formatDateShort(currentClosingDate()) }}</span>
+                </div>
+                <div>
+                  <span class="date-label">Vencimiento:</span>
+                  <span>{{ formatDateShort(currentDueDate()) }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Closing Date Field -->
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Fecha de Corte</mat-label>
+              <input matInput
+                     [matDatepicker]="closingPicker"
+                     formControlName="closingDate"
+                     (dateChange)="onClosingDateChange()"
+                     placeholder="Selecciona una fecha">
+              <mat-datepicker-toggle matIconSuffix [for]="closingPicker"></mat-datepicker-toggle>
+              <mat-datepicker #closingPicker></mat-datepicker>
+              <mat-error>{{ getClosingDateErrorMessage() }}</mat-error>
+              <mat-hint>Día del mes en que se cierra el período de facturación</mat-hint>
+            </mat-form-field>
+
+            <!-- Due Date Field -->
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Fecha de Vencimiento</mat-label>
+              <input matInput
+                     [matDatepicker]="duePicker"
+                     formControlName="dueDate"
+                     placeholder="Selecciona una fecha">
+              <mat-datepicker-toggle matIconSuffix [for]="duePicker"></mat-datepicker-toggle>
+              <mat-datepicker #duePicker></mat-datepicker>
+              <mat-error>{{ getDueDateErrorMessage() }}</mat-error>
+              <mat-hint>Fecha límite para realizar el pago sin intereses</mat-hint>
+            </mat-form-field>
+
+            <!-- Dates Explanation -->
+            <div class="dates-explanation">
+              <mat-icon>info</mat-icon>
+              <div>
+                <h4>¿Qué significan estas fechas?</h4>
+                <ul>
+                  <li><strong>Fecha de Corte:</strong> Se cierra el período y se calcula el saldo a pagar</li>
+                  <li><strong>Fecha de Vencimiento:</strong> Último día para pagar sin intereses</li>
+                  <li>Entre el corte y vencimiento tienes un período de gracia de aproximadamente 15 días</li>
+                </ul>
+              </div>
+            </div>
+          </form>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  </mat-dialog-content>
+
+  <!-- Dialog Actions -->
+  <mat-dialog-actions align="end">
+    <button mat-button (click)="onCancel()" [disabled]="loading()">
+      Cancelar
+    </button>
+    
+    @if (selectedOperation() === 'limit') {
+      <button mat-raised-button 
+              color="primary" 
+              (click)="onUpdateCreditLimit()"
+              [disabled]="creditLimitForm.invalid || loading()">
+        @if (loading()) {
+          <mat-spinner diameter="20"></mat-spinner>
+        } @else {
+          <mat-icon>update</mat-icon>
+        }
+        Actualizar Límite
+      </button>
+    } @else if (selectedOperation() === 'dates') {
+      <button mat-raised-button 
+              color="primary" 
+              (click)="onUpdateCreditDates()"
+              [disabled]="creditDatesForm.invalid || loading()">
+        @if (loading()) {
+          <mat-spinner diameter="20"></mat-spinner>
+        } @else {
+          <mat-icon>update</mat-icon>
+        }
+        Actualizar Fechas
+      </button>
+    }
+  </mat-dialog-actions>
+</div>

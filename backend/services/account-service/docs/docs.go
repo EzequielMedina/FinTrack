@@ -62,7 +62,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Accounts retrieved successfully",
                         "schema": {
-                            "$ref": "#/definitions/dto.PaginatedAccountResponse"
+                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.PaginatedAccountResponse"
                         }
                     },
                     "400": {
@@ -118,7 +118,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.CreateAccountRequest"
+                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.CreateAccountRequest"
                         }
                     }
                 ],
@@ -126,7 +126,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Account created successfully",
                         "schema": {
-                            "$ref": "#/definitions/dto.AccountResponse"
+                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.AccountResponse"
                         }
                     },
                     "400": {
@@ -192,7 +192,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/dto.AccountResponse"
+                                "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.AccountResponse"
                             }
                         }
                     },
@@ -207,6 +207,84 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/accounts/user/{userId}/cards": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve all cards owned by a user across all their accounts",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cards"
+                ],
+                "summary": "Get cards by user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "userId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "description": "Page size",
+                        "name": "pageSize",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Cards retrieved successfully",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_card_dto.PaginatedCardResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request parameters",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -257,7 +335,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Account retrieved successfully",
                         "schema": {
-                            "$ref": "#/definitions/dto.AccountResponse"
+                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.AccountResponse"
                         }
                     },
                     "400": {
@@ -329,7 +407,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.UpdateAccountRequest"
+                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.UpdateAccountRequest"
                         }
                     }
                 ],
@@ -337,7 +415,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Account updated successfully",
                         "schema": {
-                            "$ref": "#/definitions/dto.AccountResponse"
+                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.AccountResponse"
                         }
                     },
                     "400": {
@@ -447,6 +525,161 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/accounts/{id}/add-funds": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Add funds to a virtual wallet account",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Wallet"
+                ],
+                "summary": "Add funds to wallet",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Account ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Add funds data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.AddFundsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Funds added successfully",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.BalanceResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request data",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Account not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/accounts/{id}/available-credit": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get the available credit limit for a credit card account",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Credit"
+                ],
+                "summary": "Get available credit",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Account ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Available credit retrieved successfully",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.AvailableCreditResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request data",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Account not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/accounts/{id}/balance": {
             "get": {
                 "security": [
@@ -478,7 +711,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Balance retrieved successfully",
                         "schema": {
-                            "$ref": "#/definitions/dto.BalanceResponse"
+                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.BalanceResponse"
                         }
                     },
                     "400": {
@@ -550,7 +783,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.UpdateBalanceRequest"
+                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.UpdateBalanceRequest"
                         }
                     }
                 ],
@@ -558,7 +791,754 @@ const docTemplate = `{
                     "200": {
                         "description": "Balance updated successfully",
                         "schema": {
-                            "$ref": "#/definitions/dto.BalanceResponse"
+                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.BalanceResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request data",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Account not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/accounts/{id}/cards": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve all cards associated with an account",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cards"
+                ],
+                "summary": "Get cards by account",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Account ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "description": "Page size",
+                        "name": "pageSize",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Cards retrieved successfully",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_card_dto.PaginatedCardResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request parameters",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Account not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a new card associated with an account",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cards"
+                ],
+                "summary": "Create a new card",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Account ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Card creation data",
+                        "name": "card",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_card_dto.CreateCardRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Card created successfully",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_card_dto.CardResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request data",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Account not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/accounts/{id}/cards/{cardId}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve a specific card by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cards"
+                ],
+                "summary": "Get card by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Account ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Card ID",
+                        "name": "cardId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Card retrieved successfully",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_card_dto.CardResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid card ID",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Card not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update card information",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cards"
+                ],
+                "summary": "Update card",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Account ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Card ID",
+                        "name": "cardId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Card update data",
+                        "name": "card",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_card_dto.UpdateCardRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Card updated successfully",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_card_dto.CardResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request data",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Card not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Delete a card",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cards"
+                ],
+                "summary": "Delete card",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Account ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Card ID",
+                        "name": "cardId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Card deleted successfully",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid card ID",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Card not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/accounts/{id}/cards/{cardId}/block": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Block a card to prevent its usage",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cards"
+                ],
+                "summary": "Block card",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Account ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Card ID",
+                        "name": "cardId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Card blocked successfully",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_card_dto.CardResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid card ID",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Card not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/accounts/{id}/cards/{cardId}/set-default": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Set a specific card as the default for its account",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cards"
+                ],
+                "summary": "Set default card",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Account ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Card ID",
+                        "name": "cardId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Card set as default successfully",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_card_dto.CardResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid card ID",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Card not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/accounts/{id}/cards/{cardId}/unblock": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Unblock a card to allow its usage",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cards"
+                ],
+                "summary": "Unblock card",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Account ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Card ID",
+                        "name": "cardId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Card unblocked successfully",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_card_dto.CardResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid card ID",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Card not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/accounts/{id}/credit-dates": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update the closing and due dates for a credit card account",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Credit"
+                ],
+                "summary": "Update credit card dates",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Account ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Credit dates update data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.UpdateCreditDatesRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Credit dates updated successfully",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.AccountResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request data",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Account not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/accounts/{id}/credit-limit": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update the credit limit for a credit card account",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Credit"
+                ],
+                "summary": "Update credit limit",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Account ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Credit limit update data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.UpdateCreditLimitRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Credit limit updated successfully",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.AccountResponse"
                         }
                     },
                     "400": {
@@ -632,7 +1612,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.UpdateStatusRequest"
+                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.UpdateStatusRequest"
                         }
                     }
                 ],
@@ -640,7 +1620,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Status updated successfully",
                         "schema": {
-                            "$ref": "#/definitions/dto.AccountResponse"
+                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.AccountResponse"
                         }
                     },
                     "400": {
@@ -681,10 +1661,92 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/accounts/{id}/withdraw-funds": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Withdraw funds from a virtual wallet account",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Wallet"
+                ],
+                "summary": "Withdraw funds from wallet",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Account ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Withdraw funds data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.WithdrawFundsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Funds withdrawn successfully",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.BalanceResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request data or insufficient funds",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Account not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
-        "dto.AccountResponse": {
+        "github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.AccountResponse": {
             "type": "object",
             "properties": {
                 "account_type": {
@@ -693,13 +1755,27 @@ const docTemplate = `{
                 "balance": {
                     "type": "number"
                 },
+                "closing_date": {
+                    "type": "string"
+                },
                 "created_at": {
                     "type": "string"
+                },
+                "credit_limit": {
+                    "description": "Credit card specific fields",
+                    "type": "number"
                 },
                 "currency": {
                     "type": "string"
                 },
                 "description": {
+                    "type": "string"
+                },
+                "dni": {
+                    "description": "Personal identification (for virtual wallets)",
+                    "type": "string"
+                },
+                "due_date": {
                     "type": "string"
                 },
                 "id": {
@@ -719,7 +1795,45 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.BalanceResponse": {
+        "github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.AddFundsRequest": {
+            "type": "object",
+            "required": [
+                "amount",
+                "description"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "description": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 3
+                },
+                "reference": {
+                    "type": "string",
+                    "maxLength": 50
+                }
+            }
+        },
+        "github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.AvailableCreditResponse": {
+            "type": "object",
+            "properties": {
+                "account_id": {
+                    "type": "string"
+                },
+                "available_credit": {
+                    "type": "number"
+                },
+                "credit_limit": {
+                    "type": "number"
+                },
+                "used_credit": {
+                    "type": "number"
+                }
+            }
+        },
+        "github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.BalanceResponse": {
             "type": "object",
             "properties": {
                 "account_id": {
@@ -730,7 +1844,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.CreateAccountRequest": {
+        "github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.CreateAccountRequest": {
             "type": "object",
             "required": [
                 "account_type",
@@ -742,15 +1856,35 @@ const docTemplate = `{
                 "account_type": {
                     "type": "string"
                 },
+                "closing_date": {
+                    "type": "string"
+                },
+                "credit_limit": {
+                    "description": "Credit card specific fields",
+                    "type": "number",
+                    "minimum": 0
+                },
                 "currency": {
                     "type": "string"
                 },
                 "description": {
                     "type": "string"
                 },
+                "dni": {
+                    "description": "Personal identification (for virtual wallets)",
+                    "type": "string",
+                    "maxLength": 20,
+                    "minLength": 7
+                },
+                "due_date": {
+                    "type": "string"
+                },
                 "initial_balance": {
                     "type": "number",
                     "minimum": 0
+                },
+                "is_active": {
+                    "type": "boolean"
                 },
                 "name": {
                     "type": "string"
@@ -760,21 +1894,21 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.PaginatedAccountResponse": {
+        "github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.PaginatedAccountResponse": {
             "type": "object",
             "properties": {
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dto.AccountResponse"
+                        "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.AccountResponse"
                     }
                 },
                 "pagination": {
-                    "$ref": "#/definitions/dto.PaginationMeta"
+                    "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.PaginationMeta"
                 }
             }
         },
-        "dto.PaginationMeta": {
+        "github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.PaginationMeta": {
             "type": "object",
             "properties": {
                 "current_page": {
@@ -791,13 +1925,30 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.UpdateAccountRequest": {
+        "github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.UpdateAccountRequest": {
             "type": "object",
             "required": [
                 "name"
             ],
             "properties": {
+                "closing_date": {
+                    "type": "string"
+                },
+                "credit_limit": {
+                    "description": "Credit card specific fields",
+                    "type": "number",
+                    "minimum": 0
+                },
                 "description": {
+                    "type": "string"
+                },
+                "dni": {
+                    "description": "Personal identification (for virtual wallets)",
+                    "type": "string",
+                    "maxLength": 20,
+                    "minLength": 7
+                },
+                "due_date": {
                     "type": "string"
                 },
                 "name": {
@@ -805,7 +1956,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.UpdateBalanceRequest": {
+        "github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.UpdateBalanceRequest": {
             "type": "object",
             "required": [
                 "amount"
@@ -816,11 +1967,237 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.UpdateStatusRequest": {
+        "github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.UpdateCreditDatesRequest": {
+            "type": "object",
+            "properties": {
+                "closing_date": {
+                    "type": "string"
+                },
+                "due_date": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.UpdateCreditLimitRequest": {
+            "type": "object",
+            "properties": {
+                "credit_limit": {
+                    "type": "number",
+                    "minimum": 0
+                }
+            }
+        },
+        "github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.UpdateStatusRequest": {
             "type": "object",
             "properties": {
                 "is_active": {
                     "type": "boolean"
+                }
+            }
+        },
+        "github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.WithdrawFundsRequest": {
+            "type": "object",
+            "required": [
+                "amount",
+                "description"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "description": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 3
+                },
+                "reference": {
+                    "type": "string",
+                    "maxLength": 50
+                }
+            }
+        },
+        "github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_card_dto.CardResponse": {
+            "type": "object",
+            "properties": {
+                "account_id": {
+                    "type": "string"
+                },
+                "card_brand": {
+                    "type": "string"
+                },
+                "card_type": {
+                    "type": "string"
+                },
+                "closing_date": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "credit_limit": {
+                    "description": "Credit card specific fields",
+                    "type": "number"
+                },
+                "due_date": {
+                    "type": "string"
+                },
+                "expiration_month": {
+                    "type": "integer"
+                },
+                "expiration_year": {
+                    "type": "integer"
+                },
+                "holder_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_default": {
+                    "type": "boolean"
+                },
+                "last_four_digits": {
+                    "type": "string"
+                },
+                "masked_number": {
+                    "type": "string"
+                },
+                "nickname": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_card_dto.CreateCardRequest": {
+            "type": "object",
+            "required": [
+                "account_id",
+                "card_brand",
+                "card_type",
+                "encrypted_number",
+                "expiration_month",
+                "expiration_year",
+                "holder_name",
+                "key_fingerprint",
+                "last_four_digits",
+                "masked_number"
+            ],
+            "properties": {
+                "account_id": {
+                    "type": "string"
+                },
+                "card_brand": {
+                    "type": "string"
+                },
+                "card_type": {
+                    "description": "\"credit\" or \"debit\"",
+                    "type": "string"
+                },
+                "closing_date": {
+                    "type": "string"
+                },
+                "credit_limit": {
+                    "description": "Credit card specific fields",
+                    "type": "number",
+                    "minimum": 0
+                },
+                "due_date": {
+                    "type": "string"
+                },
+                "encrypted_number": {
+                    "description": "Security fields (encrypted data)",
+                    "type": "string"
+                },
+                "expiration_month": {
+                    "type": "integer",
+                    "maximum": 12,
+                    "minimum": 1
+                },
+                "expiration_year": {
+                    "type": "integer"
+                },
+                "holder_name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 2
+                },
+                "is_default": {
+                    "type": "boolean"
+                },
+                "key_fingerprint": {
+                    "type": "string"
+                },
+                "last_four_digits": {
+                    "type": "string"
+                },
+                "masked_number": {
+                    "type": "string"
+                },
+                "nickname": {
+                    "type": "string",
+                    "maxLength": 50
+                }
+            }
+        },
+        "github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_card_dto.PaginatedCardResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_card_dto.CardResponse"
+                    }
+                },
+                "pagination": {
+                    "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_card_dto.PaginationMeta"
+                }
+            }
+        },
+        "github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_card_dto.PaginationMeta": {
+            "type": "object",
+            "properties": {
+                "current_page": {
+                    "type": "integer"
+                },
+                "page_size": {
+                    "type": "integer"
+                },
+                "total_items": {
+                    "type": "integer"
+                },
+                "total_pages": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_card_dto.UpdateCardRequest": {
+            "type": "object",
+            "properties": {
+                "expiration_month": {
+                    "type": "integer",
+                    "maximum": 12,
+                    "minimum": 1
+                },
+                "expiration_year": {
+                    "type": "integer",
+                    "minimum": 2024
+                },
+                "holder_name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 2
+                },
+                "is_default": {
+                    "type": "boolean"
+                },
+                "nickname": {
+                    "type": "string",
+                    "maxLength": 50
                 }
             }
         }

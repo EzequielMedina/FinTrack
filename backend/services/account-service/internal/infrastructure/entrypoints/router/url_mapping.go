@@ -28,8 +28,14 @@ func MapRoutes(r *gin.Engine, h *Handlers, cfg *config.Config, application *app.
 		accounts := api.Group("/accounts")
 		{
 			// Basic CRUD operations
-			accounts.POST("", h.Account.CreateAccount)       // POST /api/accounts
-			accounts.GET("", h.Account.GetAccounts)          // GET /api/accounts?page=1&pageSize=20
+			accounts.POST("", h.Account.CreateAccount) // POST /api/accounts
+			accounts.GET("", h.Account.GetAccounts)    // GET /api/accounts?page=1&pageSize=20
+
+			// User-specific routes (debe ir antes de /:id para evitar conflictos)
+			accounts.GET("/user/:userId", h.Account.GetAccountsByUser) // GET /api/accounts/user/:userId
+			accounts.GET("/user/:userId/cards", h.Card.GetCardsByUser) // GET /api/accounts/user/:userId/cards
+
+			// Account-specific routes con :id
 			accounts.GET("/:id", h.Account.GetAccount)       // GET /api/accounts/:id
 			accounts.PUT("/:id", h.Account.UpdateAccount)    // PUT /api/accounts/:id
 			accounts.DELETE("/:id", h.Account.DeleteAccount) // DELETE /api/accounts/:id
@@ -41,8 +47,26 @@ func MapRoutes(r *gin.Engine, h *Handlers, cfg *config.Config, application *app.
 			// Status management
 			accounts.PUT("/:id/status", h.Account.UpdateStatus) // PUT /api/accounts/:id/status
 
-			// User-specific routes
-			accounts.GET("/user/:userId", h.Account.GetAccountsByUser) // GET /api/accounts/user/:userId
+			// Wallet operations
+			accounts.POST("/:id/add-funds", h.Account.AddFunds)           // POST /api/accounts/:id/add-funds
+			accounts.POST("/:id/withdraw-funds", h.Account.WithdrawFunds) // POST /api/accounts/:id/withdraw-funds
+
+			// Credit card operations
+			accounts.PUT("/:id/credit-limit", h.Account.UpdateCreditLimit)      // PUT /api/accounts/:id/credit-limit
+			accounts.PUT("/:id/credit-dates", h.Account.UpdateCreditDates)      // PUT /api/accounts/:id/credit-dates
+			accounts.GET("/:id/available-credit", h.Account.GetAvailableCredit) // GET /api/accounts/:id/available-credit
+
+			// Card management routes (usar :id ya que no hay conflicto con esta estructura)
+			accounts.POST("/:id/cards", h.Card.CreateCard)           // POST /api/accounts/:id/cards
+			accounts.GET("/:id/cards", h.Card.GetCardsByAccount)     // GET /api/accounts/:id/cards
+			accounts.GET("/:id/cards/:cardId", h.Card.GetCard)       // GET /api/accounts/:id/cards/:cardId
+			accounts.PUT("/:id/cards/:cardId", h.Card.UpdateCard)    // PUT /api/accounts/:id/cards/:cardId
+			accounts.DELETE("/:id/cards/:cardId", h.Card.DeleteCard) // DELETE /api/accounts/:id/cards/:cardId
+
+			// Card status management
+			accounts.PUT("/:id/cards/:cardId/block", h.Card.BlockCard)            // PUT /api/accounts/:id/cards/:cardId/block
+			accounts.PUT("/:id/cards/:cardId/unblock", h.Card.UnblockCard)        // PUT /api/accounts/:id/cards/:cardId/unblock
+			accounts.PUT("/:id/cards/:cardId/set-default", h.Card.SetDefaultCard) // PUT /api/accounts/:id/cards/:cardId/set-default
 		}
 	}
 }

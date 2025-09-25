@@ -12,6 +12,16 @@
         Dashboard
       </button>
       
+      <button mat-button [routerLink]="['/accounts']" routerLinkActive="active">
+        <mat-icon>account_balance</mat-icon>
+        Cuentas
+      </button>
+      
+      <button mat-button [routerLink]="['/cards']" routerLinkActive="active">
+        <mat-icon>credit_card</mat-icon>
+        Tarjetas
+      </button>
+      
       <button mat-button 
               [routerLink]="['/admin']" 
               routerLinkActive="active"

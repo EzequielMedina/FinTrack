@@ -1,0 +1,295 @@
+.card-form-container {
+  max-width: 600px;
+  width: 100%;
+}
+
+.form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px 0;
+  
+  h2 {
+    margin: 0;
+    color: #333;
+    font-weight: 500;
+  }
+
+  .close-button {
+    color: #666;
+  }
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  gap: 16px;
+
+  p {
+    margin: 0;
+    color: #666;
+  }
+}
+
+.card-form {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.form-content {
+  padding: 20px 24px !important;
+  flex: 1;
+  overflow-y: auto;
+  max-height: 70vh;
+}
+
+.full-width {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.expiration-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+
+  .expiration-field {
+    flex: 1;
+  }
+}
+
+.cvv-field {
+  width: 200px;
+  margin-bottom: 16px;
+}
+
+.brand-icon {
+  width: 32px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+}
+
+.security-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #4caf50;
+  margin-top: 16px;
+
+  .security-icon {
+    color: #4caf50;
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    margin-top: 2px;
+  }
+
+  .security-text {
+    flex: 1;
+
+    strong {
+      color: #333;
+      font-size: 14px;
+    }
+
+    p {
+      margin: 4px 0 0;
+      color: #666;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+  }
+}
+
+.form-actions {
+  padding: 16px 24px !important;
+  border-top: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+
+  button {
+    min-width: 120px;
+    
+    &[type="submit"] {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+}
+
+/* Account Selector Styling */
+.account-option {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+  padding: 4px 0;
+
+  .account-name {
+    font-weight: 500;
+    color: #333;
+    font-size: 14px;
+  }
+
+  .account-details {
+    color: #666;
+    font-size: 12px;
+    margin-top: 2px;
+  }
+}
+
+.mat-mdc-option .mat-icon {
+  margin-right: 8px;
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+.mat-mdc-option .mat-mdc-progress-spinner {
+  margin-right: 8px;
+}
+
+/* Form Field Customizations */
+.mat-mdc-form-field {
+  &.full-width .mat-mdc-text-field-wrapper {
+    width: 100%;
+  }
+
+  .mat-mdc-form-field-error {
+    color: #f44336;
+    font-size: 12px;
+  }
+
+  .mat-mdc-form-field-hint {
+    color: #666;
+    font-size: 12px;
+  }
+}
+
+/* Input Styling */
+input[formControlName="cardNumber"] {
+  font-family: 'Courier New', monospace;
+  letter-spacing: 1px;
+  font-size: 16px;
+}
+
+input[formControlName="holderName"] {
+  text-transform: uppercase;
+}
+
+input[formControlName="cvv"] {
+  font-family: 'Courier New', monospace;
+  letter-spacing: 2px;
+}
+
+/* Error States */
+.mat-mdc-form-field.mat-form-field-invalid {
+  .mat-mdc-text-field-wrapper {
+    border-color: #f44336;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .card-form-container {
+    max-width: 100%;
+    height: 100vh;
+  }
+
+  .form-header {
+    padding: 16px 20px 0;
+  }
+
+  .form-content {
+    padding: 16px 20px !important;
+    max-height: calc(100vh - 120px);
+  }
+
+  .expiration-row {
+    flex-direction: column;
+    gap: 0;
+
+    .expiration-field {
+      margin-bottom: 16px;
+    }
+  }
+
+  .cvv-field {
+    width: 100%;
+  }
+
+  .form-actions {
+    padding: 16px 20px !important;
+    flex-direction: column-reverse;
+
+    button {
+      width: 100%;
+      margin: 0;
+      
+      &:not(:last-child) {
+        margin-top: 8px;
+      }
+    }
+  }
+
+  .security-notice {
+    margin-top: 12px;
+    padding: 12px;
+
+    .security-text {
+      strong {
+        font-size: 13px;
+      }
+
+      p {
+        font-size: 12px;
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .form-header h2 {
+    font-size: 18px;
+  }
+
+  .security-notice {
+    flex-direction: column;
+    text-align: center;
+
+    .security-icon {
+      align-self: center;
+    }
+  }
+}
+
+/* Animation for brand detection */
+.brand-icon {
+  transition: all 0.3s ease;
+  
+  &.ng-enter {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  
+  &.ng-enter-active {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

@@ -1,0 +1,132 @@
+<div class="card-list-container">
+  @if (cards.length === 0) {
+    <div class="no-cards">
+      <mat-icon class="no-cards-icon">credit_card_off</mat-icon>
+      <p>No hay tarjetas en esta categoría</p>
+    </div>
+  } @else {
+    <div class="cards-grid">
+      @for (card of cards; track card.id) {
+        <mat-card class="card-item" [class.default-card]="card.isDefault" [class.expired]="isCardExpired(card)">
+          <!-- Card Header -->
+          <mat-card-header>
+            <div class="card-brand-icon" mat-card-avatar>
+              <img [src]="getCardBrandIcon(card.cardBrand)" [alt]="card.cardBrand" />
+            </div>
+            <mat-card-title class="card-title">
+              <span class="card-nickname">{{ card.nickname || 'Tarjeta ' + getCardTypeLabel(card.cardType) }}</span>
+              @if (card.isDefault) {
+                <mat-chip class="default-chip" color="primary">Predeterminada</mat-chip>
+              }
+            </mat-card-title>
+            <mat-card-subtitle>
+              <div class="card-type">
+                <mat-icon>{{ getCardTypeIcon(card.cardType) }}</mat-icon>
+                {{ getCardTypeLabel(card.cardType) }}
+              </div>
+            </mat-card-subtitle>
+            
+            <!-- Card Actions Menu -->
+            <button mat-icon-button [matMenuTriggerFor]="cardMenu" class="card-menu-trigger">
+              <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #cardMenu="matMenu">
+              <button mat-menu-item (click)="onEdit(card)">
+                <mat-icon>edit</mat-icon>
+                <span>Editar</span>
+              </button>
+              @if (!card.isDefault) {
+                <button mat-menu-item (click)="onSetDefault(card)" [disabled]="card.status !== CardStatus.ACTIVE">
+                  <mat-icon>star</mat-icon>
+                  <span>Establecer como predeterminada</span>
+                </button>
+              }
+              @if (card.status === CardStatus.ACTIVE) {
+                <button mat-menu-item (click)="onChangeStatus(card)">
+                  <mat-icon>toggle_off</mat-icon>
+                  <span>Desactivar</span>
+                </button>
+                <button mat-menu-item (click)="onBlock(card)">
+                  <mat-icon>block</mat-icon>
+                  <span>Bloquear</span>
+                </button>
+              } @else if (card.status === CardStatus.INACTIVE) {
+                <button mat-menu-item (click)="onChangeStatus(card)">
+                  <mat-icon>toggle_on</mat-icon>
+                  <span>Activar</span>
+                </button>
+              } @else if (card.status === CardStatus.BLOCKED) {
+                <button mat-menu-item (click)="onBlock(card)">
+                  <mat-icon>check_circle</mat-icon>
+                  <span>Desbloquear</span>
+                </button>
+              }
+              <mat-divider></mat-divider>
+              <button mat-menu-item (click)="onDelete(card)" class="delete-action">
+                <mat-icon>delete</mat-icon>
+                <span>Eliminar</span>
+              </button>
+            </mat-menu>
+          </mat-card-header>
+
+          <!-- Card Content -->
+          <mat-card-content class="card-content">
+            <!-- Card Number (Masked) -->
+            <div class="card-number">
+              {{ card.maskedNumber }}
+            </div>
+
+            <!-- Card Details -->
+            <div class="card-details">
+              <div class="card-detail">
+                <span class="label">Titular:</span>
+                <span class="value">{{ card.holderName }}</span>
+              </div>
+              <div class="card-detail">
+                <span class="label">Vence:</span>
+                <span class="value" [class.expired]="isCardExpired(card)">
+                  {{ formatExpirationDate(card.expirationMonth, card.expirationYear) }}
+                  @if (isCardExpired(card)) {
+                    <mat-icon class="expired-icon" matTooltip="Tarjeta vencida">warning</mat-icon>
+                  }
+                </span>
+              </div>
+            </div>
+
+            <!-- Card Status -->
+            <div class="card-status">
+              <mat-chip [color]="getStatusColor(card.status)" [selected]="true">
+                {{ getStatusLabel(card.status) }}
+              </mat-chip>
+            </div>
+          </mat-card-content>
+
+          <!-- Card Actions -->
+          <mat-card-actions class="card-actions">
+            <button mat-button (click)="onEdit(card)">
+              <mat-icon>edit</mat-icon>
+              Editar
+            </button>
+            @if (card.status === CardStatus.ACTIVE && !card.isDefault) {
+              <button mat-button color="primary" (click)="onSetDefault(card)">
+                <mat-icon>star</mat-icon>
+                Por defecto
+              </button>
+            }
+            @if (card.status === CardStatus.ACTIVE) {
+              <button mat-button color="warn" (click)="onChangeStatus(card)">
+                <mat-icon>toggle_off</mat-icon>
+                Desactivar
+              </button>
+            } @else if (card.status === CardStatus.INACTIVE) {
+              <button mat-button color="primary" (click)="onChangeStatus(card)">
+                <mat-icon>toggle_on</mat-icon>
+                Activar
+              </button>
+            }
+          </mat-card-actions>
+        </mat-card>
+      }
+    </div>
+  }
+</div>

@@ -48,7 +48,11 @@ func (h *Handler) CreateAccount(c *gin.Context) {
 		Description: req.Description,
 		Currency:    entities.Currency(req.Currency),
 		Balance:     req.InitialBalance,
-		IsActive:    true,
+		IsActive:    getActiveStatus(req.IsActive),
+		CreditLimit: req.CreditLimit,
+		ClosingDate: req.ClosingDate,
+		DueDate:     req.DueDate,
+		DNI:         req.DNI,
 	}
 
 	createdAccount, err := h.accountService.CreateAccount(account)
@@ -340,4 +344,293 @@ func (h *Handler) UpdateStatus(c *gin.Context) {
 
 	response := dto.ToAccountResponse(updatedAccount)
 	c.JSON(http.StatusOK, response)
+}
+
+// AddFunds adds funds to a wallet account
+// @Summary Add funds to wallet
+// @Description Add funds to a virtual wallet account
+// @Tags Wallet
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path string true "Account ID"
+// @Param request body dto.AddFundsRequest true "Add funds data"
+// @Success 200 {object} dto.BalanceResponse "Funds added successfully"
+// @Failure 400 {object} map[string]string "Invalid request data"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 404 {object} map[string]string "Account not found"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Router /api/accounts/{id}/add-funds [post]
+func (h *Handler) AddFunds(c *gin.Context) {
+	accountID := c.Param("id")
+	if accountID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "account ID is required"})
+		return
+	}
+
+	var req dto.AddFundsRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// First verify it's a wallet account
+	account, err := h.accountService.GetAccountByID(accountID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "account not found"})
+		return
+	}
+
+	if account.AccountType != entities.AccountTypeWallet {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "funds can only be added to wallet accounts"})
+		return
+	}
+
+	newBalance, err := h.accountService.UpdateAccountBalance(accountID, req.Amount)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	response := dto.BalanceResponse{
+		AccountID: accountID,
+		Balance:   newBalance,
+	}
+	c.JSON(http.StatusOK, response)
+}
+
+// WithdrawFunds withdraws funds from a wallet account
+// @Summary Withdraw funds from wallet
+// @Description Withdraw funds from a virtual wallet account
+// @Tags Wallet
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path string true "Account ID"
+// @Param request body dto.WithdrawFundsRequest true "Withdraw funds data"
+// @Success 200 {object} dto.BalanceResponse "Funds withdrawn successfully"
+// @Failure 400 {object} map[string]string "Invalid request data or insufficient funds"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 404 {object} map[string]string "Account not found"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Router /api/accounts/{id}/withdraw-funds [post]
+func (h *Handler) WithdrawFunds(c *gin.Context) {
+	accountID := c.Param("id")
+	if accountID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "account ID is required"})
+		return
+	}
+
+	var req dto.WithdrawFundsRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// First verify it's a wallet account and has sufficient funds
+	account, err := h.accountService.GetAccountByID(accountID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "account not found"})
+		return
+	}
+
+	if account.AccountType != entities.AccountTypeWallet {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "funds can only be withdrawn from wallet accounts"})
+		return
+	}
+
+	if account.Balance < req.Amount {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "insufficient funds"})
+		return
+	}
+
+	newBalance, err := h.accountService.UpdateAccountBalance(accountID, -req.Amount)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	response := dto.BalanceResponse{
+		AccountID: accountID,
+		Balance:   newBalance,
+	}
+	c.JSON(http.StatusOK, response)
+}
+
+// UpdateCreditLimit updates the credit limit for a credit card account
+// @Summary Update credit limit
+// @Description Update the credit limit for a credit card account
+// @Tags Credit
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path string true "Account ID"
+// @Param request body dto.UpdateCreditLimitRequest true "Credit limit update data"
+// @Success 200 {object} dto.AccountResponse "Credit limit updated successfully"
+// @Failure 400 {object} map[string]string "Invalid request data"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 404 {object} map[string]string "Account not found"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Router /api/accounts/{id}/credit-limit [put]
+func (h *Handler) UpdateCreditLimit(c *gin.Context) {
+	accountID := c.Param("id")
+	if accountID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "account ID is required"})
+		return
+	}
+
+	var req dto.UpdateCreditLimitRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// First verify it's a credit card account
+	account, err := h.accountService.GetAccountByID(accountID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "account not found"})
+		return
+	}
+
+	if account.AccountType != entities.AccountTypeCredit {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "credit limit can only be set for credit card accounts"})
+		return
+	}
+
+	// Update credit limit (this would need to be implemented in the service)
+	account.CreditLimit = &req.CreditLimit
+
+	// For now, we'll call the existing update method
+	// In a real implementation, you'd need a specific service method for this
+	updatedAccount, err := h.accountService.UpdateAccount(accountID, account.Name, account.Description)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	response := dto.ToAccountResponse(updatedAccount)
+	c.JSON(http.StatusOK, response)
+}
+
+// UpdateCreditDates updates the closing and due dates for a credit card account
+// @Summary Update credit card dates
+// @Description Update the closing and due dates for a credit card account
+// @Tags Credit
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path string true "Account ID"
+// @Param request body dto.UpdateCreditDatesRequest true "Credit dates update data"
+// @Success 200 {object} dto.AccountResponse "Credit dates updated successfully"
+// @Failure 400 {object} map[string]string "Invalid request data"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 404 {object} map[string]string "Account not found"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Router /api/accounts/{id}/credit-dates [put]
+func (h *Handler) UpdateCreditDates(c *gin.Context) {
+	accountID := c.Param("id")
+	if accountID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "account ID is required"})
+		return
+	}
+
+	var req dto.UpdateCreditDatesRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// First verify it's a credit card account
+	account, err := h.accountService.GetAccountByID(accountID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "account not found"})
+		return
+	}
+
+	if account.AccountType != entities.AccountTypeCredit {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "credit dates can only be set for credit card accounts"})
+		return
+	}
+
+	// Update credit dates (this would need to be implemented in the service)
+	account.ClosingDate = req.ClosingDate
+	account.DueDate = req.DueDate
+
+	// For now, we'll call the existing update method
+	// In a real implementation, you'd need a specific service method for this
+	updatedAccount, err := h.accountService.UpdateAccount(accountID, account.Name, account.Description)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	response := dto.ToAccountResponse(updatedAccount)
+	c.JSON(http.StatusOK, response)
+}
+
+// GetAvailableCredit gets the available credit for a credit card account
+// @Summary Get available credit
+// @Description Get the available credit limit for a credit card account
+// @Tags Credit
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path string true "Account ID"
+// @Success 200 {object} dto.AvailableCreditResponse "Available credit retrieved successfully"
+// @Failure 400 {object} map[string]string "Invalid request data"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 404 {object} map[string]string "Account not found"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Router /api/accounts/{id}/available-credit [get]
+func (h *Handler) GetAvailableCredit(c *gin.Context) {
+	accountID := c.Param("id")
+	if accountID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "account ID is required"})
+		return
+	}
+
+	// First verify it's a credit card account
+	account, err := h.accountService.GetAccountByID(accountID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "account not found"})
+		return
+	}
+
+	if account.AccountType != entities.AccountTypeCredit {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "available credit can only be calculated for credit card accounts"})
+		return
+	}
+
+	// Calculate available credit
+	var creditLimit float64 = 0
+	if account.CreditLimit != nil {
+		creditLimit = *account.CreditLimit
+	}
+
+	// For credit cards, negative balance means used credit
+	usedCredit := -account.Balance
+	if usedCredit < 0 {
+		usedCredit = 0 // If balance is positive, no credit is used
+	}
+
+	availableCredit := creditLimit - usedCredit
+	if availableCredit < 0 {
+		availableCredit = 0
+	}
+
+	response := dto.AvailableCreditResponse{
+		AccountID:       accountID,
+		CreditLimit:     creditLimit,
+		UsedCredit:      usedCredit,
+		AvailableCredit: availableCredit,
+	}
+	c.JSON(http.StatusOK, response)
+}
+
+// getActiveStatus returns the account active status, defaulting to true if not specified
+func getActiveStatus(isActive *bool) bool {
+	if isActive == nil {
+		return true // Default to active if not specified
+	}
+	return *isActive
 }

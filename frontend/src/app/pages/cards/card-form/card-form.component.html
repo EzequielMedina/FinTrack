@@ -1,0 +1,188 @@
+<div class="card-form-container">
+  <div class="form-header">
+    <h2 mat-dialog-title>
+      @if (data.mode === 'create') {
+        Agregar Nueva Tarjeta
+      } @else {
+        Editar Tarjeta
+      }
+    </h2>
+    <button mat-icon-button mat-dialog-close class="close-button">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <form [formGroup]="cardForm" (ngSubmit)="onSubmit()" class="card-form">
+      <div mat-dialog-content class="form-content">
+        <!-- Account Selection -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Cuenta asociada</mat-label>
+          <mat-select formControlName="accountId" required [disabled]="loadingAccounts()">
+            @if (loadingAccounts()) {
+              <mat-option disabled>
+                <mat-spinner diameter="20"></mat-spinner>
+                Cargando cuentas...
+              </mat-option>
+            } @else {
+              @if (availableAccounts().length === 0) {
+                <mat-option disabled>
+                  <mat-icon>warning</mat-icon>
+                  No hay cuentas disponibles
+                </mat-option>
+              } @else {
+                @for (account of availableAccounts(); track account.id) {
+                  <mat-option [value]="account.id">
+                    <div class="account-option">
+                      <span class="account-name">{{ account.name }}</span>
+                      <span class="account-details">
+                        {{ account.accountType | titlecase }} - {{ account.currency }} 
+                        ({{ account.balance | currency:'':'' }})
+                      </span>
+                    </div>
+                  </mat-option>
+                }
+              }
+            }
+          </mat-select>
+          <mat-icon matSuffix>account_balance</mat-icon>
+          <mat-hint>Selecciona la cuenta a la que se vinculará la tarjeta</mat-hint>
+          <mat-error>{{ getFieldError('accountId') }}</mat-error>
+        </mat-form-field>
+
+        <!-- Card Type -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Tipo de tarjeta</mat-label>
+          <mat-select formControlName="cardType" required>
+            @for (type of cardTypes; track type.value) {
+              <mat-option [value]="type.value">
+                {{ type.label }}
+              </mat-option>
+            }
+          </mat-select>
+          <mat-error>{{ getFieldError('cardType') }}</mat-error>
+        </mat-form-field>
+
+        <!-- Card Number (only for creation) -->
+        @if (data.mode === 'create') {
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Número de tarjeta</mat-label>
+            <input 
+              matInput 
+              formControlName="cardNumber" 
+              placeholder="1234 5678 9012 3456"
+              maxlength="19"
+              (input)="formatCardNumber($event)"
+              required>
+            @if (detectedBrand()) {
+              <mat-icon matSuffix class="brand-icon">
+                <img [src]="getBrandIcon()" [alt]="getBrandName()" />
+              </mat-icon>
+            }
+            <mat-hint>{{ getBrandName() }}</mat-hint>
+            <mat-error>{{ getFieldError('cardNumber') }}</mat-error>
+          </mat-form-field>
+        }
+
+        <!-- Holder Name -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Nombre del titular</mat-label>
+          <input 
+            matInput 
+            formControlName="holderName" 
+            placeholder="JUAN CARLOS PEREZ"
+            style="text-transform: uppercase"
+            required>
+          <mat-error>{{ getFieldError('holderName') }}</mat-error>
+        </mat-form-field>
+
+        <!-- Expiration Date -->
+        <div class="expiration-row">
+          <mat-form-field appearance="outline" class="expiration-field">
+            <mat-label>Mes de expiración</mat-label>
+            <mat-select formControlName="expirationMonth" required>
+              @for (month of expirationMonths; track month.value) {
+                <mat-option [value]="month.value">
+                  {{ month.label }}
+                </mat-option>
+              }
+            </mat-select>
+            <mat-error>{{ getFieldError('expirationMonth') }}</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="expiration-field">
+            <mat-label>Año de expiración</mat-label>
+            <mat-select formControlName="expirationYear" required>
+              @for (year of expirationYears; track year.value) {
+                <mat-option [value]="year.value">
+                  {{ year.label }}
+                </mat-option>
+              }
+            </mat-select>
+            <mat-error>{{ getFieldError('expirationYear') }}</mat-error>
+          </mat-form-field>
+        </div>
+
+        <!-- CVV (only for creation) -->
+        @if (data.mode === 'create') {
+          <mat-form-field appearance="outline" class="cvv-field">
+            <mat-label>CVV</mat-label>
+            <input 
+              matInput 
+              formControlName="cvv" 
+              type="password"
+              placeholder="123"
+              maxlength="4"
+              required>
+            <mat-icon matSuffix matTooltip="Código de seguridad de 3 o 4 dígitos">help_outline</mat-icon>
+            <mat-error>{{ getFieldError('cvv') }}</mat-error>
+          </mat-form-field>
+        }
+
+        <!-- Nickname -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Nombre personalizado (opcional)</mat-label>
+          <input 
+            matInput 
+            formControlName="nickname" 
+            placeholder="Ej: Tarjeta de trabajo, Tarjeta personal">
+          <mat-hint>Te ayudará a identificar fácilmente esta tarjeta</mat-hint>
+          <mat-error>{{ getFieldError('nickname') }}</mat-error>
+        </mat-form-field>
+
+        <!-- Security Notice -->
+        @if (data.mode === 'create') {
+          <div class="security-notice">
+            <mat-icon class="security-icon">security</mat-icon>
+            <div class="security-text">
+              <strong>Información segura:</strong>
+              <p>Todos los datos de tu tarjeta se encriptan antes de ser enviados y almacenados de forma segura.</p>
+            </div>
+          </div>
+        }
+      </div>
+
+      <div mat-dialog-actions class="form-actions">
+        <button 
+          type="button" 
+          mat-button 
+          (click)="onCancel()"
+          [disabled]="saving()">
+          Cancelar
+        </button>
+        <button 
+          type="submit" 
+          mat-raised-button 
+          color="primary"
+          [disabled]="cardForm.invalid || saving()">
+          @if (saving()) {
+            <mat-spinner diameter="20" style="margin-right: 8px;"></mat-spinner>
+          }
+          @if (data.mode === 'create') {
+            Agregar Tarjeta
+          } @else {
+            Actualizar Tarjeta
+          }
+        </button>
+      </div>
+    </form>
+</div>
