@@ -39,6 +39,7 @@ export class CardListComponent {
   @Output() setDefaultCard = new EventEmitter<Card>();
   @Output() blockCard = new EventEmitter<Card>();
   @Output() cardStatusChanged = new EventEmitter<Card>();
+  @Output() viewCardDetail = new EventEmitter<Card>();
 
   // Exponer enums para usar en el template
   readonly CardType = CardType;
@@ -145,5 +146,9 @@ export class CardListComponent {
     const monthStr = month.toString().padStart(2, '0');
     const yearStr = year.toString().slice(-2);
     return `${monthStr}/${yearStr}`;
+  }
+
+  onViewDetail(card: Card): void {
+    this.viewCardDetail.emit(card);
   }
 }

@@ -101,6 +101,11 @@ type Card struct {
 	IsDefault       bool       `gorm:"not null;default:false" json:"is_default"`
 	Nickname        string     `gorm:"type:varchar(50)" json:"nickname"`
 
+	// Balance field - usage depends on card type:
+	// - Credit cards: debt amount (positive = owed to bank)
+	// - Debit cards: should always be 0 (uses account balance)
+	Balance float64 `gorm:"type:decimal(15,2);not null;default:0" json:"balance"`
+
 	// Credit card specific fields
 	CreditLimit *float64   `gorm:"type:decimal(15,2);null" json:"credit_limit,omitempty"`
 	ClosingDate *time.Time `gorm:"type:date;null" json:"closing_date,omitempty"`
@@ -291,6 +296,136 @@ func (c *Card) IsExpired() bool {
 // IsActive checks if the card is active and not expired
 func (c *Card) IsActive() bool {
 	return c.Status == CardStatusActive && !c.IsExpired()
+}
+
+// GetAvailableBalance returns the available balance for the card
+func (c *Card) GetAvailableBalance() float64 {
+	if c.CardType == CardTypeDebit {
+		// For debit cards, available balance is the account balance
+		return c.Account.Balance
+	} else if c.CardType == CardTypeCredit && c.CreditLimit != nil {
+		// For credit cards, available balance is credit limit minus debt
+		return *c.CreditLimit - c.Balance
+	}
+	return 0
+}
+
+// GetDebt returns the debt amount for credit cards
+func (c *Card) GetDebt() float64 {
+	if c.CardType == CardTypeCredit {
+		return c.Balance // Positive balance = debt
+	}
+	return 0 // Debit cards don't have debt
+}
+
+// CanCharge checks if the card can be charged with the specified amount
+func (c *Card) CanCharge(amount float64) bool {
+	if !c.IsActive() {
+		return false
+	}
+
+	if c.CardType == CardTypeDebit {
+		// For debit cards, check account balance
+		return c.Account.Balance >= amount
+	} else if c.CardType == CardTypeCredit {
+		// For credit cards, check available credit
+		return c.GetAvailableBalance() >= amount
+	}
+
+	return false
+}
+
+// Charge processes a charge to the card
+func (c *Card) Charge(amount float64) error {
+	if !c.CanCharge(amount) {
+		return &ValidationError{Field: "amount", Message: "insufficient funds or credit"}
+	}
+
+	if c.CardType == CardTypeDebit {
+		// For debit cards, deduct from account balance
+		c.Account.Balance -= amount
+	} else if c.CardType == CardTypeCredit {
+		// For credit cards, add to debt
+		c.Balance += amount
+	}
+
+	return nil
+}
+
+// Payment processes a payment to a credit card
+func (c *Card) Payment(amount float64) error {
+	if c.CardType != CardTypeCredit {
+		return &ValidationError{Field: "card_type", Message: "payments only allowed for credit cards"}
+	}
+
+	if amount <= 0 {
+		return &ValidationError{Field: "amount", Message: "payment amount must be positive"}
+	}
+
+	// Reduce debt (balance can go negative if overpaid)
+	c.Balance -= amount
+	return nil
+}
+
+// GetMinimumPayment calculates minimum payment for credit cards
+func (c *Card) GetMinimumPayment() float64 {
+	if c.CardType != CardTypeCredit || c.Balance <= 0 {
+		return 0
+	}
+
+	// Example: 5% of debt or $500, whichever is greater
+	minPercentage := c.Balance * 0.05
+	minAmount := 500.0
+
+	if minPercentage > minAmount {
+		return minPercentage
+	}
+	return minAmount
+}
+
+// IsOverdue checks if the credit card payment is overdue
+func (c *Card) IsOverdue() bool {
+	if c.CardType != CardTypeCredit || c.DueDate == nil || c.Balance <= 0 {
+		return false
+	}
+
+	return time.Now().After(*c.DueDate)
+}
+
+// GetNextClosingDate calculates the next closing date
+func (c *Card) GetNextClosingDate() *time.Time {
+	if c.CardType != CardTypeCredit || c.ClosingDate == nil {
+		return nil
+	}
+
+	now := time.Now()
+	closingDay := c.ClosingDate.Day()
+
+	// Find next closing date
+	nextClosing := time.Date(now.Year(), now.Month(), closingDay, 0, 0, 0, 0, time.Local)
+	if nextClosing.Before(now) {
+		nextClosing = nextClosing.AddDate(0, 1, 0)
+	}
+
+	return &nextClosing
+}
+
+// GetNextDueDate calculates the next due date
+func (c *Card) GetNextDueDate() *time.Time {
+	if c.CardType != CardTypeCredit || c.DueDate == nil {
+		return nil
+	}
+
+	now := time.Now()
+	dueDay := c.DueDate.Day()
+
+	// Find next due date
+	nextDue := time.Date(now.Year(), now.Month(), dueDay, 0, 0, 0, 0, time.Local)
+	if nextDue.Before(now) {
+		nextDue = nextDue.AddDate(0, 1, 0)
+	}
+
+	return &nextDue
 }
 
 // ValidationError represents a validation error

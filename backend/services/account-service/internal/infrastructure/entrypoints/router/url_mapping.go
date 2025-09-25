@@ -68,5 +68,19 @@ func MapRoutes(r *gin.Engine, h *Handlers, cfg *config.Config, application *app.
 			accounts.PUT("/:id/cards/:cardId/unblock", h.Card.UnblockCard)        // PUT /api/accounts/:id/cards/:cardId/unblock
 			accounts.PUT("/:id/cards/:cardId/set-default", h.Card.SetDefaultCard) // PUT /api/accounts/:id/cards/:cardId/set-default
 		}
+
+		// Direct card operations (financial transactions)
+		cards := api.Group("/cards")
+		{
+			// Card balance queries
+			cards.GET("/:cardId/balance", h.Card.GetCardBalance) // GET /api/cards/:cardId/balance
+
+			// Credit card operations
+			cards.POST("/:cardId/charge", h.Card.ChargeCard)   // POST /api/cards/:cardId/charge
+			cards.POST("/:cardId/payment", h.Card.PaymentCard) // POST /api/cards/:cardId/payment
+
+			// Debit card operations
+			cards.POST("/:cardId/transaction", h.Card.ProcessDebitTransaction) // POST /api/cards/:cardId/transaction
+		}
 	}
 }

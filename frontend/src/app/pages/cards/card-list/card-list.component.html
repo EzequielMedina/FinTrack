@@ -31,6 +31,11 @@
               <mat-icon>more_vert</mat-icon>
             </button>
             <mat-menu #cardMenu="matMenu">
+              <button mat-menu-item (click)="onViewDetail(card)" [disabled]="card.status !== CardStatus.ACTIVE">
+                <mat-icon>account_balance_wallet</mat-icon>
+                <span>Ver Operaciones</span>
+              </button>
+              <mat-divider></mat-divider>
               <button mat-menu-item (click)="onEdit(card)">
                 <mat-icon>edit</mat-icon>
                 <span>Editar</span>
@@ -103,6 +108,10 @@
 
           <!-- Card Actions -->
           <mat-card-actions class="card-actions">
+            <button mat-raised-button color="primary" (click)="onViewDetail(card)" [disabled]="card.status !== CardStatus.ACTIVE">
+              <mat-icon>account_balance_wallet</mat-icon>
+              Ver Operaciones
+            </button>
             <button mat-button (click)="onEdit(card)">
               <mat-icon>edit</mat-icon>
               Editar

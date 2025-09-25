@@ -330,6 +330,7 @@ export class CardService {
       status: cardResponse.status as CardStatus,
       isDefault: cardResponse.is_default || cardResponse.isDefault,
       nickname: cardResponse.nickname,
+      balance: cardResponse.balance || 0, // New: Include balance field
       creditLimit: cardResponse.credit_limit,
       closingDate: cardResponse.closing_date,
       dueDate: cardResponse.due_date,

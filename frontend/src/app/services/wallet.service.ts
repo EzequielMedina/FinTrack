@@ -15,7 +15,7 @@ import { IWalletService } from './account.service';
 @Injectable({ providedIn: 'root' })
 export class WalletService implements IWalletService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = `${environment.accountServiceUrl}/api/accounts`;
+  private readonly apiUrl = `${environment.accountServiceUrl}/accounts`;
 
   // Minimum and maximum amounts for wallet operations
   private readonly MIN_OPERATION_AMOUNT = 0.01;

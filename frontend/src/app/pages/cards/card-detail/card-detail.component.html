@@ -1,0 +1,342 @@
+<div class="card-detail-container">
+  <!-- Información de la Tarjeta -->
+  <mat-card class="card-info">
+    <mat-card-header>
+      <div mat-card-avatar>
+        <mat-icon [color]="card.cardType === CardType.CREDIT ? 'warn' : 'primary'">
+          {{ card.cardType === CardType.CREDIT ? 'credit_card' : 'payment' }}
+        </mat-icon>
+      </div>
+      <mat-card-title>{{ card.nickname || 'Tarjeta ' + (card.cardType === CardType.CREDIT ? 'de Crédito' : 'de Débito') }}</mat-card-title>
+      <mat-card-subtitle>
+        {{ card.cardType === CardType.CREDIT ? 'Tarjeta de Crédito' : 'Tarjeta de Débito' }}
+        • {{ card.maskedNumber }}
+      </mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <div class="card-status">
+        <mat-chip-set>
+          <mat-chip [color]="card.cardBrand === 'visa' ? 'primary' : 'accent'">
+            {{ card.cardBrand | titlecase }}
+          </mat-chip>
+          <mat-chip 
+            [color]="card.status === 'active' ? 'primary' : 'warn'">
+            {{ card.status === 'active' ? 'Activa' : 'Inactiva' }}
+          </mat-chip>
+          <mat-chip 
+            *ngIf="card.isDefault" 
+            color="primary">
+            <mat-icon matChipAvatar>star</mat-icon>
+            Predeterminada
+          </mat-chip>
+        </mat-chip-set>
+      </div>
+
+      <div class="card-details">
+        <p><strong>Titular:</strong> {{ card.holderName }}</p>
+        <p><strong>Vencimiento:</strong> {{ card.expirationMonth.toString().padStart(2, '0') }}/{{ card.expirationYear }}</p>
+        <p *ngIf="card.creditLimit"><strong>Límite de Crédito:</strong> {{ formatCurrency(card.creditLimit) }}</p>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Balance y Operaciones -->
+  <mat-tab-group class="operations-tabs" animationDuration="300ms">
+    
+    <!-- TAB DE BALANCE -->
+    <mat-tab label="Balance">
+      <div class="tab-content">
+        
+        <!-- Balance de Tarjeta de Crédito -->
+        <mat-card *ngIf="card.cardType === CardType.CREDIT" class="balance-card credit-balance">
+          <mat-card-header>
+            <mat-card-title>Balance de Crédito</mat-card-title>
+            <button 
+              mat-icon-button 
+              (click)="onRefreshBalance()"
+              [disabled]="loading()">
+              <mat-icon>refresh</mat-icon>
+            </button>
+          </mat-card-header>
+          <mat-card-content *ngIf="creditBalance() as balance">
+            <div class="balance-grid">
+              <div class="balance-item debt">
+                <span class="label">Deuda Actual</span>
+                <span class="amount debt-amount">{{ formatCurrency(balance.balance) }}</span>
+              </div>
+              <div class="balance-item">
+                <span class="label">Límite de Crédito</span>
+                <span class="amount">{{ formatCurrency(balance.creditLimit) }}</span>
+              </div>
+              <div class="balance-item available">
+                <span class="label">Crédito Disponible</span>
+                <span class="amount available-amount">{{ formatCurrency(balance.availableCredit) }}</span>
+              </div>
+              <div class="balance-item payment">
+                <span class="label">Pago Mínimo</span>
+                <span class="amount payment-amount">{{ formatCurrency(balance.minimumPayment) }}</span>
+              </div>
+            </div>
+            <div class="due-date" *ngIf="balance.dueDate">
+              <mat-icon>schedule</mat-icon>
+              <span>Fecha de Vencimiento: {{ balance.dueDate | date:'dd/MM/yyyy' }}</span>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Balance de Tarjeta de Débito -->
+        <mat-card *ngIf="card.cardType === CardType.DEBIT" class="balance-card debit-balance">
+          <mat-card-header>
+            <mat-card-title>Balance Disponible</mat-card-title>
+            <button 
+              mat-icon-button 
+              (click)="onRefreshBalance()"
+              [disabled]="loading()">
+              <mat-icon>refresh</mat-icon>
+            </button>
+          </mat-card-header>
+          <mat-card-content *ngIf="debitBalance() as balance">
+            <div class="balance-grid">
+              <div class="balance-item">
+                <span class="label">Balance de Cuenta</span>
+                <span class="amount">{{ formatCurrency(balance.accountBalance) }}</span>
+              </div>
+              <div class="balance-item available">
+                <span class="label">Disponible para Usar</span>
+                <span class="amount available-amount">{{ formatCurrency(balance.availableBalance) }}</span>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+        
+      </div>
+    </mat-tab>
+
+    <!-- TAB DE OPERACIONES CRÉDITO -->
+    <mat-tab 
+      *ngIf="card.cardType === CardType.CREDIT" 
+      label="Operaciones de Crédito">
+      <div class="tab-content">
+        
+        <!-- Hacer Cargo -->
+        <mat-card class="operation-card">
+          <mat-card-header>
+            <mat-card-title>Realizar Compra</mat-card-title>
+            <mat-card-subtitle>Cargar un gasto a la tarjeta</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <form [formGroup]="chargeForm" (ngSubmit)="onCharge()">
+              <div class="form-row">
+                <mat-form-field>
+                  <mat-label>Monto</mat-label>
+                  <input 
+                    matInput 
+                    type="number" 
+                    formControlName="amount" 
+                    placeholder="0.00"
+                    min="0.01"
+                    step="0.01">
+                  <span matTextPrefix>$</span>
+                  <mat-error *ngIf="chargeForm.get('amount')?.hasError('required')">
+                    El monto es requerido
+                  </mat-error>
+                  <mat-error *ngIf="chargeForm.get('amount')?.hasError('min')">
+                    El monto debe ser mayor a 0
+                  </mat-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Descripción</mat-label>
+                  <input 
+                    matInput 
+                    formControlName="description" 
+                    placeholder="Ej: Compra en supermercado">
+                  <mat-error *ngIf="chargeForm.get('description')?.hasError('required')">
+                    La descripción es requerida
+                  </mat-error>
+                </mat-form-field>
+              </div>
+
+              <mat-form-field class="full-width">
+                <mat-label>Referencia (Opcional)</mat-label>
+                <input 
+                  matInput 
+                  formControlName="reference" 
+                  placeholder="Número de transacción o referencia">
+              </mat-form-field>
+
+              <div class="form-actions">
+                <span class="available-info">
+                  Crédito disponible: {{ getAvailableCreditFormatted() }}
+                </span>
+                <button 
+                  mat-raised-button 
+                  color="primary" 
+                  type="submit"
+                  [disabled]="!chargeForm.valid || isFormDisabled()">
+                  <mat-icon>shopping_cart</mat-icon>
+                  Realizar Compra
+                </button>
+              </div>
+            </form>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Hacer Pago -->
+        <mat-card class="operation-card">
+          <mat-card-header>
+            <mat-card-title>Realizar Pago</mat-card-title>
+            <mat-card-subtitle>Pagar la deuda de la tarjeta</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <form [formGroup]="paymentForm" (ngSubmit)="onPayment()">
+              <div class="form-row">
+                <mat-form-field>
+                  <mat-label>Monto a Pagar</mat-label>
+                  <input 
+                    matInput 
+                    type="number" 
+                    formControlName="amount" 
+                    placeholder="0.00"
+                    min="0.01"
+                    step="0.01">
+                  <span matTextPrefix>$</span>
+                  <mat-error *ngIf="paymentForm.get('amount')?.hasError('required')">
+                    El monto es requerido
+                  </mat-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Método de Pago</mat-label>
+                  <mat-select formControlName="paymentMethod">
+                    <mat-option value="bank_transfer">Transferencia Bancaria</mat-option>
+                    <mat-option value="debit_card">Tarjeta de Débito</mat-option>
+                    <mat-option value="cash">Efectivo</mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
+
+              <mat-form-field class="full-width">
+                <mat-label>Referencia (Opcional)</mat-label>
+                <input 
+                  matInput 
+                  formControlName="reference" 
+                  placeholder="Comprobante o referencia del pago">
+              </mat-form-field>
+
+              <div class="payment-shortcuts">
+                <button 
+                  mat-stroked-button 
+                  type="button"
+                  (click)="payMinimumAmount()">
+                  Pago Mínimo: {{ getMinimumPaymentFormatted() }}
+                </button>
+                <button 
+                  mat-stroked-button 
+                  type="button"
+                  (click)="payFullBalance()">
+                  Pagar Total: {{ getCurrentDebtFormatted() }}
+                </button>
+              </div>
+
+              <div class="form-actions">
+                <span class="debt-info">
+                  Deuda actual: {{ getCurrentDebtFormatted() }}
+                </span>
+                <button 
+                  mat-raised-button 
+                  color="accent" 
+                  type="submit"
+                  [disabled]="!paymentForm.valid || isFormDisabled()">
+                  <mat-icon>payment</mat-icon>
+                  Realizar Pago
+                </button>
+              </div>
+            </form>
+          </mat-card-content>
+        </mat-card>
+        
+      </div>
+    </mat-tab>
+
+    <!-- TAB DE OPERACIONES DÉBITO -->
+    <mat-tab 
+      *ngIf="card.cardType === CardType.DEBIT" 
+      label="Transacciones">
+      <div class="tab-content">
+        
+        <mat-card class="operation-card">
+          <mat-card-header>
+            <mat-card-title>Realizar Transacción</mat-card-title>
+            <mat-card-subtitle>Compra o retiro con tarjeta de débito</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <form [formGroup]="transactionForm" (ngSubmit)="onTransaction()">
+              <div class="form-row">
+                <mat-form-field>
+                  <mat-label>Monto</mat-label>
+                  <input 
+                    matInput 
+                    type="number" 
+                    formControlName="amount" 
+                    placeholder="0.00"
+                    min="0.01"
+                    step="0.01">
+                  <span matTextPrefix>$</span>
+                  <mat-error *ngIf="transactionForm.get('amount')?.hasError('required')">
+                    El monto es requerido
+                  </mat-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Descripción</mat-label>
+                  <input 
+                    matInput 
+                    formControlName="description" 
+                    placeholder="Ej: Compra en farmacia">
+                  <mat-error *ngIf="transactionForm.get('description')?.hasError('required')">
+                    La descripción es requerida
+                  </mat-error>
+                </mat-form-field>
+              </div>
+
+              <mat-form-field class="full-width">
+                <mat-label>Comercio (Opcional)</mat-label>
+                <input 
+                  matInput 
+                  formControlName="merchantName" 
+                  placeholder="Nombre del comercio">
+              </mat-form-field>
+
+              <mat-form-field class="full-width">
+                <mat-label>Referencia (Opcional)</mat-label>
+                <input 
+                  matInput 
+                  formControlName="reference" 
+                  placeholder="Número de transacción">
+              </mat-form-field>
+
+              <div class="form-actions">
+                <span class="available-info">
+                  Saldo disponible: {{ getAccountBalanceFormatted() }}
+                </span>
+                <button 
+                  mat-raised-button 
+                  color="primary" 
+                  type="submit"
+                  [disabled]="!transactionForm.valid || isFormDisabled()">
+                  <mat-icon>point_of_sale</mat-icon>
+                  Procesar Transacción
+                </button>
+              </div>
+            </form>
+          </mat-card-content>
+        </mat-card>
+        
+      </div>
+    </mat-tab>
+    
+  </mat-tab-group>
+
+</div>

@@ -135,3 +135,13 @@ func (r *CardRepository) SetDefaultByAccount(accountID, cardID string) error {
 
 	return tx.Commit().Error
 }
+
+// GetByIDWithAccount retrieves a card by its ID with account data preloaded
+func (r *CardRepository) GetByIDWithAccount(cardID string) (*entities.Card, error) {
+	var card entities.Card
+	err := r.db.Preload("Account").Where("id = ? AND deleted_at IS NULL", cardID).First(&card).Error
+	if err != nil {
+		return nil, err
+	}
+	return &card, nil
+}

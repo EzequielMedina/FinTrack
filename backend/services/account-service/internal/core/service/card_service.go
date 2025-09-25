@@ -222,3 +222,97 @@ func (s *CardService) SetDefaultCard(cardID string) (*entities.Card, error) {
 
 	return updatedCard, nil
 }
+
+// GetCardByIDWithAccount gets a card by ID with account preloaded
+func (s *CardService) GetCardByIDWithAccount(cardID string) (*entities.Card, error) {
+	card, err := s.cardRepo.GetByIDWithAccount(cardID)
+	if err != nil {
+		return nil, fmt.Errorf("card not found: %w", err)
+	}
+	return card, nil
+}
+
+// CREDIT CARD FINANCIAL OPERATIONS
+
+// ChargeCard processes a charge to a credit card
+func (s *CardService) ChargeCard(cardID string, amount float64, description, reference string) (*entities.Card, error) {
+	// Get card with account data
+	card, err := s.cardRepo.GetByIDWithAccount(cardID)
+	if err != nil {
+		return nil, fmt.Errorf("card not found: %w", err)
+	}
+
+	// Validate that it's a credit card
+	if card.CardType != entities.CardTypeCredit {
+		return nil, fmt.Errorf("charges can only be made to credit cards")
+	}
+
+	// Use the business logic from the entity
+	if err := card.Charge(amount); err != nil {
+		return nil, fmt.Errorf("failed to charge card: %w", err)
+	}
+
+	// Save updated card
+	updatedCard, err := s.cardRepo.Update(card)
+	if err != nil {
+		return nil, fmt.Errorf("failed to save card charge: %w", err)
+	}
+
+	return updatedCard, nil
+}
+
+// PaymentCard processes a payment to a credit card
+func (s *CardService) PaymentCard(cardID string, amount float64, paymentMethod, reference string) (*entities.Card, error) {
+	// Get card
+	card, err := s.cardRepo.GetByID(cardID)
+	if err != nil {
+		return nil, fmt.Errorf("card not found: %w", err)
+	}
+
+	// Use the business logic from the entity
+	if err := card.Payment(amount); err != nil {
+		return nil, fmt.Errorf("failed to process payment: %w", err)
+	}
+
+	// Save updated card
+	updatedCard, err := s.cardRepo.Update(card)
+	if err != nil {
+		return nil, fmt.Errorf("failed to save card payment: %w", err)
+	}
+
+	return updatedCard, nil
+}
+
+// DEBIT CARD OPERATIONS
+
+// ProcessDebitTransaction processes a transaction with a debit card
+func (s *CardService) ProcessDebitTransaction(cardID string, amount float64, description, merchantName, reference string) (*entities.Card, error) {
+	// Get card with account data
+	card, err := s.cardRepo.GetByIDWithAccount(cardID)
+	if err != nil {
+		return nil, fmt.Errorf("card not found: %w", err)
+	}
+
+	// Validate that it's a debit card
+	if card.CardType != entities.CardTypeDebit {
+		return nil, fmt.Errorf("transactions can only be made with debit cards")
+	}
+
+	// Use the business logic from the entity
+	if err := card.Charge(amount); err != nil {
+		return nil, fmt.Errorf("failed to process transaction: %w", err)
+	}
+
+	// Save updated account (debit cards deduct from account balance)
+	if err := s.accountRepo.Update(&card.Account); err != nil {
+		return nil, fmt.Errorf("failed to update account balance: %w", err)
+	}
+
+	// Get updated card with new account balance
+	updatedCard, err := s.cardRepo.GetByIDWithAccount(cardID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get updated card: %w", err)
+	}
+
+	return updatedCard, nil
+}

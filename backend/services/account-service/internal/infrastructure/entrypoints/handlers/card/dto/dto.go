@@ -52,6 +52,7 @@ type CardResponse struct {
 	Status          string    `json:"status"`
 	IsDefault       bool      `json:"is_default"`
 	Nickname        string    `json:"nickname,omitempty"`
+	Balance         float64   `json:"balance"` // New: Card balance (debt for credit, 0 for debit)
 	CreatedAt       time.Time `json:"created_at"`
 	UpdatedAt       time.Time `json:"updated_at"`
 
@@ -62,6 +63,49 @@ type CardResponse struct {
 
 	// Security fields (encrypted data - never exposed in response)
 	// EncryptedNumber and KeyFingerprint are intentionally omitted for security
+}
+
+// Credit Card Financial Operations DTOs
+
+// CreditCardChargeRequest represents a charge to a credit card
+type CreditCardChargeRequest struct {
+	Amount      float64 `json:"amount" binding:"required,min=0.01"`
+	Description string  `json:"description" binding:"required,min=3,max=255"`
+	Reference   string  `json:"reference,omitempty" binding:"max=50"`
+}
+
+// CreditCardPaymentRequest represents a payment to a credit card
+type CreditCardPaymentRequest struct {
+	Amount        float64 `json:"amount" binding:"required,min=0.01"`
+	PaymentMethod string  `json:"payment_method" binding:"required,oneof=bank_transfer debit_card cash"`
+	Reference     string  `json:"reference,omitempty" binding:"max=50"`
+}
+
+// CreditCardBalanceResponse represents the balance information for a credit card
+type CreditCardBalanceResponse struct {
+	CardID          string     `json:"card_id"`
+	Balance         float64    `json:"balance"`            // Current debt
+	CreditLimit     float64    `json:"credit_limit"`       // Total credit limit
+	AvailableCredit float64    `json:"available_credit"`   // Remaining credit
+	MinimumPayment  float64    `json:"minimum_payment"`    // Minimum payment due
+	DueDate         *time.Time `json:"due_date,omitempty"` // Next payment due date
+}
+
+// Debit Card Operations DTOs
+
+// DebitCardTransactionRequest represents a transaction with a debit card
+type DebitCardTransactionRequest struct {
+	Amount       float64 `json:"amount" binding:"required,min=0.01"`
+	Description  string  `json:"description" binding:"required,min=3,max=255"`
+	MerchantName string  `json:"merchant_name,omitempty" binding:"max=100"`
+	Reference    string  `json:"reference,omitempty" binding:"max=50"`
+}
+
+// DebitCardBalanceResponse represents the balance information for a debit card
+type DebitCardBalanceResponse struct {
+	CardID           string  `json:"card_id"`
+	AccountBalance   float64 `json:"account_balance"`   // Current account balance
+	AvailableBalance float64 `json:"available_balance"` // Available balance (same as account)
 }
 
 // PaginatedCardResponse represents paginated card list response
@@ -93,6 +137,7 @@ func ToCardResponse(card *entities.Card) CardResponse {
 		Status:          string(card.Status),
 		IsDefault:       card.IsDefault,
 		Nickname:        card.Nickname,
+		Balance:         card.Balance, // New: Include balance
 		CreatedAt:       card.CreatedAt,
 		UpdatedAt:       card.UpdatedAt,
 		CreditLimit:     card.CreditLimit,
@@ -118,5 +163,48 @@ func ToPaginatedCardResponse(cards []*entities.Card, total int64, page, pageSize
 			TotalItems:  total,
 			TotalPages:  totalPages,
 		},
+	}
+}
+
+// ToCreditCardBalanceResponse converts card entity to credit balance response
+func ToCreditCardBalanceResponse(card *entities.Card) CreditCardBalanceResponse {
+	var creditLimit, availableCredit, minimumPayment float64
+
+	if card.CreditLimit != nil {
+		creditLimit = *card.CreditLimit
+		availableCredit = creditLimit - card.Balance
+	}
+
+	// Calculate minimum payment (5% of balance or minimum $500)
+	if card.Balance > 0 {
+		minimumPayment = card.Balance * 0.05
+		if minimumPayment < 500 {
+			minimumPayment = 500
+		}
+		// Can't be more than the total balance
+		if minimumPayment > card.Balance {
+			minimumPayment = card.Balance
+		}
+	}
+
+	return CreditCardBalanceResponse{
+		CardID:          card.ID,
+		Balance:         card.Balance,
+		CreditLimit:     creditLimit,
+		AvailableCredit: availableCredit,
+		MinimumPayment:  minimumPayment,
+		DueDate:         card.DueDate,
+	}
+}
+
+// ToDebitCardBalanceResponse converts card entity to debit balance response
+func ToDebitCardBalanceResponse(card *entities.Card) DebitCardBalanceResponse {
+	// For debit cards, available balance comes from the associated account
+	accountBalance := card.Account.Balance
+
+	return DebitCardBalanceResponse{
+		CardID:           card.ID,
+		AccountBalance:   accountBalance,
+		AvailableBalance: accountBalance, // Same as account balance for debit cards
 	}
 }
