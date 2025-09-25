@@ -19,6 +19,7 @@ import { Card, CardType, CardBrand, CreateCardRequest, UpdateCardRequest, CardFo
 interface DialogData {
   mode: 'create' | 'edit';
   card?: Card;
+  accounts?: Account[]; // Cuentas disponibles para asociar la tarjeta
 }
 
 @Component({
@@ -142,10 +143,15 @@ export class CardFormComponent implements OnInit, OnDestroy {
     this.loadingAccounts.set(true);
     this.accountService.getAccountsByUser(currentUser.id).subscribe({
       next: (response: AccountsListResponse) => {
-        // Filtrar solo cuentas que pueden tener tarjetas (no wallets)
-        const accountsWithCards = response.accounts.filter(account => 
-          account.accountType !== 'wallet' && account.isActive
-        );
+        // Filtrar solo cuentas que pueden tener tarjetas
+        // Excluir: wallet, SAVINGS (cuentas de ahorro)
+        // Incluir: checking, CHECKING, bank_account, credit, debit
+        const accountsWithCards = response.accounts.filter(account => {
+          const accountType = account.accountType.toLowerCase();
+          return account.isActive && 
+                 accountType !== 'wallet' && 
+                 accountType !== 'savings';
+        });
         this.availableAccounts.set(accountsWithCards);
         this.loadingAccounts.set(false);
         
@@ -283,15 +289,34 @@ export class CardFormComponent implements OnInit, OnDestroy {
   }
 
   private createCard(formData: CardFormData): void {
+    // Obtener el userId del usuario autenticado
+    const currentUser = this.authService.currentUserSig();
+    if (!currentUser) {
+      this.snackBar.open('Error: Usuario no autenticado', 'Cerrar', { duration: 3000 });
+      this.saving.set(false);
+      return;
+    }
+
     const request: CreateCardRequest = {
-      accountId: formData.accountId,
+      userId: currentUser.id, // Usar el ID del usuario autenticado
+      accountId: formData.accountId, // ID de la cuenta seleccionada
       cardType: formData.cardType,
       cardNumber: formData.cardNumber,
       holderName: formData.holderName,
       expirationMonth: formData.expirationMonth,
       expirationYear: formData.expirationYear,
       cvv: formData.cvv,
-      nickname: formData.nickname
+      nickname: formData.nickname,
+      // Credit card specific fields
+      ...(formData.cardType === CardType.CREDIT && formData.creditLimit && {
+        creditLimit: formData.creditLimit
+      }),
+      ...(formData.closingDate && {
+        closingDate: formData.closingDate
+      }),
+      ...(formData.dueDate && {
+        dueDate: formData.dueDate
+      })
     };
 
     this.cardService.createCard(request).subscribe({

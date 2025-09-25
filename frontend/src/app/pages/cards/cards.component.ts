@@ -9,8 +9,9 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { CardService } from '../../services/card.service';
+import { AccountService } from '../../services/account.service';
 import { AuthService } from '../../services/auth.service';
-import { Card, CardType, CardStatus } from '../../models';
+import { Card, CardType, CardStatus, AccountsListResponse } from '../../models';
 import { CardListComponent } from './card-list/card-list.component';
 import { CardFormComponent } from './card-form/card-form.component';
 
@@ -35,6 +36,7 @@ import { CardFormComponent } from './card-form/card-form.component';
 })
 export class CardsComponent implements OnInit {
   private readonly cardService = inject(CardService);
+  private readonly accountService = inject(AccountService);
   private readonly authService = inject(AuthService);
   private readonly snackBar = inject(MatSnackBar);
   private readonly dialog = inject(MatDialog);
@@ -93,16 +95,44 @@ export class CardsComponent implements OnInit {
   }
 
   onAddCard(): void {
-    const dialogRef = this.dialog.open(CardFormComponent, {
-      width: '600px',
-      disableClose: true,
-      data: { mode: 'create' }
-    });
+    // Primero necesitamos obtener una cuenta del usuario para asociar la tarjeta
+    const user = this.currentUser();
+    if (!user) {
+      this.snackBar.open('Error: Usuario no autenticado', 'Cerrar', { duration: 3000 });
+      return;
+    }
 
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.loadUserCards(); // Recargar tarjetas después de agregar
-        this.snackBar.open('Tarjeta agregada exitosamente', 'Cerrar', {
+    // Obtenemos las cuentas del usuario para seleccionar una
+    this.accountService.getAccountsByUser(user.id).subscribe({
+      next: (accountsResponse: AccountsListResponse) => {
+        if (accountsResponse.accounts.length === 0) {
+          this.snackBar.open('Necesitas tener al menos una cuenta para agregar una tarjeta', 'Cerrar', {
+            duration: 3000
+          });
+          return;
+        }
+
+        const dialogRef = this.dialog.open(CardFormComponent, {
+          width: '600px',
+          disableClose: true,
+          data: { 
+            mode: 'create',
+            accounts: accountsResponse.accounts // Pasar las cuentas al diálogo
+          }
+        });
+
+        dialogRef.afterClosed().subscribe(result => {
+          if (result) {
+            this.loadUserCards(); // Recargar tarjetas después de agregar
+            this.snackBar.open('Tarjeta agregada exitosamente', 'Cerrar', {
+              duration: 3000
+            });
+          }
+        });
+      },
+      error: (error: any) => {
+        console.error('Error loading accounts:', error);
+        this.snackBar.open('Error al cargar las cuentas', 'Cerrar', {
           duration: 3000
         });
       }

@@ -74,8 +74,8 @@ export class CardListComponent {
 
   private performStatusChange(card: Card, action: 'activate' | 'deactivate'): void {
     const operation = action === 'activate' 
-      ? this.cardService.activateCard(card.accountId || card.id)
-      : this.cardService.deactivateCard(card.accountId || card.id);
+      ? this.cardService.activateCard(card.accountId, card.id)
+      : this.cardService.deactivateCard(card.accountId, card.id);
 
     operation.subscribe({
       next: (updatedCard) => {

@@ -69,12 +69,13 @@ export class AccountService implements IAccountService {
       user_id: accountData.userId,
       account_type: accountData.accountType,
       name: accountData.name,
-      description: accountData.description,
+      description: accountData.description || "",
       currency: accountData.currency,
       initial_balance: accountData.initialBalance,
+      is_active: accountData.isActive !== false, // Default to true
       credit_limit: accountData.creditLimit,
-      closing_date: accountData.closingDate,
-      due_date: accountData.dueDate,
+      closing_date: accountData.closingDate ? new Date(accountData.closingDate).toISOString() : null,
+      due_date: accountData.dueDate ? new Date(accountData.dueDate).toISOString() : null,
       dni: accountData.dni
     };
 

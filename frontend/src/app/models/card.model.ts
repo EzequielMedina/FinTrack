@@ -43,7 +43,8 @@ export interface Card {
 }
 
 export interface CreateCardRequest {
-  accountId: string;           // REQUIRED: ID of the parent account
+  userId: string;              // REQUIRED: ID of the user who owns the card
+  accountId: string;           // REQUIRED: ID of the account to link the card to
   cardType: CardType;
   cardNumber: string;          // Full number (encrypted on frontend)
   holderName: string;
@@ -93,7 +94,7 @@ export interface CardsListResponse {
 
 // Tipos para formularios reactivos
 export interface CardFormData {
-  accountId: string;           // REQUIRED: Parent account ID
+  accountId: string;           // ID de la cuenta seleccionada en el formulario
   cardType: CardType;
   cardNumber: string;
   holderName: string;

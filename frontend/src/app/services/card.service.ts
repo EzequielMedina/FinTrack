@@ -21,24 +21,44 @@ import {
 export class CardService {
   private readonly http = inject(HttpClient);
   private readonly encryptionService = inject(EncryptionService);
-  private readonly apiUrl = environment.accountServiceUrl;
+  private readonly apiUrl = `${environment.accountServiceUrl}/accounts`;
 
   // CRUD Operations
   createCard(cardData: CreateCardRequest): Observable<Card> {
     // Encriptar datos sensibles antes de enviar
     return from(this.encryptCardData(cardData)).pipe(
       switchMap(encryptedData => {
-        // Mapear Card a Account para el backend
-        const accountPayload = {
-          user_id: cardData.accountId, // Usar accountId en lugar de userId
-          account_type: cardData.cardType, // 'credit' o 'debit'
-          name: cardData.nickname || `Tarjeta ${cardData.cardType === CardType.CREDIT ? 'de Crédito' : 'de Débito'}`,
-          description: `${cardData.holderName} - **** **** **** ${cardData.cardNumber.slice(-4)} - Exp: ${cardData.expirationMonth.toString().padStart(2, '0')}/${cardData.expirationYear}`,
-          initial_balance: 0.0
+        // Usar el endpoint de cards con el accountId del usuario
+        const cardPayload = {
+          card_type: cardData.cardType,
+          card_brand: this.detectCardBrand(cardData.cardNumber),
+          last_four_digits: this.getLastFourDigits(cardData.cardNumber),
+          masked_number: this.maskCardNumber(cardData.cardNumber),
+          holder_name: cardData.holderName,
+          expiration_month: cardData.expirationMonth,
+          expiration_year: cardData.expirationYear,
+          nickname: cardData.nickname,
+          encrypted_number: encryptedData.encryptedNumber,
+          encrypted_cvv: encryptedData.encryptedCvv,
+          key_fingerprint: encryptedData.keyFingerprint,
+          // Campos específicos para tarjetas de crédito
+          ...(cardData.cardType === CardType.CREDIT && cardData.creditLimit && {
+            credit_limit: cardData.creditLimit
+          }),
+          ...(cardData.closingDate && {
+            closing_date: new Date(cardData.closingDate).toISOString().split('T')[0]
+          }),
+          ...(cardData.dueDate && {
+            due_date: new Date(cardData.dueDate).toISOString().split('T')[0]
+          })
         };
 
-                return this.http.post<any>(this.apiUrl, accountPayload).pipe(
-          map(accountResponse => this.mapAccountToCard(accountResponse, cardData))
+        return this.http.post<any>(`${this.apiUrl}/${cardData.accountId}/cards`, cardPayload).pipe(
+          map(response => this.mapCardResponseToCard(response)),
+          catchError(error => {
+            console.error('Error creating card:', error);
+            throw new Error('Error al crear la tarjeta: ' + (error.error?.message || error.message));
+          })
         );
       })
     );
@@ -49,23 +69,27 @@ export class CardService {
       .set('page', page.toString())
       .set('pageSize', pageSize.toString());
     
-    // Obtener todas las cuentas y filtrar por tipo tarjeta
-    return this.http.get<any>(`${this.apiUrl}`, { params }).pipe(
+    return this.http.get<any>(`${this.apiUrl}/${accountId}/cards`, { params }).pipe(
       map(response => {
-        // Filtrar solo cuentas de tipo credit y debit
-        const cardAccounts = response.data.filter((account: any) => 
-          account.account_type === 'credit' || account.account_type === 'debit'
-        );
-        
-        const cards = cardAccounts.map((account: any) => this.mapAccountToCard(account));
+        const cards = response.data ? response.data.map((card: any) => this.mapCardResponseToCard(card)) : [];
         
         return {
           cards,
-          total: cardAccounts.length,
-          page: response.pagination.current_page,
-          pageSize: response.pagination.page_size,
-          totalPages: Math.ceil(cardAccounts.length / pageSize)
+          total: response.pagination?.total_items || cards.length,
+          page: response.pagination?.current_page || page,
+          pageSize: response.pagination?.page_size || pageSize,
+          totalPages: response.pagination?.total_pages || Math.ceil(cards.length / pageSize)
         };
+      }),
+      catchError(error => {
+        console.error('Error getting cards by account:', error);
+        return of({
+          cards: [],
+          total: 0,
+          page: page,
+          pageSize: pageSize,
+          totalPages: 0
+        });
       })
     );
   }
@@ -73,48 +97,28 @@ export class CardService {
   getCardsByUser(userId: string, page: number = 1, pageSize: number = 20): Observable<CardsListResponse> {
     console.log('CardService: Getting cards for user', userId);
     
-    // Obtener cuentas por usuario y filtrar tarjetas desde account-service
-    return this.http.get<any>(`${this.apiUrl}/accounts/user/${userId}`).pipe(
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('pageSize', pageSize.toString());
+    
+    return this.http.get<any>(`${this.apiUrl}/user/${userId}/cards`, { params }).pipe(
       map(response => {
         console.log('CardService: Received response from backend:', response);
         
-        // Manejar diferentes formatos de respuesta del backend
-        let accounts: any[] = [];
+        const cards = response.data ? response.data.map((card: any) => this.mapCardResponseToCard(card)) : [];
         
-        if (Array.isArray(response)) {
-          accounts = response;
-        } else if (response && Array.isArray(response.accounts)) {
-          accounts = response.accounts;
-        } else if (response && Array.isArray(response.data)) {
-          accounts = response.data;
-        } else {
-          console.log('CardService: No accounts found or invalid response format');
-          accounts = [];
-        }
-        
-        console.log('CardService: Processed accounts:', accounts);
-        
-        // Filtrar solo cuentas de tipo credit y debit
-        const cardAccounts = accounts.filter((account: any) => 
-          account.account_type === 'credit' || account.account_type === 'debit'
-        );
-        
-        console.log('CardService: Filtered card accounts:', cardAccounts);
-        
-        const cards = cardAccounts.map((account: any) => this.mapAccountToCard(account));
         console.log('CardService: Mapped cards:', cards);
         
         return {
           cards,
-          total: cardAccounts.length,
-          page: page,
-          pageSize: pageSize,
-          totalPages: Math.ceil(cardAccounts.length / pageSize)
+          total: response.pagination?.total_items || cards.length,
+          page: response.pagination?.current_page || page,
+          pageSize: response.pagination?.page_size || pageSize,
+          totalPages: response.pagination?.total_pages || Math.ceil(cards.length / pageSize)
         };
       }),
       catchError(error => {
         console.error('CardService: Error getting cards by user:', error);
-        // Retornar respuesta vacía en caso de error
         return of({
           cards: [],
           total: 0,
@@ -127,80 +131,53 @@ export class CardService {
   }
 
   getCardById(accountId: string, cardId: string): Observable<Card> {
-    return this.http.get<any>(`${this.apiUrl}/${cardId}`).pipe(
-      map(accountResponse => this.mapAccountToCard(accountResponse))
+    return this.http.get<any>(`${this.apiUrl}/${accountId}/cards/${cardId}`).pipe(
+      map(response => this.mapCardResponseToCard(response))
     );
   }
 
   updateCard(accountId: string, cardId: string, cardData: UpdateCardRequest): Observable<Card> {
-    // Mapear UpdateCardRequest a UpdateAccountRequest
     const updatePayload = {
-      name: cardData.nickname || `Tarjeta ${cardData.holderName ? 'de ' + cardData.holderName : ''}`,
-      description: cardData.holderName || ''
+      holder_name: cardData.holderName,
+      nickname: cardData.nickname,
+      expiration_month: cardData.expirationMonth,
+      expiration_year: cardData.expirationYear
     };
 
-    return this.http.put<any>(`${this.apiUrl}/${cardId}`, updatePayload).pipe(
-      map(accountResponse => this.mapAccountToCard(accountResponse))
+    return this.http.put<any>(`${this.apiUrl}/${accountId}/cards/${cardId}`, updatePayload).pipe(
+      map(response => this.mapCardResponseToCard(response))
     );
   }
 
   deleteCard(accountId: string, cardId: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${cardId}`);
+    return this.http.delete<void>(`${this.apiUrl}/${accountId}/cards/${cardId}`);
   }
 
   setDefaultCard(accountId: string, cardId: string): Observable<Card> {
-    // Por ahora, simulamos el comportamiento actualizando el estado
-    const updatePayload = {
-      name: "Tarjeta Predeterminada",
-      description: "Tarjeta establecida como predeterminada"
-    };
-    
-    return this.http.put<any>(`${this.apiUrl}/${cardId}`, updatePayload).pipe(
-      map(accountResponse => this.mapAccountToCard(accountResponse))
+    return this.http.put<any>(`${this.apiUrl}/${accountId}/cards/${cardId}/set-default`, {}).pipe(
+      map(response => this.mapCardResponseToCard(response))
     );
   }
 
   blockCard(accountId: string, cardId: string): Observable<Card> {
-    // Usar el endpoint de status del account-service
-    const statusPayload = {
-      is_active: false
-    };
-    
-    return this.http.put<any>(`${this.apiUrl}/${cardId}/status`, statusPayload).pipe(
-      map(accountResponse => this.mapAccountToCard(accountResponse))
+    return this.http.put<any>(`${this.apiUrl}/${accountId}/cards/${cardId}/block`, {}).pipe(
+      map(response => this.mapCardResponseToCard(response))
     );
   }
 
   unblockCard(accountId: string, cardId: string): Observable<Card> {
-    // Usar el endpoint de status del account-service
-    const statusPayload = {
-      is_active: true
-    };
-    
-    return this.http.put<any>(`${this.apiUrl}/${cardId}/status`, statusPayload).pipe(
-      map(accountResponse => this.mapAccountToCard(accountResponse))
+    return this.http.put<any>(`${this.apiUrl}/${accountId}/cards/${cardId}/unblock`, {}).pipe(
+      map(response => this.mapCardResponseToCard(response))
     );
   }
 
-  // Métodos específicos para activar/desactivar tarjetas
-  activateCard(cardId: string): Observable<Card> {
-    const statusPayload = {
-      is_active: true
-    };
-    
-    return this.http.put<any>(`${this.apiUrl}/${cardId}/status`, statusPayload).pipe(
-      map(accountResponse => this.mapAccountToCard(accountResponse))
-    );
+  // Métodos específicos para activar/desactivar tarjetas (usar los nuevos endpoints)
+  activateCard(accountId: string, cardId: string): Observable<Card> {
+    return this.unblockCard(accountId, cardId);
   }
 
-  deactivateCard(cardId: string): Observable<Card> {
-    const statusPayload = {
-      is_active: false
-    };
-    
-    return this.http.put<any>(`${this.apiUrl}/${cardId}/status`, statusPayload).pipe(
-      map(accountResponse => this.mapAccountToCard(accountResponse))
-    );
+  deactivateCard(accountId: string, cardId: string): Observable<Card> {
+    return this.blockCard(accountId, cardId);
   }
 
   // Validation Methods
@@ -322,11 +299,10 @@ export class CardService {
     if (cleanNumber.length < 4) return cardNumber;
     
     const lastFour = cleanNumber.slice(-4);
-    const masked = '*'.repeat(cleanNumber.length - 4);
     
-    // Formatear con espacios cada 4 dígitos
-    const formatted = (masked + lastFour).match(/.{1,4}/g)?.join(' ') || '';
-    return formatted;
+    // Usar siempre el formato estándar: **** **** **** XXXX (19 caracteres)
+    // Esto evita problemas con números de tarjeta de diferentes longitudes
+    return `**** **** **** ${lastFour}`;
   }
 
   getLastFourDigits(cardNumber: string): string {
@@ -339,45 +315,26 @@ export class CardService {
     return cleanNumber.match(/.{1,4}/g)?.join(' ') || cardNumber;
   }
 
-  // Método privado para mapear Account (backend) a Card (frontend)
-  private mapAccountToCard(account: any, originalCardData?: CreateCardRequest): Card {
-    // Extraer los últimos 4 dígitos del description si está disponible
-    const lastFourMatch = account.description?.match(/\*{4}\s\*{4}\s\*{4}\s(\d{4})/) || 
-                         account.description?.match(/(\d{4})/) ||
-                         account.name?.match(/(\d{4})$/);
-    const lastFourDigits = lastFourMatch ? lastFourMatch[1] : '0000';
-    
-    // Extraer datos de expiración del description si están disponibles
-    const expMatch = account.description?.match(/Exp:\s(\d{2})\/(\d{4})/);
-    const expirationMonth = expMatch ? parseInt(expMatch[1]) : (originalCardData?.expirationMonth || 12);
-    const expirationYear = expMatch ? parseInt(expMatch[2]) : (originalCardData?.expirationYear || 2030);
-    
-    // Extraer nombre del titular del description
-    const holderNameMatch = account.description?.match(/^([^-]+)/);
-    const holderName = holderNameMatch ? holderNameMatch[1].trim() : (originalCardData?.holderName || 'Titular');
-    
-    // Determinar el brand basado en el primer dígito (simplificado)
-    const firstDigit = lastFourDigits[0];
-    let cardBrand = CardBrand.OTHER;
-    if (firstDigit === '4') cardBrand = CardBrand.VISA;
-    else if (firstDigit === '5') cardBrand = CardBrand.MASTERCARD;
-    else if (firstDigit === '3') cardBrand = CardBrand.AMERICAN_EXPRESS;
-    
+  // Método para mapear la respuesta del backend (Card API) a Card del frontend
+  private mapCardResponseToCard(cardResponse: any): Card {
     return {
-      id: account.id,
-      accountId: account.id, // Usar el ID de la cuenta como accountId
-      cardType: account.account_type === 'credit' ? CardType.CREDIT : CardType.DEBIT,
-      cardBrand: cardBrand,
-      lastFourDigits: lastFourDigits,
-      maskedNumber: `**** **** **** ${lastFourDigits}`,
-      holderName: holderName,
-      expirationMonth: expirationMonth,
-      expirationYear: expirationYear,
-      status: account.is_active ? CardStatus.ACTIVE : CardStatus.INACTIVE,
-      isDefault: false, // Por ahora no manejamos tarjeta predeterminada
-      nickname: account.name,
-      createdAt: account.created_at,
-      updatedAt: account.updated_at
+      id: cardResponse.id,
+      accountId: cardResponse.account_id,
+      cardType: cardResponse.card_type as CardType,
+      cardBrand: cardResponse.card_brand as CardBrand,
+      lastFourDigits: cardResponse.last_four_digits || cardResponse.lastFourDigits,
+      maskedNumber: cardResponse.masked_number || cardResponse.maskedNumber,
+      holderName: cardResponse.holder_name || cardResponse.holderName,
+      expirationMonth: cardResponse.expiration_month || cardResponse.expirationMonth,
+      expirationYear: cardResponse.expiration_year || cardResponse.expirationYear,
+      status: cardResponse.status as CardStatus,
+      isDefault: cardResponse.is_default || cardResponse.isDefault,
+      nickname: cardResponse.nickname,
+      creditLimit: cardResponse.credit_limit,
+      closingDate: cardResponse.closing_date,
+      dueDate: cardResponse.due_date,
+      createdAt: cardResponse.created_at,
+      updatedAt: cardResponse.updated_at
     };
   }
 

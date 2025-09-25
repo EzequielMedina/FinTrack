@@ -61,8 +61,8 @@ const (
 
 // Account represents a financial account in the system
 type Account struct {
-	ID          string      `gorm:"type:char(36);primaryKey" json:"id"`
-	UserID      string      `gorm:"type:char(36);not null;index" json:"user_id"`
+	ID          string      `gorm:"type:varchar(36);primaryKey" json:"id"`
+	UserID      string      `gorm:"type:varchar(36);not null;index" json:"user_id"`
 	AccountType AccountType `gorm:"type:varchar(20);not null;index" json:"account_type"`
 	Name        string      `gorm:"type:varchar(100);not null" json:"name"`
 	Description string      `gorm:"type:text" json:"description"`
@@ -88,8 +88,8 @@ type Account struct {
 
 // Card represents a payment card associated with an account
 type Card struct {
-	ID              string     `gorm:"type:char(36);primaryKey" json:"id"`
-	AccountID       string     `gorm:"type:char(36);not null;index" json:"account_id"`
+	ID              string     `gorm:"type:varchar(36);primaryKey" json:"id"`
+	AccountID       string     `gorm:"type:varchar(36);not null;index" json:"account_id"`
 	CardType        CardType   `gorm:"type:varchar(10);not null" json:"card_type"`
 	CardBrand       CardBrand  `gorm:"type:varchar(20);not null" json:"card_brand"`
 	LastFourDigits  string     `gorm:"type:varchar(4);not null" json:"last_four_digits"`
@@ -258,8 +258,7 @@ func (a *Account) IsBankAccount() bool {
 // CanHaveCards checks if the account type supports cards
 func (a *Account) CanHaveCards() bool {
 	return a.IsBankAccount() || a.AccountType == AccountTypeChecking ||
-		a.AccountType == AccountTypeSavings || a.AccountType == AccountTypeCredit ||
-		a.AccountType == AccountTypeDebit
+		a.AccountType == AccountTypeCredit || a.AccountType == AccountTypeDebit
 }
 
 // GetDefaultCard returns the default card for the account
