@@ -5,3 +5,4 @@ export * from './auth.model';
 export * from './card.model';
 export * from './account.model';
 export * from './account-utils';
+export * from './transaction.model';

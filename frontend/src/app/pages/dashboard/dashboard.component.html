@@ -119,13 +119,80 @@
             </div>
           </mat-card-content>
           <mat-card-actions>
-            <button mat-flat-button color="warn">
+            <button mat-flat-button color="warn" [routerLink]="['/transactions']">
               <mat-icon>history</mat-icon>
               Ver Historial
             </button>
           </mat-card-actions>
         </mat-card>
       </div>
+
+      <!-- Transacciones Recientes -->
+      <section class="recent-transactions-section">
+        <div class="section-header">
+          <h2>Transacciones Recientes</h2>
+          <button mat-button color="primary" [routerLink]="['/transactions']">
+            Ver todas
+            <mat-icon>arrow_forward</mat-icon>
+          </button>
+        </div>
+        
+        @if (loadingTransactions()) {
+          <div class="loading-container">
+            <mat-spinner diameter="30"></mat-spinner>
+            <p>Cargando transacciones...</p>
+          </div>
+        } @else if (recentTransactions().length === 0) {
+          <mat-card class="empty-transactions" appearance="outlined">
+            <mat-card-content>
+              <div class="empty-state">
+                <mat-icon class="empty-icon">receipt_long</mat-icon>
+                <h3>No hay transacciones recientes</h3>
+                <p>Cuando realices tu primera transacción, aparecerá aquí.</p>
+                <button mat-flat-button color="primary" [routerLink]="['/transactions']">
+                  <mat-icon>add</mat-icon>
+                  Crear Transacción
+                </button>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        } @else {
+          <div class="transactions-list">
+            @for (transaction of recentTransactions(); track transaction.id) {
+              <mat-card class="transaction-item" appearance="outlined">
+                <mat-card-content>
+                  <div class="transaction-content">
+                    <div class="transaction-info">
+                      <div class="transaction-icon">
+                        <mat-icon [class]="'transaction-' + transaction.type.toLowerCase()">
+                          {{ getTransactionIcon(transaction.type) }}
+                        </mat-icon>
+                      </div>
+                      <div class="transaction-details">
+                        <h4>{{ transaction.type | titlecase }}</h4>
+                        <p class="transaction-description" *ngIf="transaction.description">
+                          {{ transaction.description }}
+                        </p>
+                        <span class="transaction-date">
+                          {{ transaction.createdAt | date:'medium' }}
+                        </span>
+                      </div>
+                    </div>
+                    <div class="transaction-amount">
+                      <span [class]="getTransactionAmount(transaction) > 0 ? 'amount-positive' : 'amount-negative'">
+                        {{ transaction.amount | currency:transaction.currency }}
+                      </span>
+                      <span class="transaction-status" [class]="'status-' + transaction.status.toLowerCase()">
+                        {{ transaction.status | titlecase }}
+                      </span>
+                    </div>
+                  </div>
+                </mat-card-content>
+              </mat-card>
+            }
+          </div>
+        }
+      </section>
     }
 
     <!-- Quick Actions -->
@@ -133,7 +200,7 @@
       <h3>Acciones Rápidas</h3>
       <div class="actions-grid">
         <!-- Acciones para todos los usuarios -->
-        <button mat-fab extended color="primary" class="action-button">
+        <button mat-fab extended color="primary" class="action-button" [routerLink]="['/transactions']">
           <mat-icon>add</mat-icon>
           Nueva Transacción
         </button>

@@ -16,7 +16,7 @@ import { ICreditService } from './account.service';
 @Injectable({ providedIn: 'root' })
 export class CreditService implements ICreditService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = `${environment.accountServiceUrl}/api/accounts`;
+  private readonly apiUrl = `${environment.accountServiceUrl}/accounts`;
 
   // Credit card business logic constants
   private readonly MIN_CREDIT_LIMIT = 0;

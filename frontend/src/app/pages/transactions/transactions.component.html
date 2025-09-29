@@ -1,0 +1,538 @@
+<div class="transactions-container">
+  <!-- Header -->
+  <div class="page-header">
+    <h1>Transacciones</h1>
+    <div class="header-actions">
+      <button 
+        class="btn btn-outline" 
+        (click)="toggleFilters()"
+        [class.active]="showFilters">
+        <i class="icon-filter"></i>
+        Filtros
+      </button>
+    </div>
+  </div>
+
+  <!-- Tabs Navigation -->
+  <div class="tabs-container">
+    <div class="tabs">
+      <button 
+        class="tab" 
+        [class.active]="activeTab === 'list'"
+        (click)="setActiveTab('list')">
+        <i class="icon-list"></i>
+        Lista
+      </button>
+      <button 
+        class="tab" 
+        [class.active]="activeTab === 'transfer'"
+        (click)="setActiveTab('transfer')">
+        <i class="icon-repeat"></i>
+        Transferir
+      </button>
+      <button 
+        class="tab" 
+        [class.active]="activeTab === 'deposit'"
+        (click)="setActiveTab('deposit')">
+        <i class="icon-arrow-down"></i>
+        Depositar
+      </button>
+      <button 
+        class="tab" 
+        [class.active]="activeTab === 'withdrawal'"
+        (click)="setActiveTab('withdrawal')">
+        <i class="icon-arrow-up"></i>
+        Retirar
+      </button>
+      <button 
+        class="tab" 
+        [class.active]="activeTab === 'payment'"
+        (click)="setActiveTab('payment')">
+        <i class="icon-card"></i>
+        Pagar
+      </button>
+    </div>
+  </div>
+
+  <!-- Filters Panel -->
+  <div class="filters-panel" *ngIf="showFilters && activeTab === 'list'">
+    <div class="filters-grid">
+      <div class="filter-group">
+        <label for="typeFilter">Tipo</label>
+        <select 
+          id="typeFilter" 
+          [(ngModel)]="filters.type" 
+          (ngModelChange)="onFilterChange()"
+          class="form-control">
+          <option value="">Todos</option>
+          <option [value]="TransactionType.DEPOSIT">Depósito</option>
+          <option [value]="TransactionType.WITHDRAWAL">Retiro</option>
+          <option [value]="TransactionType.TRANSFER">Transferencia</option>
+          <option [value]="TransactionType.PAYMENT">Pago</option>
+          <option [value]="TransactionType.REFUND">Reembolso</option>
+          <option [value]="TransactionType.PURCHASE">Compra</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="statusFilter">Estado</label>
+        <select 
+          id="statusFilter" 
+          [(ngModel)]="filters.status" 
+          (ngModelChange)="onFilterChange()"
+          class="form-control">
+          <option value="">Todos</option>
+          <option [value]="TransactionStatus.PENDING">Pendiente</option>
+          <option [value]="TransactionStatus.COMPLETED">Completado</option>
+          <option [value]="TransactionStatus.FAILED">Fallido</option>
+          <option [value]="TransactionStatus.CANCELLED">Cancelado</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="startDate">Desde</label>
+        <input 
+          type="date" 
+          id="startDate"
+          [(ngModel)]="filters.startDate" 
+          (ngModelChange)="onFilterChange()"
+          class="form-control">
+      </div>
+
+      <div class="filter-group">
+        <label for="endDate">Hasta</label>
+        <input 
+          type="date" 
+          id="endDate"
+          [(ngModel)]="filters.endDate" 
+          (ngModelChange)="onFilterChange()"
+          class="form-control">
+      </div>
+
+      <div class="filter-group">
+        <label for="minAmount">Monto Mínimo</label>
+        <input 
+          type="number" 
+          id="minAmount"
+          [(ngModel)]="filters.minAmount" 
+          (ngModelChange)="onFilterChange()"
+          step="0.01"
+          class="form-control">
+      </div>
+
+      <div class="filter-group">
+        <label for="maxAmount">Monto Máximo</label>
+        <input 
+          type="number" 
+          id="maxAmount"
+          [(ngModel)]="filters.maxAmount" 
+          (ngModelChange)="onFilterChange()"
+          step="0.01"
+          class="form-control">
+      </div>
+
+      <div class="filter-actions">
+        <button 
+          type="button" 
+          class="btn btn-secondary btn-sm"
+          (click)="clearFilters()">
+          Limpiar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="content-container">
+    
+    <!-- LISTA DE TRANSACCIONES -->
+    <div *ngIf="activeTab === 'list'" class="transactions-list">
+      <div *ngIf="loading" class="loading-container">
+        <div class="spinner"></div>
+        <p>Cargando transacciones...</p>
+      </div>
+
+      <div *ngIf="!loading && transactions.length === 0" class="empty-state">
+        <div class="empty-icon">
+          <i class="icon-receipt"></i>
+        </div>
+        <h3>No hay transacciones</h3>
+        <p>Aún no tienes transacciones registradas.</p>
+      </div>
+
+      <div *ngIf="!loading && transactions.length > 0" class="transactions-grid">
+        <div 
+          *ngFor="let transaction of transactions" 
+          class="transaction-card"
+          [class]="getStatusClass(transaction.status)">
+          
+          <div class="transaction-icon">
+            <i [class]="'icon-' + getTransactionIcon(transaction.type)"></i>
+          </div>
+
+          <div class="transaction-content">
+            <div class="transaction-header">
+              <h4>{{ transaction.type | titlecase }}</h4>
+              <span class="transaction-amount" 
+                    [class.positive]="transaction.type === TransactionType.DEPOSIT || transaction.type === TransactionType.REFUND"
+                    [class.negative]="transaction.type === TransactionType.WITHDRAWAL || transaction.type === TransactionType.PAYMENT">
+                {{ transaction.amount | currency:transaction.currency }}
+              </span>
+            </div>
+
+            <div class="transaction-details">
+              <p *ngIf="transaction.description" class="description">
+                {{ transaction.description }}
+              </p>
+              
+              <div class="transaction-accounts" *ngIf="transaction.fromAccountId || transaction.toAccountId">
+                <span *ngIf="transaction.fromAccountId" class="from-account">
+                  Desde: {{ getAccountName(transaction.fromAccountId) }}
+                </span>
+                <span *ngIf="transaction.toAccountId" class="to-account">
+                  Hacia: {{ getAccountName(transaction.toAccountId) }}
+                </span>
+              </div>
+
+              <div class="transaction-meta">
+                <span class="transaction-date">
+                  {{ transaction.createdAt | date:'short' }}
+                </span>
+                <span class="transaction-status" [class]="'status-' + transaction.status.toLowerCase()">
+                  {{ transaction.status | titlecase }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="transaction-actions">
+            <button 
+              *ngIf="canCancelTransaction(transaction)"
+              class="btn btn-danger btn-sm"
+              (click)="cancelTransaction(transaction)">
+              Cancelar
+            </button>
+            <button 
+              class="btn btn-outline btn-sm"
+              (click)="viewTransactionDetails(transaction)">
+              Detalles
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Paginación -->
+      <div *ngIf="!loading && transactions.length > 0" class="pagination-container">
+        <div class="pagination-info">
+          Mostrando {{ transactions.length }} de {{ totalTransactions }} transacciones
+        </div>
+        <div class="pagination">
+          <button 
+            class="btn btn-outline btn-sm"
+            [disabled]="currentPage === 1"
+            (click)="onPageChange(currentPage - 1)">
+            Anterior
+          </button>
+          
+          <span class="page-info">
+            Página {{ currentPage }} de {{ getTotalPages() }}
+          </span>
+          
+          <button 
+            class="btn btn-outline btn-sm"
+            [disabled]="currentPage === getTotalPages()"
+            (click)="onPageChange(currentPage + 1)">
+            Siguiente
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- FORMULARIO DE TRANSFERENCIA -->
+    <div *ngIf="activeTab === 'transfer'" class="form-container">
+      <form [formGroup]="transferForm" (ngSubmit)="onTransfer()" class="transaction-form">
+        <h2>Realizar Transferencia</h2>
+        
+        <div class="form-group">
+          <label for="fromAccount">Cuenta Origen</label>
+          <select 
+            id="fromAccount" 
+            formControlName="fromAccountId" 
+            class="form-control"
+            [class.error]="transferForm.get('fromAccountId')?.invalid && transferForm.get('fromAccountId')?.touched">
+            <option value="">Selecciona una cuenta</option>
+            <option *ngFor="let account of accounts" [value]="account.id">
+              {{ getAccountName(account.id) }} - Balance: {{ account.balance | currency:account.currency }}
+            </option>
+          </select>
+          <div *ngIf="transferForm.get('fromAccountId')?.invalid && transferForm.get('fromAccountId')?.touched" class="error-message">
+            Cuenta origen es requerida
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="toAccount">Cuenta Destino</label>
+          <select 
+            id="toAccount" 
+            formControlName="toAccountId" 
+            class="form-control"
+            [class.error]="transferForm.get('toAccountId')?.invalid && transferForm.get('toAccountId')?.touched">
+            <option value="">Selecciona una cuenta</option>
+            <option *ngFor="let account of accounts" [value]="account.id">
+              {{ getAccountName(account.id) }}
+            </option>
+          </select>
+          <div *ngIf="transferForm.get('toAccountId')?.invalid && transferForm.get('toAccountId')?.touched" class="error-message">
+            Cuenta destino es requerida
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="transferAmount">Monto</label>
+          <input 
+            type="number" 
+            id="transferAmount"
+            formControlName="amount" 
+            step="0.01"
+            min="0.01"
+            class="form-control"
+            [class.error]="transferForm.get('amount')?.invalid && transferForm.get('amount')?.touched">
+          <div *ngIf="transferForm.get('amount')?.invalid && transferForm.get('amount')?.touched" class="error-message">
+            <div *ngIf="transferForm.get('amount')?.hasError('required')">El monto es requerido</div>
+            <div *ngIf="transferForm.get('amount')?.hasError('min')">El monto debe ser mayor a 0</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="transferDescription">Descripción (opcional)</label>
+          <textarea 
+            id="transferDescription"
+            formControlName="description" 
+            class="form-control"
+            rows="3"
+            placeholder="Concepto de la transferencia..."></textarea>
+        </div>
+
+        <div class="form-actions">
+          <button 
+            type="button" 
+            class="btn btn-secondary"
+            (click)="transferForm.reset()">
+            Limpiar
+          </button>
+          <button 
+            type="submit" 
+            class="btn btn-primary"
+            [disabled]="transferForm.invalid || loading">
+            <span *ngIf="loading" class="spinner-sm"></span>
+            {{ loading ? 'Procesando...' : 'Transferir' }}
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- FORMULARIO DE DEPÓSITO -->
+    <div *ngIf="activeTab === 'deposit'" class="form-container">
+      <form [formGroup]="depositForm" (ngSubmit)="onDeposit()" class="transaction-form">
+        <h2>Realizar Depósito</h2>
+        
+        <div class="form-group">
+          <label for="depositAccount">Cuenta</label>
+          <select 
+            id="depositAccount" 
+            formControlName="accountId" 
+            class="form-control"
+            [class.error]="depositForm.get('accountId')?.invalid && depositForm.get('accountId')?.touched">
+            <option value="">Selecciona una cuenta</option>
+            <option *ngFor="let account of accounts" [value]="account.id">
+              {{ getAccountName(account.id) }}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="depositAmount">Monto</label>
+          <input 
+            type="number" 
+            id="depositAmount"
+            formControlName="amount" 
+            step="0.01"
+            min="0.01"
+            class="form-control"
+            [class.error]="depositForm.get('amount')?.invalid && depositForm.get('amount')?.touched">
+        </div>
+
+        <div class="form-group">
+          <label for="depositMethod">Método</label>
+          <select 
+            id="depositMethod" 
+            formControlName="method" 
+            class="form-control">
+            <option value="BANK_TRANSFER">Transferencia Bancaria</option>
+            <option value="CASH">Efectivo</option>
+            <option value="CHECK">Cheque</option>
+            <option value="ONLINE">En Línea</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="depositDescription">Descripción (opcional)</label>
+          <textarea 
+            id="depositDescription"
+            formControlName="description" 
+            class="form-control"
+            rows="3"></textarea>
+        </div>
+
+        <div class="form-actions">
+          <button 
+            type="button" 
+            class="btn btn-secondary"
+            (click)="depositForm.reset()">
+            Limpiar
+          </button>
+          <button 
+            type="submit" 
+            class="btn btn-primary"
+            [disabled]="depositForm.invalid || loading">
+            {{ loading ? 'Procesando...' : 'Depositar' }}
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- FORMULARIO DE RETIRO -->
+    <div *ngIf="activeTab === 'withdrawal'" class="form-container">
+      <form [formGroup]="withdrawalForm" (ngSubmit)="onWithdrawal()" class="transaction-form">
+        <h2>Realizar Retiro</h2>
+        
+        <div class="form-group">
+          <label for="withdrawalAccount">Cuenta</label>
+          <select 
+            id="withdrawalAccount" 
+            formControlName="accountId" 
+            class="form-control">
+            <option value="">Selecciona una cuenta</option>
+            <option *ngFor="let account of accounts" [value]="account.id">
+              {{ getAccountName(account.id) }} - Balance: {{ account.balance | currency:account.currency }}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="withdrawalAmount">Monto</label>
+          <input 
+            type="number" 
+            id="withdrawalAmount"
+            formControlName="amount" 
+            step="0.01"
+            min="0.01"
+            class="form-control">
+        </div>
+
+        <div class="form-group">
+          <label for="withdrawalMethod">Método</label>
+          <select 
+            id="withdrawalMethod" 
+            formControlName="method" 
+            class="form-control">
+            <option value="ATM">Cajero Automático</option>
+            <option value="BANK_TRANSFER">Transferencia Bancaria</option>
+            <option value="CASH">Efectivo</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="withdrawalDescription">Descripción (opcional)</label>
+          <textarea 
+            id="withdrawalDescription"
+            formControlName="description" 
+            class="form-control"
+            rows="3"></textarea>
+        </div>
+
+        <div class="form-actions">
+          <button 
+            type="button" 
+            class="btn btn-secondary"
+            (click)="withdrawalForm.reset()">
+            Limpiar
+          </button>
+          <button 
+            type="submit" 
+            class="btn btn-primary"
+            [disabled]="withdrawalForm.invalid || loading">
+            {{ loading ? 'Procesando...' : 'Retirar' }}
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- FORMULARIO DE PAGO -->
+    <div *ngIf="activeTab === 'payment'" class="form-container">
+      <form [formGroup]="paymentForm" (ngSubmit)="onPayment()" class="transaction-form">
+        <h2>Realizar Pago</h2>
+        
+        <div class="form-group">
+          <label for="paymentAccount">Cuenta</label>
+          <select 
+            id="paymentAccount" 
+            formControlName="accountId" 
+            class="form-control">
+            <option value="">Selecciona una cuenta</option>
+            <option *ngFor="let account of accounts" [value]="account.id">
+              {{ getAccountName(account.id) }} - Balance: {{ account.balance | currency:account.currency }}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="paymentAmount">Monto</label>
+          <input 
+            type="number" 
+            id="paymentAmount"
+            formControlName="amount" 
+            step="0.01"
+            min="0.01"
+            class="form-control">
+        </div>
+
+        <div class="form-group">
+          <label for="merchantName">Comercio (opcional)</label>
+          <input 
+            type="text" 
+            id="merchantName"
+            formControlName="merchantName" 
+            class="form-control"
+            placeholder="Nombre del comercio...">
+        </div>
+
+        <div class="form-group">
+          <label for="paymentDescription">Descripción</label>
+          <textarea 
+            id="paymentDescription"
+            formControlName="description" 
+            class="form-control"
+            rows="3"
+            placeholder="Concepto del pago..."></textarea>
+        </div>
+
+        <div class="form-actions">
+          <button 
+            type="button" 
+            class="btn btn-secondary"
+            (click)="paymentForm.reset()">
+            Limpiar
+          </button>
+          <button 
+            type="submit" 
+            class="btn btn-primary"
+            [disabled]="paymentForm.invalid || loading">
+            {{ loading ? 'Procesando...' : 'Pagar' }}
+          </button>
+        </div>
+      </form>
+    </div>
+
+  </div>
+</div>

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { AccountService } from '../../services/account.service';
+import { TransactionService } from '../../services/transaction.service';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -10,8 +11,8 @@ import { MatGridListModule } from '@angular/material/grid-list';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { HasPermissionDirective } from '../../shared/directives/has-permission.directive';
 import { HasRoleDirective } from '../../shared/directives/has-role.directive';
-import { Permission, UserRole, Account, AccountType, Currency } from '../../models';
-import { Subject, takeUntil } from 'rxjs';
+import { Permission, UserRole, Account, AccountType, Currency, Transaction, TransactionType } from '../../models';
+import { Subject, takeUntil, forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-dashboard',
@@ -33,11 +34,14 @@ import { Subject, takeUntil } from 'rxjs';
 export class DashboardComponent implements OnInit, OnDestroy {
   private readonly auth = inject(AuthService);
   private readonly accountService = inject(AccountService);
+  private readonly transactionService = inject(TransactionService);
   private readonly destroy$ = new Subject<void>();
 
   // Signals para datos del dashboard
   accounts = signal<Account[]>([]);
+  recentTransactions = signal<Transaction[]>([]);
   loading = signal(false);
+  loadingTransactions = signal(false);
   totalWalletBalance = signal(0);
   totalWalletBalanceUSD = signal(0);
   totalCreditLimit = signal(0);
@@ -47,6 +51,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   // Exponemos los enums para usar en el template
   readonly Permission = Permission;
   readonly UserRole = UserRole;
+  readonly TransactionType = TransactionType;
 
   get currentUser() {
     return this.auth.currentUserSig;
@@ -62,6 +67,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     
     // Cargar datos del dashboard
     this.loadDashboardData();
+    this.loadRecentTransactions();
   }
 
   ngOnDestroy(): void {
@@ -169,5 +175,45 @@ export class DashboardComponent implements OnInit, OnDestroy {
     
     // Logging final para debug
     console.log('Dashboard: Stats updated - walletARS:', this.totalWalletBalance(), 'walletUSD:', this.totalWalletBalanceUSD(), 'credit:', this.totalCreditLimit(), 'accounts:', this.activeAccountsCount());
+  }
+
+  private loadRecentTransactions(): void {
+    const user = this.currentUser();
+    
+    if (!user?.id) {
+      console.log('Dashboard: No user ID available for transactions');
+      return;
+    }
+
+    console.log('Dashboard: Loading recent transactions for user ID:', user.id);
+    this.loadingTransactions.set(true);
+    
+    this.transactionService.getRecentTransactions(user.id, 5).pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (transactions) => {
+        console.log('Dashboard: Loaded recent transactions:', transactions);
+        this.recentTransactions.set(transactions);
+        this.transactionsCount.set(transactions.length);
+        this.loadingTransactions.set(false);
+      },
+      error: (error) => {
+        console.error('Error loading recent transactions:', error);
+        this.loadingTransactions.set(false);
+        this.recentTransactions.set([]);
+        this.transactionsCount.set(0);
+      }
+    });
+  }
+
+  // Métodos para el template
+  getTransactionIcon(type: TransactionType): string {
+    return this.transactionService.getTransactionIcon(type);
+  }
+
+  getTransactionAmount(transaction: Transaction): number {
+    // Para mostrar en el dashboard con signo correcto
+    const isPositive = [TransactionType.DEPOSIT, TransactionType.REFUND, TransactionType.SALARY].includes(transaction.type);
+    return isPositive ? transaction.amount : -transaction.amount;
   }
 }
