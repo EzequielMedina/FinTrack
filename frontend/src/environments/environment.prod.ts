@@ -3,5 +3,6 @@ export const environment = {
   apiUrl: '/api',
   wsUrl: '/ws',
   accountServiceUrl: '/api',
-  userServiceUrl: '/api'
+  userServiceUrl: '/api',
+  transactionServiceUrl: '/api'
 };
