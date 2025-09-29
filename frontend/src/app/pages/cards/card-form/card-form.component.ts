@@ -103,6 +103,7 @@ export class CardFormComponent implements OnInit, OnDestroy {
       expirationMonth: ['', [Validators.required]],
       expirationYear: ['', [Validators.required]],
       cvv: [''],
+      creditLimit: [''],
       nickname: ['', [Validators.maxLength(30)]]
     });
 
@@ -217,6 +218,28 @@ export class CardFormComponent implements OnInit, OnDestroy {
       takeUntil(this.destroy$)
     ).subscribe(() => {
       this.validateExpirationDate();
+    });
+
+    // Validación condicional para creditLimit según el tipo de tarjeta
+    this.cardForm.get('cardType')?.valueChanges.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe(cardType => {
+      const creditLimitControl = this.cardForm.get('creditLimit');
+      if (creditLimitControl) {
+        if (cardType === CardType.CREDIT) {
+          // Para tarjetas de crédito, el límite es requerido
+          creditLimitControl.setValidators([
+            Validators.required,
+            Validators.min(100),
+            Validators.max(10000000000)
+          ]);
+        } else {
+          // Para tarjetas de débito, no se requiere límite
+          creditLimitControl.clearValidators();
+          creditLimitControl.setValue('');
+        }
+        creditLimitControl.updateValueAndValidity();
+      }
     });
   }
 
@@ -376,7 +399,32 @@ export class CardFormComponent implements OnInit, OnDestroy {
       const errors = control.errors;
       if (errors) {
         const errorKey = Object.keys(errors)[0];
-        return errors[errorKey];
+        const errorValue = errors[errorKey];
+        
+        // Handle specific error types
+        switch (errorKey) {
+          case 'required':
+            return 'Este campo es requerido';
+          case 'min':
+            return `El valor mínimo es ${errorValue.min}`;
+          case 'max':
+            return `El valor máximo es ${errorValue.max}`;
+          case 'minlength':
+            return `Mínimo ${errorValue.requiredLength} caracteres`;
+          case 'maxlength':
+            return `Máximo ${errorValue.requiredLength} caracteres`;
+          case 'pattern':
+            return 'Formato inválido';
+          case 'invalidCardNumber':
+            return 'Número de tarjeta inválido';
+          case 'invalidCvv':
+            return 'CVV inválido';
+          case 'invalidExpirationDate':
+            return 'Fecha de expiración inválida';
+          default:
+            // If it's a string, return it; if it's an object, return a generic message
+            return typeof errorValue === 'string' ? errorValue : 'Campo inválido';
+        }
       }
     }
     return null;

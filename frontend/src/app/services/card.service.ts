@@ -39,7 +39,6 @@ export class CardService {
           expiration_year: cardData.expirationYear,
           nickname: cardData.nickname,
           encrypted_number: encryptedData.encryptedNumber,
-          encrypted_cvv: encryptedData.encryptedCvv,
           key_fingerprint: encryptedData.keyFingerprint,
           // Campos específicos para tarjetas de crédito
           ...(cardData.cardType === CardType.CREDIT && cardData.creditLimit && {

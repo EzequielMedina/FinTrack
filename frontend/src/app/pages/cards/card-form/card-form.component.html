@@ -122,21 +122,42 @@
           </mat-form-field>
         </div>
 
-        <!-- CVV (only for creation) -->
-        @if (data.mode === 'create') {
-          <mat-form-field appearance="outline" class="cvv-field">
-            <mat-label>CVV</mat-label>
-            <input 
-              matInput 
-              formControlName="cvv" 
-              type="password"
-              placeholder="123"
-              maxlength="4"
-              required>
-            <mat-icon matSuffix matTooltip="Código de seguridad de 3 o 4 dígitos">help_outline</mat-icon>
-            <mat-error>{{ getFieldError('cvv') }}</mat-error>
-          </mat-form-field>
-        }
+        <!-- CVV and Credit Limit Row -->
+        <div class="form-row">
+          <!-- CVV -->
+          @if (data.mode === 'create') {
+            <mat-form-field appearance="outline" class="half-width">
+              <mat-label>CVV</mat-label>
+              <input 
+                matInput 
+                formControlName="cvv" 
+                type="password"
+                maxlength="4"
+                placeholder="123"
+                required>
+              <mat-hint>Código de seguridad de 3 o 4 dígitos</mat-hint>
+              <mat-error>{{ getFieldError('cvv') }}</mat-error>
+            </mat-form-field>
+          }
+
+          <!-- Credit Limit (only for credit cards) -->
+          @if (cardForm.get('cardType')?.value === 'credit') {
+            <mat-form-field appearance="outline" class="half-width">
+              <mat-label>Límite de crédito</mat-label>
+              <input 
+                matInput 
+                formControlName="creditLimit" 
+                type="number"
+                placeholder="5000"
+                min="100"
+                step="100"
+                required>
+              <span matTextPrefix>$&nbsp;</span>
+              <mat-hint>Límite mínimo: $100</mat-hint>
+              <mat-error>{{ getFieldError('creditLimit') }}</mat-error>
+            </mat-form-field>
+          }
+        </div>
 
         <!-- Nickname -->
         <mat-form-field appearance="outline" class="full-width">
