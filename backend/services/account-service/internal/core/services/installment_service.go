@@ -612,18 +612,18 @@ func (s *InstallmentService) GetMonthlyInstallmentLoad(userID string, year, mont
 	}
 
 	response := map[string]interface{}{
-		"user_id":             userID,
-		"year":                year,
-		"month":               month,
-		"total_installments":  totalInstallments,
-		"total_amount":        totalAmount,
-		"paid_installments":   paidInstallments,
-		"paid_amount":         paidAmount,
+		"user_id":              userID,
+		"year":                 year,
+		"month":                month,
+		"total_installments":   totalInstallments,
+		"total_amount":         totalAmount,
+		"paid_installments":    paidInstallments,
+		"paid_amount":          paidAmount,
 		"pending_installments": pendingInstallments,
-		"pending_amount":      pendingAmount,
+		"pending_amount":       pendingAmount,
 		"overdue_installments": overdueInstallments,
-		"overdue_amount":      overdueAmount,
-		"daily_breakdown":     dailyBreakdown,
+		"overdue_amount":       overdueAmount,
+		"daily_breakdown":      dailyBreakdown,
 	}
 
 	return response, nil
