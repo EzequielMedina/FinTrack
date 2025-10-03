@@ -394,8 +394,6 @@ func (s *TransactionService) GetTransactionByID(id string, userID string) (*doma
 	return transaction, nil
 }
 
-
-
 // GetTransactionsByUser retrieves transactions for a user with filtering
 func (s *TransactionService) GetTransactionsByUser(userID string, filters TransactionFilters) ([]*domaintransaction.Transaction, int, error) {
 	if userID == "" {

@@ -46,20 +46,20 @@ type CreateTransactionRequest struct {
 
 // TransactionResponse represents the response from transaction service
 type TransactionResponse struct {
-	ID              string                 `json:"id"`
-	ReferenceID     string                 `json:"referenceId"`
-	Type            string                 `json:"type"`
-	Status          string                 `json:"status"`
-	Amount          float64                `json:"amount"`
-	Currency        string                 `json:"currency"`
-	FromAccountID   *string                `json:"fromAccountId"`
-	ToAccountID     *string                `json:"toAccountId"`
-	Description     string                 `json:"description"`
-	PaymentMethod   string                 `json:"paymentMethod"`
-	MerchantName    string                 `json:"merchantName"`
-	Metadata        map[string]interface{} `json:"metadata"`
-	CreatedAt       time.Time              `json:"createdAt"`
-	UpdatedAt       time.Time              `json:"updatedAt"`
+	ID            string                 `json:"id"`
+	ReferenceID   string                 `json:"referenceId"`
+	Type          string                 `json:"type"`
+	Status        string                 `json:"status"`
+	Amount        float64                `json:"amount"`
+	Currency      string                 `json:"currency"`
+	FromAccountID *string                `json:"fromAccountId"`
+	ToAccountID   *string                `json:"toAccountId"`
+	Description   string                 `json:"description"`
+	PaymentMethod string                 `json:"paymentMethod"`
+	MerchantName  string                 `json:"merchantName"`
+	Metadata      map[string]interface{} `json:"metadata"`
+	CreatedAt     time.Time              `json:"createdAt"`
+	UpdatedAt     time.Time              `json:"updatedAt"`
 }
 
 // CreateTransaction creates a transaction in the transaction service
