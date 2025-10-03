@@ -2,7 +2,6 @@ package mysql
 
 import (
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/fintrack/account-service/internal/core/domain/entities"
@@ -48,7 +47,7 @@ func (r *InstallmentPlanRepository) GetByIDWithInstallments(planID string) (*ent
 	err := r.db.Preload("Installments", func(db *gorm.DB) *gorm.DB {
 		return db.Order("installment_number ASC")
 	}).Where("id = ?", planID).First(&plan).Error
-	
+
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, fmt.Errorf("installment plan not found")
@@ -64,7 +63,7 @@ func (r *InstallmentPlanRepository) GetByCard(cardID string, status string, limi
 	var total int64
 
 	query := r.db.Model(&entities.InstallmentPlan{}).Where("card_id = ?", cardID)
-	
+
 	if status != "" {
 		query = query.Where("status = ?", status)
 	}
@@ -95,7 +94,7 @@ func (r *InstallmentPlanRepository) GetByUser(userID string, status string, limi
 	query := r.db.Model(&entities.InstallmentPlan{}).
 		Preload("Card").
 		Where("user_id = ?", userID)
-	
+
 	if status != "" {
 		query = query.Where("status = ?", status)
 	}
@@ -192,11 +191,11 @@ func (r *InstallmentPlanRepository) GetCompletedByCard(cardID string, limit, off
 // GetOverdueByUser retrieves installment plans with overdue installments for a user
 func (r *InstallmentPlanRepository) GetOverdueByUser(userID string) ([]*entities.InstallmentPlan, error) {
 	var plans []*entities.InstallmentPlan
-	
+
 	// Join with installments table to find plans with overdue installments
 	err := r.db.Distinct("installment_plans.*").
 		Joins("JOIN installments ON installment_plans.id = installments.plan_id").
-		Where("installment_plans.user_id = ? AND installment_plans.status = ? AND installments.status = ?", 
+		Where("installment_plans.user_id = ? AND installment_plans.status = ? AND installments.status = ?",
 			userID, entities.InstallmentPlanStatusActive, entities.InstallmentStatusOverdue).
 		Preload("Installments", "status = ?", entities.InstallmentStatusOverdue).
 		Find(&plans).Error
@@ -244,7 +243,7 @@ func (r *InstallmentPlanRepository) GetSummaryByUser(userID string) (*dto.Instal
 	// Get financial summary for active plans
 	type FinancialSummary struct {
 		TotalOutstanding float64
-		TotalPaid       float64
+		TotalPaid        float64
 	}
 
 	var financial FinancialSummary
@@ -286,16 +285,16 @@ func (r *InstallmentPlanRepository) GetSummaryByUser(userID string) (*dto.Instal
 // GetPlansWithUpcomingPayments retrieves plans with payments due in the next N days
 func (r *InstallmentPlanRepository) GetPlansWithUpcomingPayments(userID string, days int) ([]*entities.InstallmentPlan, error) {
 	cutoffDate := time.Now().AddDate(0, 0, days)
-	
+
 	var plans []*entities.InstallmentPlan
 	err := r.db.Distinct("installment_plans.*").
 		Joins("JOIN installments ON installment_plans.id = installments.plan_id").
-		Where("installment_plans.user_id = ? AND installment_plans.status = ? AND installments.status IN ? AND installments.due_date <= ?", 
-			userID, entities.InstallmentPlanStatusActive, 
-			[]string{string(entities.InstallmentStatusPending), string(entities.InstallmentStatusOverdue)}, 
+		Where("installment_plans.user_id = ? AND installment_plans.status = ? AND installments.status IN ? AND installments.due_date <= ?",
+			userID, entities.InstallmentPlanStatusActive,
+			[]string{string(entities.InstallmentStatusPending), string(entities.InstallmentStatusOverdue)},
 			cutoffDate).
-		Preload("Installments", "status IN ? AND due_date <= ?", 
-			[]string{string(entities.InstallmentStatusPending), string(entities.InstallmentStatusOverdue)}, 
+		Preload("Installments", "status IN ? AND due_date <= ?",
+			[]string{string(entities.InstallmentStatusPending), string(entities.InstallmentStatusOverdue)},
 			cutoffDate).
 		Order("installment_plans.created_at DESC").
 		Find(&plans).Error
@@ -414,7 +413,7 @@ func (r *InstallmentPlanRepository) GetMonthlyBreakdown(userID string, year int)
 	}
 
 	var monthlyData []MonthlyData
-	
+
 	// Complex query to get monthly breakdown
 	query := `
 		SELECT 

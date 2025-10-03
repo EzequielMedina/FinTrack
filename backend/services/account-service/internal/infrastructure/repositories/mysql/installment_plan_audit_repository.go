@@ -55,7 +55,7 @@ func (r *InstallmentPlanAuditRepository) GetByPlan(planID string, limit, offset 
 // GetByInstallment retrieves audit records for a specific installment
 func (r *InstallmentPlanAuditRepository) GetByInstallment(installmentID string) ([]*entities.InstallmentPlanAudit, error) {
 	var audits []*entities.InstallmentPlanAudit
-	
+
 	err := r.db.Where("installment_id = ?", installmentID).
 		Order("created_at DESC").
 		Find(&audits).Error
@@ -146,7 +146,7 @@ func (r *InstallmentPlanAuditRepository) CreatePaymentAudit(planID, installmentI
 func (r *InstallmentPlanAuditRepository) CreateStatusChangeAudit(planID string, oldStatus, newStatus entities.InstallmentPlanStatus, changedBy, reason string) error {
 	oldStatusStr := string(oldStatus)
 	newStatusStr := string(newStatus)
-	
+
 	audit := &entities.InstallmentPlanAudit{
 		PlanID:       planID,
 		Action:       "status_changed",
@@ -176,7 +176,7 @@ func (r *InstallmentPlanAuditRepository) CreatePlanCreationAudit(planID, created
 func (r *InstallmentPlanAuditRepository) CreatePlanCancellationAudit(planID, cancelledBy, reason string) error {
 	oldStatus := string(entities.InstallmentPlanStatusActive)
 	newStatus := string(entities.InstallmentPlanStatusCancelled)
-	
+
 	audit := &entities.InstallmentPlanAudit{
 		PlanID:       planID,
 		Action:       "cancelled",
@@ -193,7 +193,7 @@ func (r *InstallmentPlanAuditRepository) CreatePlanCancellationAudit(planID, can
 func (r *InstallmentPlanAuditRepository) CreatePlanCompletionAudit(planID string, completedBy string) error {
 	oldStatus := string(entities.InstallmentPlanStatusActive)
 	newStatus := string(entities.InstallmentPlanStatusCompleted)
-	
+
 	audit := &entities.InstallmentPlanAudit{
 		PlanID:       planID,
 		Action:       "completed",
@@ -214,7 +214,7 @@ func (r *InstallmentPlanAuditRepository) GetAuditSummary(userID string, dateFrom
 	}
 
 	var summaries []AuditSummary
-	
+
 	query := `
 		SELECT 
 			ipa.action,
@@ -243,7 +243,7 @@ func (r *InstallmentPlanAuditRepository) GetAuditSummary(userID string, dateFrom
 // GetRecentActivity retrieves recent audit activity for a user
 func (r *InstallmentPlanAuditRepository) GetRecentActivity(userID string, limit int) ([]*entities.InstallmentPlanAudit, error) {
 	var audits []*entities.InstallmentPlanAudit
-	
+
 	err := r.db.Joins("JOIN installment_plans ON installment_plan_audit.plan_id = installment_plans.id").
 		Where("installment_plans.user_id = ?", userID).
 		Order("installment_plan_audit.created_at DESC").
@@ -301,7 +301,7 @@ func (r *InstallmentPlanAuditRepository) BulkCreateAudit(audits []*entities.Inst
 // DeleteOldAuditRecords deletes audit records older than specified date (for maintenance)
 func (r *InstallmentPlanAuditRepository) DeleteOldAuditRecords(cutoffDate time.Time) (int64, error) {
 	result := r.db.Where("created_at < ?", cutoffDate).Delete(&entities.InstallmentPlanAudit{})
-	
+
 	if result.Error != nil {
 		return 0, fmt.Errorf("failed to delete old audit records: %w", result.Error)
 	}
@@ -337,19 +337,19 @@ func (r *InstallmentPlanAuditRepository) GetAuditsByIPAddress(ipAddress string, 
 // GetAuditStatistics retrieves comprehensive audit statistics
 func (r *InstallmentPlanAuditRepository) GetAuditStatistics(dateFrom, dateTo time.Time) (map[string]interface{}, error) {
 	type Stats struct {
-		TotalAudits          int64  `json:"total_audits"`
-		UniqueUsers          int64  `json:"unique_users"`
-		UniquePlans          int64  `json:"unique_plans"`
-		MostCommonAction     string `json:"most_common_action"`
-		MostActiveUser       string `json:"most_active_user"`
-		PaymentAudits        int64  `json:"payment_audits"`
-		StatusChangeAudits   int64  `json:"status_change_audits"`
-		CreationAudits       int64  `json:"creation_audits"`
-		CancellationAudits   int64  `json:"cancellation_audits"`
+		TotalAudits        int64  `json:"total_audits"`
+		UniqueUsers        int64  `json:"unique_users"`
+		UniquePlans        int64  `json:"unique_plans"`
+		MostCommonAction   string `json:"most_common_action"`
+		MostActiveUser     string `json:"most_active_user"`
+		PaymentAudits      int64  `json:"payment_audits"`
+		StatusChangeAudits int64  `json:"status_change_audits"`
+		CreationAudits     int64  `json:"creation_audits"`
+		CancellationAudits int64  `json:"cancellation_audits"`
 	}
 
 	var stats Stats
-	
+
 	// Get basic counts
 	err := r.db.Model(&entities.InstallmentPlanAudit{}).
 		Where("created_at BETWEEN ? AND ?", dateFrom, dateTo).
@@ -420,15 +420,15 @@ func (r *InstallmentPlanAuditRepository) GetAuditStatistics(dateFrom, dateTo tim
 
 	// Convert to map
 	result := map[string]interface{}{
-		"total_audits":          stats.TotalAudits,
-		"unique_users":          stats.UniqueUsers,
-		"unique_plans":          stats.UniquePlans,
-		"most_common_action":    stats.MostCommonAction,
-		"most_active_user":      stats.MostActiveUser,
-		"payment_audits":        stats.PaymentAudits,
-		"status_change_audits":  stats.StatusChangeAudits,
-		"creation_audits":       stats.CreationAudits,
-		"cancellation_audits":   stats.CancellationAudits,
+		"total_audits":         stats.TotalAudits,
+		"unique_users":         stats.UniqueUsers,
+		"unique_plans":         stats.UniquePlans,
+		"most_common_action":   stats.MostCommonAction,
+		"most_active_user":     stats.MostActiveUser,
+		"payment_audits":       stats.PaymentAudits,
+		"status_change_audits": stats.StatusChangeAudits,
+		"creation_audits":      stats.CreationAudits,
+		"cancellation_audits":  stats.CancellationAudits,
 	}
 
 	return result, nil

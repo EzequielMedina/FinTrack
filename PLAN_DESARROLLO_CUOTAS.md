@@ -105,30 +105,46 @@ Implementar un sistema completo de cuotas para tarjetas de crédito que permita 
 
 ## 🌐 FASE 3: BACKEND - APIs Y ENDPOINTS
 
-### 3.1 Handlers (Account-Service)
-- [ ] Crear `installment_handler.go`
-  - [ ] POST `/api/cards/{cardId}/installments/preview` - Preview de cuotas
-  - [ ] POST `/api/cards/{cardId}/charge-installments` - Compra con cuotas
-  - [ ] GET `/api/cards/{cardId}/installment-plans` - Planes activos por tarjeta
-  - [ ] GET `/api/installment-plans/{planId}` - Detalle de plan específico
-  - [ ] POST `/api/installments/{installmentId}/pay` - Pagar cuota
-  - [ ] GET `/api/installments/{installmentId}` - Detalle de cuota
-- [ ] Actualizar `card_handler.go`
-  - [ ] Modificar respuestas para incluir información de cuotas
-  - [ ] Agregar validaciones para operaciones con cuotas
+### 3.1 Handlers (Account-Service) ✅ COMPLETADA
+- [x] Crear `installment_handler.go`
+  - [x] POST `/api/cards/{cardId}/installments/preview` - Preview de cuotas
+  - [x] POST `/api/cards/{cardId}/charge-installments` - Compra con cuotas
+  - [x] GET `/api/cards/{cardId}/installment-plans` - Planes activos por tarjeta
+  - [x] GET `/api/installment-plans/{planId}` - Detalle de plan específico
+  - [x] POST `/api/installments/{installmentId}/pay` - Pagar cuota
+  - [x] GET `/api/installments/{installmentId}` - Detalle de cuota
+  - [x] GET `/api/installment-plans` - Listar todos los planes con paginación
+  - [x] GET `/api/installments` - Listar todas las cuotas con paginación
+  - [x] GET `/api/users/{userId}/installment-summary` - Resumen por usuario
+  - [x] POST `/api/installments/{installmentId}/monthly-load` - Descuento automático
+  - [x] POST `/api/installment-plans/{planId}/cancel` - Cancelar plan
+- [x] Actualizar `card_handler.go`
+  - [x] Agregar endpoint POST `/api/cards/{cardId}/charge-installments`
+  - [x] Actualizar interfaz CardServiceInterface
 
-### 3.2 Routing y Middleware
-- [ ] Actualizar `router.go`
-  - [ ] Registrar nuevas rutas de installments
-  - [ ] Aplicar middleware de autenticación
-  - [ ] Configurar rate limiting si es necesario
+### 3.2 Routing y Middleware ✅ COMPLETADA
+- [x] Actualizar `router.go`
+  - [x] Registrar nuevas rutas de installments
+  - [x] Aplicar middleware de autenticación
+  - [x] Configurar dependency injection para InstallmentHandler
+- [x] Actualizar dependency injection
+  - [x] Conectar InstallmentService e InstallmentHandler
+  - [x] Verificar configuración de todos los servicios
 
-### 3.3 Integración con Transaction-Service
-- [ ] Actualizar `transaction_client.go`
-  - [ ] Agregar método CreateInstallmentTransaction
-  - [ ] Enviar metadata de cuotas en transacciones
-  - [ ] Manejar registro de pagos de cuotas
-- [ ] Validar comunicación entre servicios
+### 3.3 Integración con Transaction-Service ✅ COMPLETADA
+- [x] Actualizar `transaction_client.go`
+  - [x] Agregar método CreateInstallmentTransaction
+  - [x] Enviar metadata de cuotas en transacciones
+  - [x] Manejar registro de pagos de cuotas
+  - [x] Agregar CreateInstallmentPaymentTransaction
+  - [x] Agregar CreateInstallmentCancellationTransaction
+  - [x] Agregar GetTransactionsByInstallmentPlan
+  - [x] Agregar HealthCheck para validación de conectividad
+- [x] Validar comunicación entre servicios
+  - [x] Integrar transaction client en InstallmentService
+  - [x] Agregar llamadas async para registro de transacciones
+  - [x] Actualizar CardService para usar InstallmentService
+  - [x] Configurar dependency injection correctamente
 
 ---
 

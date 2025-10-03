@@ -21,3 +21,25 @@ type AccountServiceInterface interface {
 	// Status operations
 	UpdateAccountStatus(accountID string, isActive bool) (*entities.Account, error)
 }
+
+// InstallmentServiceInterface defines the contract for installment service operations
+type InstallmentServiceInterface interface {
+	// Preview and calculation
+	CalculateInstallmentPlan(amount float64, installments int, interestRate float64) (*entities.InstallmentPlan, []*entities.Installment, error)
+
+	// Plan management
+	CreateInstallmentPlan(cardID string, amount float64, installments int, interestRate float64, description string) (*entities.InstallmentPlan, error)
+	GetInstallmentPlansByCard(cardID string, page, pageSize int) ([]*entities.InstallmentPlan, int64, error)
+	GetInstallmentPlanByID(planID string) (*entities.InstallmentPlan, error)
+	CancelInstallmentPlan(planID string, reason string) error
+
+	// Installment operations
+	PayInstallment(installmentID string, amount float64) (*entities.Installment, error)
+	GetInstallmentsByStatus(status string, page, pageSize int) ([]*entities.Installment, int64, error)
+	GetOverdueInstallments(page, pageSize int) ([]*entities.Installment, int64, error)
+	GetUpcomingInstallments(days int, page, pageSize int) ([]*entities.Installment, int64, error)
+
+	// Summary and reporting
+	GetInstallmentsSummary(userID string) (map[string]interface{}, error)
+	GetMonthlyInstallmentsLoad(userID string, year, month int) ([]map[string]interface{}, error)
+}

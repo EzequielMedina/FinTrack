@@ -541,3 +541,66 @@ func (h *Handler) getErrorStatus(err error) int {
 	// Default to internal server error for unhandled cases
 	return http.StatusInternalServerError
 }
+
+// ChargeCardWithInstallments charges a credit card with installment plan
+// @Summary Charge card with installments
+// @Description Create a purchase on a credit card with installment plan
+// @Tags Cards
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path string true "Card ID"
+// @Param charge body dto.CreditCardChargeWithInstallmentsRequest true "Charge with installments data"
+// @Success 201 {object} dto.ChargeWithInstallmentsResponse "Purchase created with installments"
+// @Failure 400 {object} map[string]string "Invalid request data"
+// @Failure 404 {object} map[string]string "Card not found"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Router /api/cards/{id}/charge-installments [post]
+func (h *Handler) ChargeCardWithInstallments(c *gin.Context) {
+	cardID := c.Param("id")
+	if cardID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "card ID is required"})
+		return
+	}
+
+	var req dto.CreditCardChargeWithInstallmentsRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Convert to CreateInstallmentPlanRequest
+	installmentReq := &dto.CreateInstallmentPlanRequest{
+		CardID:            cardID,
+		TotalAmount:       req.Amount,
+		InstallmentsCount: req.InstallmentsCount,
+		StartDate:         req.StartDate,
+		Description:       req.Description,
+		MerchantName:      req.MerchantName,
+		MerchantID:        req.MerchantID,
+		InterestRate:      req.InterestRate,
+		AdminFee:          req.AdminFee,
+		Reference:         req.Reference,
+	}
+
+	// Set user context from middleware
+	userID := c.GetString("user_id")
+	if userID == "" {
+		userID = c.GetHeader("X-User-ID")
+		if userID == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "user not authenticated"})
+			return
+		}
+	}
+	installmentReq.UserID = userID
+	installmentReq.InitiatedBy = userID
+
+	// Create charge with installments
+	response, err := h.cardService.ChargeCardWithInstallments(installmentReq)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, response)
+}

@@ -14,10 +14,10 @@ import (
 
 // InstallmentService implements the installment service interface
 type InstallmentService struct {
-	installmentPlanRepo      ports.InstallmentPlanRepositoryInterface
-	installmentRepo          ports.InstallmentRepositoryInterface
-	installmentAuditRepo     ports.InstallmentPlanAuditRepositoryInterface
-	cardRepo                 ports.CardRepositoryInterface
+	installmentPlanRepo  ports.InstallmentPlanRepositoryInterface
+	installmentRepo      ports.InstallmentRepositoryInterface
+	installmentAuditRepo ports.InstallmentPlanAuditRepositoryInterface
+	cardRepo             ports.CardRepositoryInterface
 }
 
 // NewInstallmentService creates a new installment service
@@ -61,21 +61,21 @@ func (s *InstallmentService) CalculateInstallmentPlan(amount float64, installmen
 	// Generate installment preview items
 	installments := make([]dto.InstallmentPreviewItem, installmentsCount)
 	remainingPrincipal := amount
-	
+
 	for i := 0; i < installmentsCount; i++ {
 		dueDate := startDate.AddDate(0, i, 0) // Monthly installments
-		
+
 		// Calculate interest for this installment
 		interestForInstallment := totalInterest / float64(installmentsCount)
 		principalForInstallment := installmentAmount - interestForInstallment
-		
+
 		// Adjust last installment for rounding differences
 		if i == installmentsCount-1 {
 			// Ensure the last installment covers any rounding differences
 			principalForInstallment = remainingPrincipal
 			installmentAmount = principalForInstallment + interestForInstallment
 		}
-		
+
 		installments[i] = dto.InstallmentPreviewItem{
 			Number:             i + 1,
 			Amount:             math.Round(installmentAmount*100) / 100,
@@ -84,7 +84,7 @@ func (s *InstallmentService) CalculateInstallmentPlan(amount float64, installmen
 			Interest:           math.Round(interestForInstallment*100) / 100,
 			RemainingPrincipal: math.Round(remainingPrincipal*100) / 100,
 		}
-		
+
 		remainingPrincipal -= principalForInstallment
 	}
 
@@ -95,9 +95,9 @@ func (s *InstallmentService) CalculateInstallmentPlan(amount float64, installmen
 		StartDate:         startDate,
 		InterestRate:      interestRate,
 		TotalInterest:     math.Round(totalInterest*100) / 100,
-		AdminFee:         adminFee,
-		TotalToPay:       math.Round(totalToPay*100) / 100,
-		Installments:     installments,
+		AdminFee:          adminFee,
+		TotalToPay:        math.Round(totalToPay*100) / 100,
+		Installments:      installments,
 	}, nil
 }
 
@@ -108,7 +108,7 @@ func (s *InstallmentService) CreateInstallmentPlan(req *dto.CreateInstallmentPla
 	if err != nil {
 		return nil, fmt.Errorf("failed to get card: %w", err)
 	}
-	
+
 	if card.Account.UserID != req.UserID {
 		return nil, errors.New("card does not belong to user")
 	}
@@ -142,7 +142,7 @@ func (s *InstallmentService) CreateInstallmentPlan(req *dto.CreateInstallmentPla
 		MerchantID:        req.MerchantID,
 		InterestRate:      req.InterestRate,
 		TotalInterest:     preview.TotalInterest,
-		AdminFee:         req.AdminFee,
+		AdminFee:          req.AdminFee,
 		CreatedAt:         time.Now(),
 		UpdatedAt:         time.Now(),
 	}
@@ -156,19 +156,19 @@ func (s *InstallmentService) CreateInstallmentPlan(req *dto.CreateInstallmentPla
 	// Create individual installments
 	for _, installmentPreview := range preview.Installments {
 		installment := &entities.Installment{
-			ID:                   uuid.New().String(),
-			PlanID:               savedPlan.ID,
-			InstallmentNumber:    installmentPreview.Number,
-			Amount:               installmentPreview.Amount,
-			DueDate:              installmentPreview.DueDate,
-			Status:               entities.InstallmentStatusPending,
-			PaidAmount:           0.0,
-			RemainingAmount:      installmentPreview.Amount,
-			LateFee:             0.0,
-			PenaltyAmount:       0.0,
-			GracePeriodDays:     7, // Default grace period
-			CreatedAt:           time.Now(),
-			UpdatedAt:           time.Now(),
+			ID:                uuid.New().String(),
+			PlanID:            savedPlan.ID,
+			InstallmentNumber: installmentPreview.Number,
+			Amount:            installmentPreview.Amount,
+			DueDate:           installmentPreview.DueDate,
+			Status:            entities.InstallmentStatusPending,
+			PaidAmount:        0.0,
+			RemainingAmount:   installmentPreview.Amount,
+			LateFee:           0.0,
+			PenaltyAmount:     0.0,
+			GracePeriodDays:   7, // Default grace period
+			CreatedAt:         time.Now(),
+			UpdatedAt:         time.Now(),
 		}
 
 		_, err := s.installmentRepo.Create(installment)
@@ -179,18 +179,18 @@ func (s *InstallmentService) CreateInstallmentPlan(req *dto.CreateInstallmentPla
 
 	// Create audit record
 	audit := &entities.InstallmentPlanAudit{
-		ID:                  uuid.New().String(),
-		PlanID:              savedPlan.ID,
-		Action:              "created",
-		NewStatus:           (*string)(&savedPlan.Status),
-		ChangedBy:           req.InitiatedBy,
-		ChangeReason:        fmt.Sprintf("Plan created with %d installments for %.2f", req.InstallmentsCount, req.TotalAmount),
-		Metadata:           map[string]interface{}{
-			"card_id":      req.CardID,
+		ID:           uuid.New().String(),
+		PlanID:       savedPlan.ID,
+		Action:       "created",
+		NewStatus:    (*string)(&savedPlan.Status),
+		ChangedBy:    req.InitiatedBy,
+		ChangeReason: fmt.Sprintf("Plan created with %d installments for %.2f", req.InstallmentsCount, req.TotalAmount),
+		Metadata: map[string]interface{}{
+			"card_id":       req.CardID,
 			"merchant_name": req.MerchantName,
-			"user_id":      req.UserID,
+			"user_id":       req.UserID,
 		},
-		CreatedAt:           time.Now(),
+		CreatedAt: time.Now(),
 	}
 
 	err = s.installmentAuditRepo.Create(audit)
@@ -260,17 +260,17 @@ func (s *InstallmentService) CancelInstallmentPlan(planID, reason string, cancel
 
 	// Create audit record
 	audit := &entities.InstallmentPlanAudit{
-		ID:                  uuid.New().String(),
-		PlanID:              planID,
-		Action:              "cancelled",
-		OldStatus:           (*string)(&oldStatus),
-		NewStatus:           (*string)(&cancelledStatus),
-		ChangedBy:           cancelledBy,
-		ChangeReason:        reason,
-		Metadata:           map[string]interface{}{
+		ID:           uuid.New().String(),
+		PlanID:       planID,
+		Action:       "cancelled",
+		OldStatus:    (*string)(&oldStatus),
+		NewStatus:    (*string)(&cancelledStatus),
+		ChangedBy:    cancelledBy,
+		ChangeReason: reason,
+		Metadata: map[string]interface{}{
 			"user_id": plan.UserID,
 		},
-		CreatedAt:           time.Now(),
+		CreatedAt: time.Now(),
 	}
 
 	err = s.installmentAuditRepo.Create(audit)
@@ -305,17 +305,17 @@ func (s *InstallmentService) SuspendInstallmentPlan(planID, reason string, suspe
 
 	// Create audit record
 	audit := &entities.InstallmentPlanAudit{
-		ID:                  uuid.New().String(),
-		PlanID:              planID,
-		Action:              "suspended",
-		OldStatus:           (*string)(&oldStatus),
-		NewStatus:           (*string)(&suspendedStatus),
-		ChangedBy:           suspendedBy,
-		ChangeReason:        reason,
-		Metadata:           map[string]interface{}{
+		ID:           uuid.New().String(),
+		PlanID:       planID,
+		Action:       "suspended",
+		OldStatus:    (*string)(&oldStatus),
+		NewStatus:    (*string)(&suspendedStatus),
+		ChangedBy:    suspendedBy,
+		ChangeReason: reason,
+		Metadata: map[string]interface{}{
 			"user_id": plan.UserID,
 		},
-		CreatedAt:           time.Now(),
+		CreatedAt: time.Now(),
 	}
 
 	err = s.installmentAuditRepo.Create(audit)
@@ -350,17 +350,17 @@ func (s *InstallmentService) ReactivateInstallmentPlan(planID, reason string, re
 
 	// Create audit record
 	audit := &entities.InstallmentPlanAudit{
-		ID:                  uuid.New().String(),
-		PlanID:              planID,
-		Action:              "reactivated",
-		OldStatus:           (*string)(&oldStatus),
-		NewStatus:           (*string)(&activeStatus),
-		ChangedBy:           reactivatedBy,
-		ChangeReason:        reason,
-		Metadata:           map[string]interface{}{
+		ID:           uuid.New().String(),
+		PlanID:       planID,
+		Action:       "reactivated",
+		OldStatus:    (*string)(&oldStatus),
+		NewStatus:    (*string)(&activeStatus),
+		ChangedBy:    reactivatedBy,
+		ChangeReason: reason,
+		Metadata: map[string]interface{}{
 			"user_id": plan.UserID,
 		},
-		CreatedAt:           time.Now(),
+		CreatedAt: time.Now(),
 	}
 
 	err = s.installmentAuditRepo.Create(audit)
@@ -444,19 +444,19 @@ func (s *InstallmentService) PayInstallment(req *dto.PayInstallmentRequest) (*en
 	// Create audit record
 	previousPaidAmount := installment.PaidAmount - req.Amount
 	audit := &entities.InstallmentPlanAudit{
-		ID:                  uuid.New().String(),
-		PlanID:              plan.ID,
-		InstallmentID:       &installment.ID,
-		Action:              "installment_paid",
-		PaymentAmount:       &req.Amount,
-		ChangedBy:           req.InitiatedBy,
-		ChangeReason:        fmt.Sprintf("Payment: %.2f via %s", req.Amount, req.PaymentMethod),
-		Metadata:           map[string]interface{}{
-			"user_id":         req.UserID,
-			"previous_paid":   previousPaidAmount,
-			"current_paid":    installment.PaidAmount,
+		ID:            uuid.New().String(),
+		PlanID:        plan.ID,
+		InstallmentID: &installment.ID,
+		Action:        "installment_paid",
+		PaymentAmount: &req.Amount,
+		ChangedBy:     req.InitiatedBy,
+		ChangeReason:  fmt.Sprintf("Payment: %.2f via %s", req.Amount, req.PaymentMethod),
+		Metadata: map[string]interface{}{
+			"user_id":       req.UserID,
+			"previous_paid": previousPaidAmount,
+			"current_paid":  installment.PaidAmount,
 		},
-		CreatedAt:           time.Now(),
+		CreatedAt: time.Now(),
 	}
 
 	err = s.installmentAuditRepo.Create(audit)
@@ -492,7 +492,7 @@ func (s *InstallmentService) GetInstallmentSummary(userID string) (*dto.Installm
 	for i, inst := range upcomingInstallments {
 		plan, _ := s.installmentPlanRepo.GetByID(inst.PlanID)
 		daysUntilDue := int(time.Until(inst.DueDate).Hours() / 24)
-		
+
 		upcoming[i] = dto.UpcomingInstallmentSummary{
 			InstallmentID:     inst.ID,
 			PlanID:            inst.PlanID,
@@ -513,13 +513,13 @@ func (s *InstallmentService) GetInstallmentSummary(userID string) (*dto.Installm
 	}
 
 	return &dto.InstallmentSummaryResponse{
-		UserID:                    userID,
-		TotalActivePlans:          summaryData.TotalActivePlans,
-		TotalCompletedPlans:       summaryData.TotalCompletedPlans,
-		TotalCancelledPlans:       summaryData.TotalCancelledPlans,
-		TotalOutstandingAmount:    summaryData.TotalOutstandingAmount,
-		TotalPaidAmount:           summaryData.TotalPaidAmount,
-		TotalOverdueAmount:        summaryData.TotalOverdueAmount,
+		UserID:                   userID,
+		TotalActivePlans:         summaryData.TotalActivePlans,
+		TotalCompletedPlans:      summaryData.TotalCompletedPlans,
+		TotalCancelledPlans:      summaryData.TotalCancelledPlans,
+		TotalOutstandingAmount:   summaryData.TotalOutstandingAmount,
+		TotalPaidAmount:          summaryData.TotalPaidAmount,
+		TotalOverdueAmount:       summaryData.TotalOverdueAmount,
 		NextPaymentDue:           nextPaymentDue,
 		NextPaymentAmount:        nextPaymentAmount,
 		OverdueInstallmentsCount: summaryData.OverdueInstallmentsCount,
@@ -546,10 +546,10 @@ func (s *InstallmentService) GetMonthlyInstallmentLoad(userID string, year, mont
 
 	// Calculate totals and organize by day
 	dailyMap := make(map[int][]dto.UpcomingInstallmentSummary)
-	
+
 	for _, inst := range installments {
 		plan, _ := s.installmentPlanRepo.GetByID(inst.PlanID)
-		
+
 		response.TotalInstallments++
 		response.TotalAmount += inst.Amount
 

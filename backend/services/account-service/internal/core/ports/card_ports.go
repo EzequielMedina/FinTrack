@@ -2,6 +2,7 @@ package ports
 
 import (
 	"time"
+
 	"github.com/fintrack/account-service/internal/core/domain/entities"
 	"github.com/fintrack/account-service/internal/infrastructure/entrypoints/handlers/card/dto"
 )
@@ -22,6 +23,7 @@ type CardServiceInterface interface {
 
 	// Credit card financial operations
 	ChargeCard(cardID string, amount float64, description, reference string) (*entities.Card, error)
+	ChargeCardWithInstallments(req *dto.CreateInstallmentPlanRequest) (*dto.ChargeWithInstallmentsResponse, error)
 	PaymentCard(cardID string, amount float64, paymentMethod, reference string) (*entities.Card, error)
 
 	// Debit card operations
@@ -49,15 +51,15 @@ type InstallmentServiceInterface interface {
 	GetInstallmentHistory(installmentID string) ([]*entities.InstallmentPlanAudit, error)
 
 	// Reporting and analytics
-	GetInstallmentSummary(userID string) (*dto.InstallmentSummaryResponse, error)
-	GetMonthlyInstallmentLoad(userID string, year, month int) (*dto.MonthlyInstallmentLoadResponse, error)
+	GetInstallmentSummary(userID string) (map[string]interface{}, error)
+	GetMonthlyInstallmentLoad(userID string, year, month int) (map[string]interface{}, error)
 }
 
 // CardRepositoryInterface defines the contract for card repository operations
 type CardRepositoryInterface interface {
 	Create(card *entities.Card) (*entities.Card, error)
 	GetByID(cardID string) (*entities.Card, error)
-	GetByIDWithAccount(cardID string) (*entities.Card, error) // New: get card with account preloaded
+	GetByIDWithAccount(cardID string) (*entities.Card, error)      // New: get card with account preloaded
 	GetWithInstallmentPlans(cardID string) (*entities.Card, error) // New: get card with installment plans preloaded
 	GetByAccount(accountID string, limit, offset int) ([]*entities.Card, int64, error)
 	GetByAccountWithInstallmentPlans(accountID string, limit, offset int) ([]*entities.Card, int64, error) // New: get cards with installment plans

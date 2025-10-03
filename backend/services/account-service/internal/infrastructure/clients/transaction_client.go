@@ -124,3 +124,131 @@ func (c *TransactionClient) CreateDebitCardTransaction(userID, accountID, cardID
 	_, err := c.CreateTransaction(userID, req)
 	return err
 }
+
+// CreateInstallmentTransaction creates a transaction record for installment plan creation
+func (c *TransactionClient) CreateInstallmentTransaction(userID, accountID, cardID string, amount float64, installmentsCount int, planID, description, merchantName, reference string) (*TransactionResponse, error) {
+	req := CreateTransactionRequest{
+		Type:          "credit_purchase_installments",
+		Amount:        amount,
+		Currency:      "ARS",
+		FromAccountID: &accountID,
+		Description:   fmt.Sprintf("Purchase with %d installments: %s", installmentsCount, description),
+		PaymentMethod: "credit_card_installments",
+		MerchantName:  merchantName,
+		ReferenceID:   reference,
+		Metadata: map[string]interface{}{
+			"cardId":            cardID,
+			"installmentPlanId": planID,
+			"installmentsCount": installmentsCount,
+			"category":          "installment_purchase",
+			"recordOnly":        false, // This affects the credit balance
+		},
+	}
+
+	return c.CreateTransaction(userID, req)
+}
+
+// CreateInstallmentPaymentTransaction creates a transaction record for installment payment
+func (c *TransactionClient) CreateInstallmentPaymentTransaction(userID, accountID, cardID string, amount float64, installmentID, planID, installmentNumber string, description string) (*TransactionResponse, error) {
+	req := CreateTransactionRequest{
+		Type:          "installment_payment",
+		Amount:        amount,
+		Currency:      "ARS",
+		ToAccountID:   &accountID, // Payment goes TO the account (reduces debt)
+		Description:   fmt.Sprintf("Installment #%s payment: %s", installmentNumber, description),
+		PaymentMethod: "installment_payment",
+		ReferenceID:   fmt.Sprintf("installment-%s", installmentID),
+		Metadata: map[string]interface{}{
+			"cardId":            cardID,
+			"installmentId":     installmentID,
+			"installmentPlanId": planID,
+			"installmentNumber": installmentNumber,
+			"category":          "installment_payment",
+			"recordOnly":        false, // This affects the credit balance
+		},
+	}
+
+	return c.CreateTransaction(userID, req)
+}
+
+// CreateInstallmentCancellationTransaction creates a transaction record when an installment plan is cancelled
+func (c *TransactionClient) CreateInstallmentCancellationTransaction(userID, accountID, cardID string, remainingAmount float64, planID, reason string) (*TransactionResponse, error) {
+	req := CreateTransactionRequest{
+		Type:          "installment_cancellation",
+		Amount:        remainingAmount,
+		Currency:      "ARS",
+		ToAccountID:   &accountID, // Cancellation credits back to account
+		Description:   fmt.Sprintf("Installment plan cancelled: %s", reason),
+		PaymentMethod: "installment_cancellation",
+		ReferenceID:   fmt.Sprintf("cancel-plan-%s", planID),
+		Metadata: map[string]interface{}{
+			"cardId":             cardID,
+			"installmentPlanId":  planID,
+			"cancellationReason": reason,
+			"category":           "installment_cancellation",
+			"recordOnly":         false,
+		},
+	}
+
+	return c.CreateTransaction(userID, req)
+}
+
+// GetTransactionsByInstallmentPlan retrieves all transactions related to an installment plan
+func (c *TransactionClient) GetTransactionsByInstallmentPlan(userID, planID string) ([]*TransactionResponse, error) {
+	url := fmt.Sprintf("%s/api/v1/transactions?installmentPlanId=%s", c.baseURL, planID)
+
+	// Create HTTP request
+	httpReq, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Set headers
+	httpReq.Header.Set("X-User-ID", userID)
+
+	// Make request
+	resp, err := c.httpClient.Do(httpReq)
+	if err != nil {
+		return nil, fmt.Errorf("failed to make request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// Check status code
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("transaction service returned status %d", resp.StatusCode)
+	}
+
+	// Parse response
+	var transactions []*TransactionResponse
+	if err := json.NewDecoder(resp.Body).Decode(&transactions); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	return transactions, nil
+}
+
+// HealthCheck verifica la conectividad con el transaction service
+func (c *TransactionClient) HealthCheck() error {
+	url := fmt.Sprintf("%s/health", c.baseURL)
+
+	// Create HTTP request
+	httpReq, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return fmt.Errorf("failed to create health check request: %w", err)
+	}
+
+	// Make request with shorter timeout for health check
+	client := &http.Client{Timeout: 5 * time.Second}
+	resp, err := client.Do(httpReq)
+	if err != nil {
+		return fmt.Errorf("failed to connect to transaction service: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// Check status code
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("transaction service health check failed with status %d", resp.StatusCode)
+	}
+
+	return nil
+}

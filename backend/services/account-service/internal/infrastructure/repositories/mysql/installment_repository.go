@@ -33,7 +33,7 @@ func (r *InstallmentRepository) GetByID(installmentID string) (*entities.Install
 	err := r.db.Preload("Plan").
 		Where("id = ?", installmentID).
 		First(&installment).Error
-		
+
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, fmt.Errorf("installment not found")
@@ -49,7 +49,7 @@ func (r *InstallmentRepository) GetByPlan(planID string) ([]*entities.Installmen
 	err := r.db.Where("plan_id = ?", planID).
 		Order("installment_number ASC").
 		Find(&installments).Error
-		
+
 	if err != nil {
 		return nil, fmt.Errorf("failed to get installments by plan: %w", err)
 	}
@@ -61,7 +61,7 @@ func (r *InstallmentRepository) GetByPlanAndNumber(planID string, installmentNum
 	var installment entities.Installment
 	err := r.db.Where("plan_id = ? AND installment_number = ?", planID, installmentNumber).
 		First(&installment).Error
-		
+
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, fmt.Errorf("installment not found")
@@ -124,12 +124,12 @@ func (r *InstallmentRepository) GetUpcoming(userID string, days int, limit, offs
 	var total int64
 
 	cutoffDate := time.Now().AddDate(0, 0, days)
-	
+
 	query := r.db.Model(&entities.Installment{}).
 		Joins("JOIN installment_plans ON installments.plan_id = installment_plans.id").
-		Where("installment_plans.user_id = ? AND installments.status IN ? AND installments.due_date <= ?", 
-			userID, 
-			[]string{string(entities.InstallmentStatusPending), string(entities.InstallmentStatusOverdue)}, 
+		Where("installment_plans.user_id = ? AND installments.status IN ? AND installments.due_date <= ?",
+			userID,
+			[]string{string(entities.InstallmentStatusPending), string(entities.InstallmentStatusOverdue)},
 			cutoffDate).
 		Preload("Plan").
 		Preload("Plan.Card")
@@ -155,9 +155,9 @@ func (r *InstallmentRepository) GetUpcoming(userID string, days int, limit, offs
 // GetByDueDateRange retrieves installments within a date range for a user
 func (r *InstallmentRepository) GetByDueDateRange(userID string, startDate, endDate time.Time) ([]*entities.Installment, error) {
 	var installments []*entities.Installment
-	
+
 	err := r.db.Joins("JOIN installment_plans ON installments.plan_id = installment_plans.id").
-		Where("installment_plans.user_id = ? AND installments.due_date BETWEEN ? AND ?", 
+		Where("installment_plans.user_id = ? AND installments.due_date BETWEEN ? AND ?",
 			userID, startDate, endDate).
 		Preload("Plan").
 		Preload("Plan.Card").
@@ -174,9 +174,9 @@ func (r *InstallmentRepository) GetByDueDateRange(userID string, startDate, endD
 // GetPendingByPlan retrieves pending installments for a plan
 func (r *InstallmentRepository) GetPendingByPlan(planID string) ([]*entities.Installment, error) {
 	var installments []*entities.Installment
-	
-	err := r.db.Where("plan_id = ? AND status IN ?", 
-		planID, 
+
+	err := r.db.Where("plan_id = ? AND status IN ?",
+		planID,
 		[]string{string(entities.InstallmentStatusPending), string(entities.InstallmentStatusOverdue)}).
 		Order("installment_number ASC").
 		Find(&installments).Error
@@ -191,9 +191,9 @@ func (r *InstallmentRepository) GetPendingByPlan(planID string) ([]*entities.Ins
 // GetNextDueByPlan retrieves the next due installment for a plan
 func (r *InstallmentRepository) GetNextDueByPlan(planID string) (*entities.Installment, error) {
 	var installment entities.Installment
-	
-	err := r.db.Where("plan_id = ? AND status IN ?", 
-		planID, 
+
+	err := r.db.Where("plan_id = ? AND status IN ?",
+		planID,
 		[]string{string(entities.InstallmentStatusPending), string(entities.InstallmentStatusOverdue)}).
 		Order("installment_number ASC").
 		First(&installment).Error
@@ -295,7 +295,7 @@ func (r *InstallmentRepository) BulkUpdateStatus(installmentIDs []string, newSta
 // GetPaymentHistory retrieves payment history for an installment
 func (r *InstallmentRepository) GetPaymentHistory(installmentID string) ([]*entities.InstallmentPlanAudit, error) {
 	var audits []*entities.InstallmentPlanAudit
-	
+
 	err := r.db.Where("installment_id = ?", installmentID).
 		Order("created_at DESC").
 		Find(&audits).Error
@@ -310,12 +310,12 @@ func (r *InstallmentRepository) GetPaymentHistory(installmentID string) ([]*enti
 // GetDailyInstallments retrieves installments due on a specific date
 func (r *InstallmentRepository) GetDailyInstallments(userID string, date time.Time) ([]*entities.Installment, error) {
 	var installments []*entities.Installment
-	
+
 	startOfDay := time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, date.Location())
 	endOfDay := startOfDay.Add(24 * time.Hour).Add(-1 * time.Nanosecond)
-	
+
 	err := r.db.Joins("JOIN installment_plans ON installments.plan_id = installment_plans.id").
-		Where("installment_plans.user_id = ? AND installments.due_date BETWEEN ? AND ?", 
+		Where("installment_plans.user_id = ? AND installments.due_date BETWEEN ? AND ?",
 			userID, startOfDay, endOfDay).
 		Preload("Plan").
 		Preload("Plan.Card").
@@ -332,21 +332,21 @@ func (r *InstallmentRepository) GetDailyInstallments(userID string, date time.Ti
 // GetInstallmentStatistics retrieves statistics for installments
 func (r *InstallmentRepository) GetInstallmentStatistics(userID string) (map[string]interface{}, error) {
 	type Stats struct {
-		TotalInstallments     int     `json:"total_installments"`
-		PaidInstallments      int     `json:"paid_installments"`
-		PendingInstallments   int     `json:"pending_installments"`
-		OverdueInstallments   int     `json:"overdue_installments"`
-		TotalAmount           float64 `json:"total_amount"`
-		PaidAmount            float64 `json:"paid_amount"`
-		PendingAmount         float64 `json:"pending_amount"`
-		OverdueAmount         float64 `json:"overdue_amount"`
-		AvgInstallmentAmount  float64 `json:"avg_installment_amount"`
-		EarliestDueDate       *time.Time `json:"earliest_due_date"`
-		LatestDueDate         *time.Time `json:"latest_due_date"`
+		TotalInstallments    int        `json:"total_installments"`
+		PaidInstallments     int        `json:"paid_installments"`
+		PendingInstallments  int        `json:"pending_installments"`
+		OverdueInstallments  int        `json:"overdue_installments"`
+		TotalAmount          float64    `json:"total_amount"`
+		PaidAmount           float64    `json:"paid_amount"`
+		PendingAmount        float64    `json:"pending_amount"`
+		OverdueAmount        float64    `json:"overdue_amount"`
+		AvgInstallmentAmount float64    `json:"avg_installment_amount"`
+		EarliestDueDate      *time.Time `json:"earliest_due_date"`
+		LatestDueDate        *time.Time `json:"latest_due_date"`
 	}
 
 	var stats Stats
-	
+
 	query := `
 		SELECT 
 			COUNT(*) as total_installments,

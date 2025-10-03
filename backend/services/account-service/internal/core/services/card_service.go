@@ -13,8 +13,8 @@ import (
 
 // CardService implements the card service interface
 type CardService struct {
-	cardRepo         ports.CardRepositoryInterface
-	accountRepo      ports.AccountRepositoryInterface
+	cardRepo           ports.CardRepositoryInterface
+	accountRepo        ports.AccountRepositoryInterface
 	installmentService ports.InstallmentServiceInterface
 }
 
@@ -25,8 +25,8 @@ func NewCardService(
 	installmentService ports.InstallmentServiceInterface,
 ) ports.CardServiceInterface {
 	return &CardService{
-		cardRepo:         cardRepo,
-		accountRepo:      accountRepo,
+		cardRepo:           cardRepo,
+		accountRepo:        accountRepo,
 		installmentService: installmentService,
 	}
 }
@@ -221,7 +221,7 @@ func (s *CardService) ChargeCard(cardID string, amount float64, description, ref
 
 	// Here you would typically create a transaction record
 	// For now, we'll just log the operation
-	fmt.Printf("Credit card charged: CardID=%s, Amount=%.2f, OldBalance=%.2f, NewBalance=%.2f\n", 
+	fmt.Printf("Credit card charged: CardID=%s, Amount=%.2f, OldBalance=%.2f, NewBalance=%.2f\n",
 		cardID, amount, oldBalance, card.Balance)
 
 	return updatedCard, nil
@@ -261,12 +261,12 @@ func (s *CardService) ChargeCardWithInstallments(req *dto.CreateInstallmentPlanR
 	// Charge the card for the first installment (if start date is today)
 	var firstInstallmentCharged bool
 	if installmentPlan.StartDate.Before(time.Now().AddDate(0, 0, 1)) { // Today or past
-		_, err = s.ChargeCard(req.CardID, installmentPlan.InstallmentAmount, 
-			fmt.Sprintf("Installment 1/%d - %s", installmentPlan.InstallmentsCount, req.Description), 
+		_, err = s.ChargeCard(req.CardID, installmentPlan.InstallmentAmount,
+			fmt.Sprintf("Installment 1/%d - %s", installmentPlan.InstallmentsCount, req.Description),
 			req.Reference)
 		if err != nil {
 			// Try to cleanup the installment plan if card charge fails
-			_, cancelErr := s.installmentService.CancelInstallmentPlan(installmentPlan.ID, 
+			_, cancelErr := s.installmentService.CancelInstallmentPlan(installmentPlan.ID,
 				"Card charge failed for first installment", req.InitiatedBy)
 			if cancelErr != nil {
 				fmt.Printf("Warning: failed to cancel installment plan after charge failure: %v\n", cancelErr)
@@ -284,9 +284,9 @@ func (s *CardService) ChargeCardWithInstallments(req *dto.CreateInstallmentPlanR
 
 	return &dto.ChargeWithInstallmentsResponse{
 		InstallmentPlan:         installmentPlan,
-		Card:                   updatedCard,
+		Card:                    updatedCard,
 		FirstInstallmentCharged: firstInstallmentCharged,
-		TransactionID:          "", // Would be set when transaction service is integrated
+		TransactionID:           "", // Would be set when transaction service is integrated
 	}, nil
 }
 
@@ -320,7 +320,7 @@ func (s *CardService) PaymentCard(cardID string, amount float64, paymentMethod, 
 	}
 
 	// Here you would typically create a payment transaction record
-	fmt.Printf("Credit card payment processed: CardID=%s, Amount=%.2f, OldBalance=%.2f, NewBalance=%.2f\n", 
+	fmt.Printf("Credit card payment processed: CardID=%s, Amount=%.2f, OldBalance=%.2f, NewBalance=%.2f\n",
 		cardID, amount, oldBalance, card.Balance)
 
 	return updatedCard, nil
@@ -357,7 +357,7 @@ func (s *CardService) ProcessDebitTransaction(cardID string, amount float64, des
 	}
 
 	// Here you would typically create a transaction record
-	fmt.Printf("Debit transaction processed: CardID=%s, Amount=%.2f, Account=%s, NewBalance=%.2f\n", 
+	fmt.Printf("Debit transaction processed: CardID=%s, Amount=%.2f, Account=%s, NewBalance=%.2f\n",
 		cardID, amount, card.AccountID, account.Balance)
 
 	// Return updated card with account info

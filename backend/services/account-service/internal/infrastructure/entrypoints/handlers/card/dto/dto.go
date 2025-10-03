@@ -70,10 +70,10 @@ type CardResponse struct {
 
 // InstallmentPlansSummary represents a summary of installment plans for a card
 type InstallmentPlansSummary struct {
-	TotalActivePlans       int     `json:"total_active_plans"`
-	TotalOutstandingAmount float64 `json:"total_outstanding_amount"`
-	NextPaymentDue        *time.Time `json:"next_payment_due,omitempty"`
-	NextPaymentAmount     float64 `json:"next_payment_amount"`
+	TotalActivePlans       int        `json:"total_active_plans"`
+	TotalOutstandingAmount float64    `json:"total_outstanding_amount"`
+	NextPaymentDue         *time.Time `json:"next_payment_due,omitempty"`
+	NextPaymentAmount      float64    `json:"next_payment_amount"`
 }
 
 // Credit Card Financial Operations DTOs
@@ -101,7 +101,7 @@ type CreditCardChargeWithInstallmentsRequest struct {
 	MerchantName      string    `json:"merchant_name,omitempty" binding:"max=100"`
 	MerchantID        string    `json:"merchant_id,omitempty" binding:"max=50"`
 	InterestRate      float64   `json:"interest_rate,omitempty" binding:"min=0,max=100"`
-	AdminFee         float64   `json:"admin_fee,omitempty" binding:"min=0"`
+	AdminFee          float64   `json:"admin_fee,omitempty" binding:"min=0"`
 	Reference         string    `json:"reference,omitempty" binding:"max=50"`
 }
 
@@ -236,7 +236,7 @@ func ToDebitCardBalanceResponse(card *entities.Card) DebitCardBalanceResponse {
 // ChargeWithInstallmentsResponse represents the response after charging a card with installments
 type ChargeWithInstallmentsResponse struct {
 	InstallmentPlan         *entities.InstallmentPlan `json:"installment_plan"`
-	Card                   *entities.Card            `json:"card"`
+	Card                    *entities.Card            `json:"card"`
 	FirstInstallmentCharged bool                      `json:"first_installment_charged"`
-	TransactionID          string                    `json:"transaction_id,omitempty"`
+	TransactionID           string                    `json:"transaction_id,omitempty"`
 }

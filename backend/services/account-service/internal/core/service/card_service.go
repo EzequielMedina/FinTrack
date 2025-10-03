@@ -12,16 +12,18 @@ import (
 )
 
 type CardService struct {
-	cardRepo          ports.CardRepositoryInterface
-	accountRepo       ports.AccountRepositoryInterface // To validate account exists
-	transactionClient *clients.TransactionClient       // To record transactions
+	cardRepo           ports.CardRepositoryInterface
+	accountRepo        ports.AccountRepositoryInterface  // To validate account exists
+	installmentService ports.InstallmentServiceInterface // To handle installment plans
+	transactionClient  *clients.TransactionClient        // To record transactions
 }
 
-func NewCardService(cardRepo ports.CardRepositoryInterface, accountRepo ports.AccountRepositoryInterface) *CardService {
+func NewCardService(cardRepo ports.CardRepositoryInterface, accountRepo ports.AccountRepositoryInterface, installmentService ports.InstallmentServiceInterface) *CardService {
 	return &CardService{
-		cardRepo:          cardRepo,
-		accountRepo:       accountRepo,
-		transactionClient: clients.NewTransactionClient(),
+		cardRepo:           cardRepo,
+		accountRepo:        accountRepo,
+		installmentService: installmentService,
+		transactionClient:  clients.NewTransactionClient(),
 	}
 }
 
@@ -354,4 +356,34 @@ func (s *CardService) ProcessDebitTransaction(cardID string, amount float64, des
 	}()
 
 	return updatedCard, nil
+}
+
+// ChargeCardWithInstallments processes a credit card charge with installment plan
+func (s *CardService) ChargeCardWithInstallments(req *dto.CreateInstallmentPlanRequest) (*dto.ChargeWithInstallmentsResponse, error) {
+	// Verificar que la tarjeta existe y obtener información con cuenta
+	card, err := s.cardRepo.GetByIDWithAccount(req.CardID)
+	if err != nil {
+		return nil, fmt.Errorf("card not found: %w", err)
+	}
+
+	if card.CardType != "credit" {
+		return nil, fmt.Errorf("installment plans are only available for credit cards")
+	}
+
+	// Crear el plan de cuotas usando InstallmentService
+	installmentPlan, err := s.installmentService.CreateInstallmentPlan(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create installment plan: %w", err)
+	}
+
+	// Cargar el primer pago de la cuota (opcional - depende de la lógica de negocio)
+	firstInstallmentCharged := false
+	// Aquí podrías implementar lógica para cargar la primera cuota inmediatamente
+
+	return &dto.ChargeWithInstallmentsResponse{
+		InstallmentPlan:         installmentPlan,
+		Card:                    card,
+		FirstInstallmentCharged: firstInstallmentCharged,
+		TransactionID:           installmentPlan.TransactionID,
+	}, nil
 }
