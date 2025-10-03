@@ -40,8 +40,8 @@ func New(cfg *config.Config) (*Application, error) {
 	sqlDB.SetMaxIdleConns(5)
 	sqlDB.SetConnMaxLifetime(5 * time.Minute)
 
-	// Auto-migrate tables
-	if err := gormDB.AutoMigrate(&entities.Account{}, &entities.Card{}, &entities.InstallmentPlan{}, &entities.Installment{}); err != nil {
+	// Auto-migrate tables (excluding installment tables that are managed via SQL migrations)
+	if err := gormDB.AutoMigrate(&entities.Account{}, &entities.Card{}); err != nil {
 		return nil, fmt.Errorf("failed to migrate tables: %w", err)
 	}
 
