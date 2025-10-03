@@ -85,14 +85,24 @@ func (s *TransactionService) CreateTransaction(request CreateTransactionRequest,
 		return nil, fmt.Errorf("failed to create transaction: %w", err)
 	}
 
-	// Execute the transaction (update balances)
-	if err := s.executeTransaction(savedTransaction); err != nil {
-		// Mark transaction as failed
-		savedTransaction.Status = domaintransaction.TransactionStatusFailed
-		savedTransaction.FailureReason = err.Error()
-		s.transactionRepo.Update(savedTransaction)
+	// Check if this is a record-only transaction (balance already updated by another service)
+	recordOnly := false
+	if savedTransaction.Metadata != nil {
+		if recordOnlyValue, exists := savedTransaction.Metadata["recordOnly"]; exists {
+			recordOnly = recordOnlyValue == "true"
+		}
+	}
 
-		return nil, fmt.Errorf("transaction execution failed: %w", err)
+	// Execute the transaction (update balances) only if not record-only
+	if !recordOnly {
+		if err := s.executeTransaction(savedTransaction); err != nil {
+			// Mark transaction as failed
+			savedTransaction.Status = domaintransaction.TransactionStatusFailed
+			savedTransaction.FailureReason = err.Error()
+			s.transactionRepo.Update(savedTransaction)
+
+			return nil, fmt.Errorf("transaction execution failed: %w", err)
+		}
 	}
 
 	// Mark transaction as completed
@@ -383,6 +393,8 @@ func (s *TransactionService) GetTransactionByID(id string, userID string) (*doma
 
 	return transaction, nil
 }
+
+
 
 // GetTransactionsByUser retrieves transactions for a user with filtering
 func (s *TransactionService) GetTransactionsByUser(userID string, filters TransactionFilters) ([]*domaintransaction.Transaction, int, error) {

@@ -59,6 +59,7 @@ services:
       DB_PASSWORD: fintrack_password
       JWT_SECRET: your-jwt-secret-key
       PORT: 8082
+      TRANSACTION_SERVICE_URL: http://transaction-service:8083
     ports:
       - "8082:8082"
     depends_on:

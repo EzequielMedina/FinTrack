@@ -25,7 +25,7 @@ export class DebitCardService {
   /**
    * Process a debit card transaction (purchase/withdrawal)
    */
-  processTransaction(cardId: string, transactionData: DebitCardTransactionRequest): Observable<DebitCardBalanceResponse> {
+  processTransaction(cardId: string, transactionData: DebitCardTransactionRequest, accountId?: string): Observable<DebitCardBalanceResponse> {
     return this.http.post<any>(`${this.apiUrl}/${cardId}/transaction`, transactionData).pipe(
       map(response => this.mapToDebitCardBalanceResponse(response)),
       catchError(error => {

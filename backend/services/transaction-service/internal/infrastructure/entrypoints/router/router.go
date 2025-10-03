@@ -7,16 +7,19 @@ import (
 
 // Router handles all HTTP routing for the transaction service
 type Router struct {
-	handler *TransactionHandler
+	handler     *TransactionHandler
+	cardHandler *CardHandler
 }
 
 // NewRouter creates a new router instance
 func NewRouter(db *sql.DB) *Router {
 	// Create handlers
 	transactionHandler := NewTransactionHandler(db)
+	cardHandler := NewCardHandler(db)
 
 	router := &Router{
-		handler: transactionHandler,
+		handler:     transactionHandler,
+		cardHandler: cardHandler,
 	}
 
 	return router
@@ -36,6 +39,11 @@ func (r *Router) SetupRoutes() *http.ServeMux {
 	mux.HandleFunc("PUT /api/v1/transactions/{id}/status", r.handler.UpdateTransactionStatusHTTP)
 	mux.HandleFunc("POST /api/v1/transactions/{id}/process", r.handler.ProcessTransactionHTTP)
 	mux.HandleFunc("POST /api/v1/transactions/{id}/reverse", r.handler.ReverseTransactionHTTP)
+
+	// Card transaction routes
+	mux.HandleFunc("POST /api/v1/cards/credit/charge", r.cardHandler.ChargeCreditCardHTTP)
+	mux.HandleFunc("POST /api/v1/cards/credit/payment", r.cardHandler.PayCreditCardHTTP)
+	mux.HandleFunc("POST /api/v1/cards/debit/transaction", r.cardHandler.ProcessDebitCardTransactionHTTP)
 
 	return mux
 }

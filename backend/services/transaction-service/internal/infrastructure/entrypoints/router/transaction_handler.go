@@ -30,7 +30,7 @@ func NewTransactionHandler(db *sql.DB) *TransactionHandler {
 	externalService := service.NewMockExternalService()
 
 	// Create account service client - using environment variable or default localhost
-	accountServiceURL := "http://localhost:8082" // Default account service port
+	accountServiceURL := "http://localhost:8082" // Correct account service port
 	if url := os.Getenv("ACCOUNT_SERVICE_URL"); url != "" {
 		accountServiceURL = url
 	}

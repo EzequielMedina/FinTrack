@@ -62,7 +62,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Accounts retrieved successfully",
                         "schema": {
-                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.PaginatedAccountResponse"
+                            "$ref": "#/definitions/dto.PaginatedAccountResponse"
                         }
                     },
                     "400": {
@@ -118,7 +118,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.CreateAccountRequest"
+                            "$ref": "#/definitions/dto.CreateAccountRequest"
                         }
                     }
                 ],
@@ -126,7 +126,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Account created successfully",
                         "schema": {
-                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.AccountResponse"
+                            "$ref": "#/definitions/dto.AccountResponse"
                         }
                     },
                     "400": {
@@ -192,7 +192,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.AccountResponse"
+                                "$ref": "#/definitions/dto.AccountResponse"
                             }
                         }
                     },
@@ -271,7 +271,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Cards retrieved successfully",
                         "schema": {
-                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_card_dto.PaginatedCardResponse"
+                            "$ref": "#/definitions/dto.PaginatedCardResponse"
                         }
                     },
                     "400": {
@@ -335,7 +335,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Account retrieved successfully",
                         "schema": {
-                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.AccountResponse"
+                            "$ref": "#/definitions/dto.AccountResponse"
                         }
                     },
                     "400": {
@@ -407,7 +407,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.UpdateAccountRequest"
+                            "$ref": "#/definitions/dto.UpdateAccountRequest"
                         }
                     }
                 ],
@@ -415,7 +415,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Account updated successfully",
                         "schema": {
-                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.AccountResponse"
+                            "$ref": "#/definitions/dto.AccountResponse"
                         }
                     },
                     "400": {
@@ -532,7 +532,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Add funds to a virtual wallet account",
+                "description": "Add funds to any type of account with specific logic per account type",
                 "consumes": [
                     "application/json"
                 ],
@@ -540,9 +540,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Wallet"
+                    "Accounts"
                 ],
-                "summary": "Add funds to wallet",
+                "summary": "Add funds to account",
                 "parameters": [
                     {
                         "type": "string",
@@ -557,7 +557,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.AddFundsRequest"
+                            "$ref": "#/definitions/dto.AddFundsRequest"
                         }
                     }
                 ],
@@ -565,7 +565,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Funds added successfully",
                         "schema": {
-                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.BalanceResponse"
+                            "$ref": "#/definitions/dto.BalanceResponse"
                         }
                     },
                     "400": {
@@ -638,7 +638,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Available credit retrieved successfully",
                         "schema": {
-                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.AvailableCreditResponse"
+                            "$ref": "#/definitions/dto.AvailableCreditResponse"
                         }
                     },
                     "400": {
@@ -711,7 +711,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Balance retrieved successfully",
                         "schema": {
-                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.BalanceResponse"
+                            "$ref": "#/definitions/dto.BalanceResponse"
                         }
                     },
                     "400": {
@@ -783,7 +783,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.UpdateBalanceRequest"
+                            "$ref": "#/definitions/dto.UpdateBalanceRequest"
                         }
                     }
                 ],
@@ -791,7 +791,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Balance updated successfully",
                         "schema": {
-                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.BalanceResponse"
+                            "$ref": "#/definitions/dto.BalanceResponse"
                         }
                     },
                     "400": {
@@ -878,7 +878,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Cards retrieved successfully",
                         "schema": {
-                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_card_dto.PaginatedCardResponse"
+                            "$ref": "#/definitions/dto.PaginatedCardResponse"
                         }
                     },
                     "400": {
@@ -941,7 +941,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_card_dto.CreateCardRequest"
+                            "$ref": "#/definitions/dto.CreateCardRequest"
                         }
                     }
                 ],
@@ -949,7 +949,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Card created successfully",
                         "schema": {
-                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_card_dto.CardResponse"
+                            "$ref": "#/definitions/dto.CardResponse"
                         }
                     },
                     "400": {
@@ -1020,7 +1020,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Card retrieved successfully",
                         "schema": {
-                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_card_dto.CardResponse"
+                            "$ref": "#/definitions/dto.CardResponse"
                         }
                     },
                     "400": {
@@ -1090,7 +1090,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_card_dto.UpdateCardRequest"
+                            "$ref": "#/definitions/dto.UpdateCardRequest"
                         }
                     }
                 ],
@@ -1098,7 +1098,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Card updated successfully",
                         "schema": {
-                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_card_dto.CardResponse"
+                            "$ref": "#/definitions/dto.CardResponse"
                         }
                     },
                     "400": {
@@ -1241,7 +1241,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Card blocked successfully",
                         "schema": {
-                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_card_dto.CardResponse"
+                            "$ref": "#/definitions/dto.CardResponse"
                         }
                     },
                     "400": {
@@ -1312,7 +1312,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Card set as default successfully",
                         "schema": {
-                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_card_dto.CardResponse"
+                            "$ref": "#/definitions/dto.CardResponse"
                         }
                     },
                     "400": {
@@ -1383,7 +1383,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Card unblocked successfully",
                         "schema": {
-                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_card_dto.CardResponse"
+                            "$ref": "#/definitions/dto.CardResponse"
                         }
                     },
                     "400": {
@@ -1448,7 +1448,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.UpdateCreditDatesRequest"
+                            "$ref": "#/definitions/dto.UpdateCreditDatesRequest"
                         }
                     }
                 ],
@@ -1456,7 +1456,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Credit dates updated successfully",
                         "schema": {
-                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.AccountResponse"
+                            "$ref": "#/definitions/dto.AccountResponse"
                         }
                     },
                     "400": {
@@ -1530,7 +1530,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.UpdateCreditLimitRequest"
+                            "$ref": "#/definitions/dto.UpdateCreditLimitRequest"
                         }
                     }
                 ],
@@ -1538,7 +1538,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Credit limit updated successfully",
                         "schema": {
-                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.AccountResponse"
+                            "$ref": "#/definitions/dto.AccountResponse"
                         }
                     },
                     "400": {
@@ -1612,7 +1612,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.UpdateStatusRequest"
+                            "$ref": "#/definitions/dto.UpdateStatusRequest"
                         }
                     }
                 ],
@@ -1620,7 +1620,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Status updated successfully",
                         "schema": {
-                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.AccountResponse"
+                            "$ref": "#/definitions/dto.AccountResponse"
                         }
                     },
                     "400": {
@@ -1694,7 +1694,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.WithdrawFundsRequest"
+                            "$ref": "#/definitions/dto.WithdrawFundsRequest"
                         }
                     }
                 ],
@@ -1702,7 +1702,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Funds withdrawn successfully",
                         "schema": {
-                            "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.BalanceResponse"
+                            "$ref": "#/definitions/dto.BalanceResponse"
                         }
                     },
                     "400": {
@@ -1743,10 +1743,293 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/cards/{cardId}/balance": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get balance information for either credit or debit card",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cards"
+                ],
+                "summary": "Get card balance",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Card ID",
+                        "name": "cardId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Debit card balance",
+                        "schema": {
+                            "$ref": "#/definitions/dto.DebitCardBalanceResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid card ID",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Card not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/cards/{cardId}/charge": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Process a purchase/charge to a credit card",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cards"
+                ],
+                "summary": "Charge credit card",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Card ID",
+                        "name": "cardId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Charge data",
+                        "name": "charge",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreditCardChargeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Charge processed successfully",
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreditCardBalanceResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request data",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Card not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/cards/{cardId}/payment": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Process a payment to reduce credit card debt",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cards"
+                ],
+                "summary": "Pay credit card",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Card ID",
+                        "name": "cardId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Payment data",
+                        "name": "payment",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreditCardPaymentRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Payment processed successfully",
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreditCardBalanceResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request data",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Card not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/cards/{cardId}/transaction": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Process a purchase/withdrawal with a debit card",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cards"
+                ],
+                "summary": "Process debit transaction",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Card ID",
+                        "name": "cardId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Transaction data",
+                        "name": "transaction",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.DebitCardTransactionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Transaction processed successfully",
+                        "schema": {
+                            "$ref": "#/definitions/dto.DebitCardBalanceResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request data",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Card not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
-        "github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.AccountResponse": {
+        "dto.AccountResponse": {
             "type": "object",
             "properties": {
                 "account_type": {
@@ -1795,7 +2078,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.AddFundsRequest": {
+        "dto.AddFundsRequest": {
             "type": "object",
             "required": [
                 "amount",
@@ -1816,7 +2099,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.AvailableCreditResponse": {
+        "dto.AvailableCreditResponse": {
             "type": "object",
             "properties": {
                 "account_id": {
@@ -1833,7 +2116,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.BalanceResponse": {
+        "dto.BalanceResponse": {
             "type": "object",
             "properties": {
                 "account_id": {
@@ -1844,183 +2127,15 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.CreateAccountRequest": {
-            "type": "object",
-            "required": [
-                "account_type",
-                "currency",
-                "name",
-                "user_id"
-            ],
-            "properties": {
-                "account_type": {
-                    "type": "string"
-                },
-                "closing_date": {
-                    "type": "string"
-                },
-                "credit_limit": {
-                    "description": "Credit card specific fields",
-                    "type": "number",
-                    "minimum": 0
-                },
-                "currency": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "dni": {
-                    "description": "Personal identification (for virtual wallets)",
-                    "type": "string",
-                    "maxLength": 20,
-                    "minLength": 7
-                },
-                "due_date": {
-                    "type": "string"
-                },
-                "initial_balance": {
-                    "type": "number",
-                    "minimum": 0
-                },
-                "is_active": {
-                    "type": "boolean"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "user_id": {
-                    "type": "string"
-                }
-            }
-        },
-        "github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.PaginatedAccountResponse": {
-            "type": "object",
-            "properties": {
-                "data": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.AccountResponse"
-                    }
-                },
-                "pagination": {
-                    "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.PaginationMeta"
-                }
-            }
-        },
-        "github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.PaginationMeta": {
-            "type": "object",
-            "properties": {
-                "current_page": {
-                    "type": "integer"
-                },
-                "page_size": {
-                    "type": "integer"
-                },
-                "total_items": {
-                    "type": "integer"
-                },
-                "total_pages": {
-                    "type": "integer"
-                }
-            }
-        },
-        "github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.UpdateAccountRequest": {
-            "type": "object",
-            "required": [
-                "name"
-            ],
-            "properties": {
-                "closing_date": {
-                    "type": "string"
-                },
-                "credit_limit": {
-                    "description": "Credit card specific fields",
-                    "type": "number",
-                    "minimum": 0
-                },
-                "description": {
-                    "type": "string"
-                },
-                "dni": {
-                    "description": "Personal identification (for virtual wallets)",
-                    "type": "string",
-                    "maxLength": 20,
-                    "minLength": 7
-                },
-                "due_date": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                }
-            }
-        },
-        "github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.UpdateBalanceRequest": {
-            "type": "object",
-            "required": [
-                "amount"
-            ],
-            "properties": {
-                "amount": {
-                    "type": "number"
-                }
-            }
-        },
-        "github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.UpdateCreditDatesRequest": {
-            "type": "object",
-            "properties": {
-                "closing_date": {
-                    "type": "string"
-                },
-                "due_date": {
-                    "type": "string"
-                }
-            }
-        },
-        "github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.UpdateCreditLimitRequest": {
-            "type": "object",
-            "properties": {
-                "credit_limit": {
-                    "type": "number",
-                    "minimum": 0
-                }
-            }
-        },
-        "github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.UpdateStatusRequest": {
-            "type": "object",
-            "properties": {
-                "is_active": {
-                    "type": "boolean"
-                }
-            }
-        },
-        "github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.WithdrawFundsRequest": {
-            "type": "object",
-            "required": [
-                "amount",
-                "description"
-            ],
-            "properties": {
-                "amount": {
-                    "type": "number"
-                },
-                "description": {
-                    "type": "string",
-                    "maxLength": 255,
-                    "minLength": 3
-                },
-                "reference": {
-                    "type": "string",
-                    "maxLength": 50
-                }
-            }
-        },
-        "github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_card_dto.CardResponse": {
+        "dto.CardResponse": {
             "type": "object",
             "properties": {
                 "account_id": {
                     "type": "string"
+                },
+                "balance": {
+                    "description": "New: Card balance (debt for credit, 0 for debit)",
+                    "type": "number"
                 },
                 "card_brand": {
                     "type": "string"
@@ -2073,10 +2188,59 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_card_dto.CreateCardRequest": {
+        "dto.CreateAccountRequest": {
             "type": "object",
             "required": [
-                "account_id",
+                "account_type",
+                "currency",
+                "name",
+                "user_id"
+            ],
+            "properties": {
+                "account_type": {
+                    "type": "string"
+                },
+                "closing_date": {
+                    "type": "string"
+                },
+                "credit_limit": {
+                    "description": "Credit card specific fields",
+                    "type": "number",
+                    "minimum": 0
+                },
+                "currency": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "dni": {
+                    "description": "Personal identification (for virtual wallets)",
+                    "type": "string",
+                    "maxLength": 20,
+                    "minLength": 7
+                },
+                "due_date": {
+                    "type": "string"
+                },
+                "initial_balance": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CreateCardRequest": {
+            "type": "object",
+            "required": [
                 "card_brand",
                 "card_type",
                 "encrypted_number",
@@ -2089,6 +2253,7 @@ const docTemplate = `{
             ],
             "properties": {
                 "account_id": {
+                    "description": "Set from URL parameter, not required in JSON",
                     "type": "string"
                 },
                 "card_brand": {
@@ -2144,38 +2309,194 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_card_dto.PaginatedCardResponse": {
+        "dto.CreditCardBalanceResponse": {
+            "type": "object",
+            "properties": {
+                "available_credit": {
+                    "description": "Remaining credit",
+                    "type": "number"
+                },
+                "balance": {
+                    "description": "Current debt",
+                    "type": "number"
+                },
+                "card_id": {
+                    "type": "string"
+                },
+                "credit_limit": {
+                    "description": "Total credit limit",
+                    "type": "number"
+                },
+                "due_date": {
+                    "description": "Next payment due date",
+                    "type": "string"
+                },
+                "minimum_payment": {
+                    "description": "Minimum payment due",
+                    "type": "number"
+                }
+            }
+        },
+        "dto.CreditCardChargeRequest": {
+            "type": "object",
+            "required": [
+                "amount",
+                "description"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "number",
+                    "minimum": 0.01
+                },
+                "description": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 3
+                },
+                "reference": {
+                    "type": "string",
+                    "maxLength": 50
+                }
+            }
+        },
+        "dto.CreditCardPaymentRequest": {
+            "type": "object",
+            "required": [
+                "amount",
+                "payment_method"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "number",
+                    "minimum": 0.01
+                },
+                "payment_method": {
+                    "type": "string",
+                    "enum": [
+                        "bank_transfer",
+                        "debit_card",
+                        "cash"
+                    ]
+                },
+                "reference": {
+                    "type": "string",
+                    "maxLength": 50
+                }
+            }
+        },
+        "dto.DebitCardBalanceResponse": {
+            "type": "object",
+            "properties": {
+                "account_balance": {
+                    "description": "Current account balance",
+                    "type": "number"
+                },
+                "available_balance": {
+                    "description": "Available balance (same as account)",
+                    "type": "number"
+                },
+                "card_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.DebitCardTransactionRequest": {
+            "type": "object",
+            "required": [
+                "amount",
+                "description"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "number",
+                    "minimum": 0.01
+                },
+                "description": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 3
+                },
+                "merchant_name": {
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "reference": {
+                    "type": "string",
+                    "maxLength": 50
+                }
+            }
+        },
+        "dto.PaginatedAccountResponse": {
             "type": "object",
             "properties": {
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_card_dto.CardResponse"
+                        "$ref": "#/definitions/dto.AccountResponse"
                     }
                 },
                 "pagination": {
-                    "$ref": "#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_card_dto.PaginationMeta"
+                    "$ref": "#/definitions/internal_infrastructure_entrypoints_handlers_account_dto.PaginationMeta"
                 }
             }
         },
-        "github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_card_dto.PaginationMeta": {
+        "dto.PaginatedCardResponse": {
             "type": "object",
             "properties": {
-                "current_page": {
-                    "type": "integer"
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.CardResponse"
+                    }
                 },
-                "page_size": {
-                    "type": "integer"
-                },
-                "total_items": {
-                    "type": "integer"
-                },
-                "total_pages": {
-                    "type": "integer"
+                "pagination": {
+                    "$ref": "#/definitions/internal_infrastructure_entrypoints_handlers_card_dto.PaginationMeta"
                 }
             }
         },
-        "github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_card_dto.UpdateCardRequest": {
+        "dto.UpdateAccountRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "closing_date": {
+                    "type": "string"
+                },
+                "credit_limit": {
+                    "description": "Credit card specific fields",
+                    "type": "number",
+                    "minimum": 0
+                },
+                "description": {
+                    "type": "string"
+                },
+                "dni": {
+                    "description": "Personal identification (for virtual wallets)",
+                    "type": "string",
+                    "maxLength": 20,
+                    "minLength": 7
+                },
+                "due_date": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.UpdateBalanceRequest": {
+            "type": "object",
+            "required": [
+                "amount"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "number"
+                }
+            }
+        },
+        "dto.UpdateCardRequest": {
             "type": "object",
             "properties": {
                 "expiration_month": {
@@ -2198,6 +2519,89 @@ const docTemplate = `{
                 "nickname": {
                     "type": "string",
                     "maxLength": 50
+                }
+            }
+        },
+        "dto.UpdateCreditDatesRequest": {
+            "type": "object",
+            "properties": {
+                "closing_date": {
+                    "type": "string"
+                },
+                "due_date": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.UpdateCreditLimitRequest": {
+            "type": "object",
+            "properties": {
+                "credit_limit": {
+                    "type": "number",
+                    "minimum": 0
+                }
+            }
+        },
+        "dto.UpdateStatusRequest": {
+            "type": "object",
+            "properties": {
+                "is_active": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "dto.WithdrawFundsRequest": {
+            "type": "object",
+            "required": [
+                "amount",
+                "description"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "description": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 3
+                },
+                "reference": {
+                    "type": "string",
+                    "maxLength": 50
+                }
+            }
+        },
+        "internal_infrastructure_entrypoints_handlers_account_dto.PaginationMeta": {
+            "type": "object",
+            "properties": {
+                "current_page": {
+                    "type": "integer"
+                },
+                "page_size": {
+                    "type": "integer"
+                },
+                "total_items": {
+                    "type": "integer"
+                },
+                "total_pages": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_infrastructure_entrypoints_handlers_card_dto.PaginationMeta": {
+            "type": "object",
+            "properties": {
+                "current_page": {
+                    "type": "integer"
+                },
+                "page_size": {
+                    "type": "integer"
+                },
+                "total_items": {
+                    "type": "integer"
+                },
+                "total_pages": {
+                    "type": "integer"
                 }
             }
         }

@@ -196,6 +196,85 @@ func (c *AccountClient) updateBalance(url string, request BalanceUpdateRequest) 
 	return &response, nil
 }
 
+// CARD OPERATIONS
+
+// CardChargeRequest representa una solicitud de cargo a tarjeta de crédito
+type CardChargeRequest struct {
+	CardID      string  `json:"card_id"`
+	Amount      float64 `json:"amount"`
+	Description string  `json:"description"`
+	Reference   string  `json:"reference,omitempty"`
+}
+
+// CardPaymentRequest representa una solicitud de pago a tarjeta de crédito
+type CardPaymentRequest struct {
+	CardID        string  `json:"card_id"`
+	Amount        float64 `json:"amount"`
+	PaymentMethod string  `json:"payment_method"`
+	Reference     string  `json:"reference,omitempty"`
+}
+
+// DebitTransactionRequest representa una solicitud de transacción con tarjeta de débito
+type DebitTransactionRequest struct {
+	CardID       string  `json:"card_id"`
+	Amount       float64 `json:"amount"`
+	Description  string  `json:"description"`
+	MerchantName string  `json:"merchant_name"`
+	Reference    string  `json:"reference,omitempty"`
+}
+
+// CardOperationResponse representa la respuesta de operaciones de tarjetas
+type CardOperationResponse struct {
+	Success     bool    `json:"success"`
+	CardID      string  `json:"card_id"`
+	NewBalance  float64 `json:"new_balance,omitempty"`
+	Message     string  `json:"message,omitempty"`
+	Transaction string  `json:"transaction_id,omitempty"`
+}
+
+// ChargeCard procesa un cargo en una tarjeta de crédito
+func (c *AccountClient) ChargeCard(req CardChargeRequest) (*CardOperationResponse, error) {
+	url := fmt.Sprintf("%s/api/cards/%s/charge", c.baseURL, req.CardID)
+	return c.processCardOperation(url, req)
+}
+
+// PaymentCard procesa un pago a una tarjeta de crédito
+func (c *AccountClient) PaymentCard(req CardPaymentRequest) (*CardOperationResponse, error) {
+	url := fmt.Sprintf("%s/api/cards/%s/payment", c.baseURL, req.CardID)
+	return c.processCardOperation(url, req)
+}
+
+// ProcessDebitTransaction procesa una transacción con tarjeta de débito
+func (c *AccountClient) ProcessDebitTransaction(req DebitTransactionRequest) (*CardOperationResponse, error) {
+	url := fmt.Sprintf("%s/api/cards/%s/transaction", c.baseURL, req.CardID)
+	return c.processCardOperation(url, req)
+}
+
+// Helper method para operaciones de tarjetas
+func (c *AccountClient) processCardOperation(url string, request interface{}) (*CardOperationResponse, error) {
+	requestBody, err := json.Marshal(request)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling request: %w", err)
+	}
+
+	resp, err := c.httpClient.Post(url, "application/json", bytes.NewBuffer(requestBody))
+	if err != nil {
+		return nil, fmt.Errorf("error calling account service: %w", err)
+	}
+	defer resp.Body.Close()
+
+	var response CardOperationResponse
+	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+		return nil, fmt.Errorf("error decoding response: %w", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return &response, fmt.Errorf("account service returned status %d: %s", resp.StatusCode, response.Message)
+	}
+
+	return &response, nil
+}
+
 // HealthCheck verifica si el account-service está disponible
 func (c *AccountClient) HealthCheck() error {
 	url := fmt.Sprintf("%s/health", c.baseURL)

@@ -6,19 +6,22 @@ import (
 
 	"github.com/fintrack/account-service/internal/core/domain/entities"
 	"github.com/fintrack/account-service/internal/core/ports"
+	"github.com/fintrack/account-service/internal/infrastructure/clients"
 	"github.com/fintrack/account-service/internal/infrastructure/entrypoints/handlers/card/dto"
 	"github.com/google/uuid"
 )
 
 type CardService struct {
-	cardRepo    ports.CardRepositoryInterface
-	accountRepo ports.AccountRepositoryInterface // To validate account exists
+	cardRepo          ports.CardRepositoryInterface
+	accountRepo       ports.AccountRepositoryInterface // To validate account exists
+	transactionClient *clients.TransactionClient       // To record transactions
 }
 
 func NewCardService(cardRepo ports.CardRepositoryInterface, accountRepo ports.AccountRepositoryInterface) *CardService {
 	return &CardService{
-		cardRepo:    cardRepo,
-		accountRepo: accountRepo,
+		cardRepo:          cardRepo,
+		accountRepo:       accountRepo,
+		transactionClient: clients.NewTransactionClient(),
 	}
 }
 
@@ -308,11 +311,47 @@ func (s *CardService) ProcessDebitTransaction(cardID string, amount float64, des
 		return nil, fmt.Errorf("failed to update account balance: %w", err)
 	}
 
+	// Record transaction in transaction service (async, don't fail if this fails)
+	go func() {
+		userID := card.Account.UserID // Assuming account has UserID field
+		if err := s.transactionClient.CreateDebitCardTransaction(
+			userID,
+			card.Account.ID,
+			cardID,
+			amount,
+			description,
+			merchantName,
+			reference,
+		); err != nil {
+			// Log error but don't fail the transaction
+			fmt.Printf("Warning: failed to record transaction in transaction service: %v\n", err)
+		}
+	}()
+
 	// Get updated card with new account balance
 	updatedCard, err := s.cardRepo.GetByIDWithAccount(cardID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get updated card: %w", err)
 	}
+
+	// Record transaction in transaction service (async, only for logging - does not modify balance)
+	go func() {
+		// Use a default user ID - in a real implementation, this should come from the request context
+		userID := "system"
+		err := s.transactionClient.CreateDebitCardTransaction(
+			userID,
+			card.Account.ID,
+			cardID,
+			amount,
+			description,
+			merchantName,
+			reference,
+		)
+		if err != nil {
+			// Log error but don't fail the main transaction
+			fmt.Printf("Warning: Failed to record transaction in transaction service: %v\n", err)
+		}
+	}()
 
 	return updatedCard, nil
 }
