@@ -43,8 +43,19 @@ export interface Card {
   closingDate?: string;
   dueDate?: string;
   
+  // Installment plans summary (only for credit cards)
+  installmentPlans?: InstallmentPlansSummary;
+  
   createdAt: string;
   updatedAt: string;
+}
+
+export interface InstallmentPlansSummary {
+  activePlans: number;
+  totalDebt: number;
+  monthlyPayment: number;
+  nextPaymentDue?: string;
+  overdueCount: number;
 }
 
 export interface CreateCardRequest {
@@ -124,4 +135,21 @@ export interface CardFormErrors {
   creditLimit?: string;
   closingDate?: string;
   dueDate?: string;
+}
+
+// Installment-related responses
+export interface CardWithInstallmentsResponse {
+  card: Card;
+  installmentPlans: any[]; // Will be typed as InstallmentPlan[] when imported
+  installmentsSummary: InstallmentPlansSummary;
+}
+
+export interface CardTransactionResponse {
+  transactionId: string;
+  card: Card;
+  amount: number;
+  type: 'charge' | 'payment' | 'installment_charge';
+  installmentPlan?: any; // Will be typed as InstallmentPlan when imported
+  success: boolean;
+  message?: string;
 }

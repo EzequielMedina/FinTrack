@@ -1,0 +1,227 @@
+<div class="installment-plan-detail">
+  <!-- Header Section -->
+  <div *ngIf="showHeader" class="detail-header">
+    <div class="header-content">
+      <div class="plan-info">
+        <h2 class="plan-title" *ngIf="currentPlanData">
+          {{ currentPlanData.merchantName || currentPlanData.description || 'Plan de Cuotas' }}
+        </h2>
+        <div class="plan-metadata" *ngIf="currentPlanData">
+          <span class="plan-id">Plan #{{ currentPlanData.id.substring(0, 8) }}</span>
+          <mat-chip [class]="getPlanStatusClass(currentPlanData.status)">
+            {{ getPlanStatusText(currentPlanData.status) }}
+          </mat-chip>
+        </div>
+      </div>
+      
+      <button mat-icon-button 
+              (click)="refresh()" 
+              [disabled]="isLoadingState"
+              matTooltip="Actualizar">
+        <mat-icon [class.spinning]="isLoadingState">refresh</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoadingState" class="loading-container">
+    <mat-progress-spinner mode="indeterminate" diameter="40"></mat-progress-spinner>
+    <p>Cargando detalle del plan...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="hasError" class="error-container">
+    <mat-icon color="warn">error</mat-icon>
+    <p>{{ hasError }}</p>
+    <button mat-button color="primary" (click)="refresh()">
+      <mat-icon>refresh</mat-icon>
+      Reintentar
+    </button>
+  </div>
+
+  <!-- Plan Detail Content -->
+  <div *ngIf="!isLoadingState && !hasError && hasPlan" class="plan-content">
+    <!-- Summary Cards -->
+    <div class="summary-section">
+      <div class="summary-grid">
+        <mat-card class="summary-card primary">
+          <mat-card-content>
+            <div class="summary-icon">
+              <mat-icon>account_balance_wallet</mat-icon>
+            </div>
+            <div class="summary-info">
+              <div class="summary-label">Total del Plan</div>
+              <div class="summary-value">{{ formatCurrency(currentPlanData.totalAmount) }}</div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="summary-card accent">
+          <mat-card-content>
+            <div class="summary-icon">
+              <mat-icon>payment</mat-icon>
+            </div>
+            <div class="summary-info">
+              <div class="summary-label">Cuota Mensual</div>
+              <div class="summary-value">{{ formatCurrency(currentPlanData.installmentAmount) }}</div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="summary-card">
+          <mat-card-content>
+            <div class="summary-icon">
+              <mat-icon>schedule</mat-icon>
+            </div>
+            <div class="summary-info">
+              <div class="summary-label">Progreso</div>
+              <div class="summary-value">{{ currentPlanData.paidInstallments }}/{{ currentPlanData.installmentsCount }}</div>
+              <div class="summary-percentage">{{ getProgressPercentage() }}%</div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="summary-card" [class.warn]="getOverdueCount() > 0">
+          <mat-card-content>
+            <div class="summary-icon">
+              <mat-icon>{{ getOverdueCount() > 0 ? 'warning' : 'check_circle' }}</mat-icon>
+            </div>
+            <div class="summary-info">
+              <div class="summary-label">Estado</div>
+              <div class="summary-value" *ngIf="getOverdueCount() === 0">Al día</div>
+              <div class="summary-value warn" *ngIf="getOverdueCount() > 0">
+                {{ getOverdueCount() }} vencida(s)
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+
+    <!-- Next Payment Alert -->
+    <div *ngIf="getNextDueInstallment() as nextInstallment" class="next-payment-alert">
+      <mat-card [class.overdue]="isOverdue(nextInstallment)">
+        <mat-card-content>
+          <div class="alert-content">
+            <div class="alert-icon">
+              <mat-icon [color]="isOverdue(nextInstallment) ? 'warn' : 'primary'">
+                {{ isOverdue(nextInstallment) ? 'warning' : 'schedule' }}
+              </mat-icon>
+            </div>
+            <div class="alert-info">
+              <div class="alert-title">
+                {{ isOverdue(nextInstallment) ? 'Cuota Vencida' : 'Próxima Cuota' }}
+              </div>
+              <div class="alert-details">
+                <span class="amount">{{ formatCurrency(nextInstallment.amount) }}</span>
+                <span class="date">{{ formatDate(nextInstallment.dueDate) }}</span>
+              </div>
+            </div>
+            <div class="alert-actions" *ngIf="showActions">
+              <button mat-raised-button 
+                      [color]="isOverdue(nextInstallment) ? 'warn' : 'primary'"
+                      (click)="onPayInstallment(nextInstallment)"
+                      [disabled]="!canPayInstallment(nextInstallment)">
+                <mat-icon>payment</mat-icon>
+                Pagar Ahora
+              </button>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Installments Table -->
+    <div class="installments-section">
+      <div class="section-header">
+        <h3>Detalle de Cuotas</h3>
+        <mat-chip class="installments-count">{{ currentInstallments.length }} cuotas</mat-chip>
+      </div>
+
+      <div class="table-container">
+        <table mat-table [dataSource]="currentInstallments" class="installments-table">
+          <!-- Installment Number Column -->
+          <ng-container matColumnDef="installmentNumber">
+            <th mat-header-cell *matHeaderCellDef>Cuota</th>
+            <td mat-cell *matCellDef="let installment">
+              <div class="installment-number">
+                <span class="number">#{{ installment.installmentNumber }}</span>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Due Date Column -->
+          <ng-container matColumnDef="dueDate">
+            <th mat-header-cell *matHeaderCellDef>Vencimiento</th>
+            <td mat-cell *matCellDef="let installment">
+              <div class="due-date" [class.overdue]="isOverdue(installment)">
+                {{ formatDate(installment.dueDate) }}
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Amount Column -->
+          <ng-container matColumnDef="amount">
+            <th mat-header-cell *matHeaderCellDef>Importe</th>
+            <td mat-cell *matCellDef="let installment">
+              <div class="amount">{{ formatCurrency(installment.amount) }}</div>
+            </td>
+          </ng-container>
+
+          <!-- Status Column -->
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef>Estado</th>
+            <td mat-cell *matCellDef="let installment">
+              <mat-chip [class]="getStatusClass(installment.status)" class="status-chip">
+                <mat-icon>{{ getStatusIcon(installment.status) }}</mat-icon>
+                {{ getStatusText(installment.status) }}
+              </mat-chip>
+            </td>
+          </ng-container>
+
+          <!-- Paid Date Column -->
+          <ng-container matColumnDef="paidDate">
+            <th mat-header-cell *matHeaderCellDef>Fecha de Pago</th>
+            <td mat-cell *matCellDef="let installment">
+              <div class="paid-date">
+                <span *ngIf="installment.paidDate">{{ formatDate(installment.paidDate) }}</span>
+                <span *ngIf="!installment.paidDate" class="not-paid">-</span>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Actions Column -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Acciones</th>
+            <td mat-cell *matCellDef="let installment">
+              <div class="actions" *ngIf="showActions">
+                <button mat-icon-button 
+                        color="primary"
+                        (click)="onPayInstallment(installment)"
+                        [disabled]="!canPayInstallment(installment)"
+                        [matTooltip]="canPayInstallment(installment) ? 'Pagar cuota' : 'No se puede pagar'"
+                        *ngIf="!isPaid(installment)">
+                  <mat-icon>payment</mat-icon>
+                </button>
+                <span *ngIf="isPaid(installment)" class="paid-indicator">
+                  <mat-icon color="primary">check_circle</mat-icon>
+                </span>
+              </div>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;" 
+              [class]="getStatusClass(row.status)"></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!isLoadingState && !hasError && !hasPlan" class="empty-state">
+    <mat-icon>info</mat-icon>
+    <h3>No se encontró el plan</h3>
+    <p>El plan de cuotas solicitado no existe o no está disponible.</p>
+  </div>
+</div>

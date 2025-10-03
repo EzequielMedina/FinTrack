@@ -473,7 +473,7 @@ func (s *InstallmentService) GetInstallmentHistory(installmentID string) ([]*ent
 }
 
 // GetInstallmentSummary retrieves installment summary for a user
-func (s *InstallmentService) GetInstallmentSummary(userID string) (*dto.InstallmentSummaryResponse, error) {
+func (s *InstallmentService) GetInstallmentSummary(userID string) (map[string]interface{}, error) {
 	summaryData, err := s.installmentPlanRepo.GetSummaryByUser(userID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get summary data: %w", err)
@@ -512,24 +512,26 @@ func (s *InstallmentService) GetInstallmentSummary(userID string) (*dto.Installm
 		}
 	}
 
-	return &dto.InstallmentSummaryResponse{
-		UserID:                   userID,
-		TotalActivePlans:         summaryData.TotalActivePlans,
-		TotalCompletedPlans:      summaryData.TotalCompletedPlans,
-		TotalCancelledPlans:      summaryData.TotalCancelledPlans,
-		TotalOutstandingAmount:   summaryData.TotalOutstandingAmount,
-		TotalPaidAmount:          summaryData.TotalPaidAmount,
-		TotalOverdueAmount:       summaryData.TotalOverdueAmount,
-		NextPaymentDue:           nextPaymentDue,
-		NextPaymentAmount:        nextPaymentAmount,
-		OverdueInstallmentsCount: summaryData.OverdueInstallmentsCount,
-		UpcomingInstallments:     upcoming,
-		RecentActivity:           []dto.InstallmentActivitySummary{}, // Could be implemented
-	}, nil
+	result := map[string]interface{}{
+		"UserID":                   userID,
+		"TotalActivePlans":         summaryData.TotalActivePlans,
+		"TotalCompletedPlans":      summaryData.TotalCompletedPlans,
+		"TotalCancelledPlans":      summaryData.TotalCancelledPlans,
+		"TotalOutstandingAmount":   summaryData.TotalOutstandingAmount,
+		"TotalPaidAmount":          summaryData.TotalPaidAmount,
+		"TotalOverdueAmount":       summaryData.TotalOverdueAmount,
+		"NextPaymentDue":           nextPaymentDue,
+		"NextPaymentAmount":        nextPaymentAmount,
+		"OverdueInstallmentsCount": summaryData.OverdueInstallmentsCount,
+		"UpcomingInstallments":     upcoming,
+		"RecentActivity":           []dto.InstallmentActivitySummary{},
+	}
+
+	return result, nil
 }
 
 // GetMonthlyInstallmentLoad retrieves monthly installment load
-func (s *InstallmentService) GetMonthlyInstallmentLoad(userID string, year, month int) (*dto.MonthlyInstallmentLoadResponse, error) {
+func (s *InstallmentService) GetMonthlyInstallmentLoad(userID string, year, month int) (map[string]interface{}, error) {
 	startDate := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.UTC)
 	endDate := startDate.AddDate(0, 1, -1)
 
@@ -538,68 +540,90 @@ func (s *InstallmentService) GetMonthlyInstallmentLoad(userID string, year, mont
 		return nil, fmt.Errorf("failed to get installments for date range: %w", err)
 	}
 
-	response := &dto.MonthlyInstallmentLoadResponse{
-		UserID: userID,
-		Year:   year,
-		Month:  month,
-	}
+	// Initialize counters
+	totalInstallments := 0
+	totalAmount := 0.0
+	paidInstallments := 0
+	paidAmount := 0.0
+	pendingInstallments := 0
+	pendingAmount := 0.0
+	overdueInstallments := 0
+	overdueAmount := 0.0
 
 	// Calculate totals and organize by day
-	dailyMap := make(map[int][]dto.UpcomingInstallmentSummary)
+	dailyMap := make(map[int][]map[string]interface{})
 
 	for _, inst := range installments {
 		plan, _ := s.installmentPlanRepo.GetByID(inst.PlanID)
 
-		response.TotalInstallments++
-		response.TotalAmount += inst.Amount
+		totalInstallments++
+		totalAmount += inst.Amount
 
 		switch inst.Status {
 		case entities.InstallmentStatusPaid:
-			response.PaidInstallments++
-			response.PaidAmount += inst.PaidAmount
+			paidInstallments++
+			paidAmount += inst.PaidAmount
 		case entities.InstallmentStatusPending:
-			response.PendingInstallments++
-			response.PendingAmount += inst.RemainingAmount
+			pendingInstallments++
+			pendingAmount += inst.RemainingAmount
 		case entities.InstallmentStatusOverdue:
-			response.OverdueInstallments++
-			response.OverdueAmount += inst.RemainingAmount
+			overdueInstallments++
+			overdueAmount += inst.RemainingAmount
 		}
 
 		day := inst.DueDate.Day()
-		summary := dto.UpcomingInstallmentSummary{
-			InstallmentID:     inst.ID,
-			PlanID:            inst.PlanID,
-			CardID:            plan.CardID,
-			Amount:            inst.Amount,
-			DueDate:           inst.DueDate,
-			Description:       plan.Description,
-			MerchantName:      plan.MerchantName,
-			InstallmentNumber: inst.InstallmentNumber,
-			TotalInstallments: plan.InstallmentsCount,
+		summary := map[string]interface{}{
+			"installment_id":     inst.ID,
+			"plan_id":            inst.PlanID,
+			"card_id":            plan.CardID,
+			"amount":             inst.Amount,
+			"due_date":           inst.DueDate,
+			"description":        plan.Description,
+			"merchant_name":      plan.MerchantName,
+			"installment_number": inst.InstallmentNumber,
+			"total_installments": plan.InstallmentsCount,
 		}
 
 		dailyMap[day] = append(dailyMap[day], summary)
 	}
 
 	// Create daily breakdown
+	dailyBreakdown := make([]map[string]interface{}, 0)
 	for day := 1; day <= endDate.Day(); day++ {
 		dailyInstallments := dailyMap[day]
 		if dailyInstallments == nil {
-			dailyInstallments = []dto.UpcomingInstallmentSummary{}
+			dailyInstallments = []map[string]interface{}{}
 		}
 
 		var dayTotal float64
 		for _, inst := range dailyInstallments {
-			dayTotal += inst.Amount
+			if amount, ok := inst["amount"].(float64); ok {
+				dayTotal += amount
+			}
 		}
 
-		response.DailyBreakdown = append(response.DailyBreakdown, dto.DailyInstallmentLoad{
-			Day:               day,
-			Date:              time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC),
-			InstallmentsCount: len(dailyInstallments),
-			TotalAmount:       dayTotal,
-			Installments:      dailyInstallments,
+		dailyBreakdown = append(dailyBreakdown, map[string]interface{}{
+			"day":                day,
+			"date":               time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC),
+			"installments_count": len(dailyInstallments),
+			"total_amount":       dayTotal,
+			"installments":       dailyInstallments,
 		})
+	}
+
+	response := map[string]interface{}{
+		"user_id":             userID,
+		"year":                year,
+		"month":               month,
+		"total_installments":  totalInstallments,
+		"total_amount":        totalAmount,
+		"paid_installments":   paidInstallments,
+		"paid_amount":         paidAmount,
+		"pending_installments": pendingInstallments,
+		"pending_amount":      pendingAmount,
+		"overdue_installments": overdueInstallments,
+		"overdue_amount":      overdueAmount,
+		"daily_breakdown":     dailyBreakdown,
 	}
 
 	return response, nil

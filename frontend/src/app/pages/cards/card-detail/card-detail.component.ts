@@ -11,9 +11,17 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Card, CardType } from '../../../models';
+import { Card, CardType, InstallmentPlan } from '../../../models';
 import { CreditCardService, CreditCardBalanceResponse } from '../../../services/credit-card.service';
 import { DebitCardService, DebitCardBalanceResponse } from '../../../services/debit-card.service';
+import { 
+  InstallmentCalculatorComponent, 
+  InstallmentPlansListComponent
+} from '../../../shared/components';
+import type { 
+  InstallmentCalculatorResult,
+  InstallmentPlanAction 
+} from '../../../shared/components';
 
 @Component({
   selector: 'app-card-detail',
@@ -29,7 +37,9 @@ import { DebitCardService, DebitCardBalanceResponse } from '../../../services/de
     MatSelectModule,
     MatChipsModule,
     MatDividerModule,
-    MatTabsModule
+    MatTabsModule,
+    InstallmentCalculatorComponent,
+    InstallmentPlansListComponent
   ],
   templateUrl: './card-detail.component.html',
   styleUrls: ['./card-detail.component.css'],
@@ -47,6 +57,10 @@ export class CardDetailComponent implements OnInit {
   creditBalance = signal<CreditCardBalanceResponse | null>(null);
   debitBalance = signal<DebitCardBalanceResponse | null>(null);
   loading = signal(false);
+
+  // Installment properties
+  installmentPlansCount = signal(0);
+  currentInstallmentCalculation = signal<InstallmentCalculatorResult | null>(null);
 
   // Form groups
   chargeForm!: FormGroup;
@@ -123,8 +137,15 @@ export class CardDetailComponent implements OnInit {
       
       const chargeData = this.chargeForm.value;
       this.creditCardService.charge(this.card.id, chargeData).subscribe({
-        next: (balance) => {
-          this.creditBalance.set(balance);
+        next: (response) => {
+          // Check if it's a regular charge (CreditCardBalanceResponse) or installment charge
+          if ('cardId' in response && 'balance' in response) {
+            // Regular charge response
+            this.creditBalance.set(response as CreditCardBalanceResponse);
+          } else {
+            // Installment charge response - reload balance
+            this.loadCardBalance();
+          }
           this.chargeForm.reset();
           this.snackBar.open('Cargo realizado exitosamente', 'Cerrar', { duration: 3000 });
           this.loading.set(false);
@@ -241,5 +262,86 @@ export class CardDetailComponent implements OnInit {
         amount: balance.balance
       });
     }
+  }
+
+  // Installment Methods
+  onInstallmentCalculationChanged(calculation: InstallmentCalculatorResult | null): void {
+    this.currentInstallmentCalculation.set(calculation);
+  }
+
+  onInstallmentsSelected(calculation: InstallmentCalculatorResult): void {
+    if (calculation && this.card.cardType === CardType.CREDIT) {
+      // Crear la compra con cuotas
+      const chargeRequest = {
+        amount: calculation.preview.totalAmount,
+        description: 'Compra en cuotas',
+        installments: {
+          count: calculation.installmentsCount,
+          interestRate: calculation.preview.interestRate,
+          adminFee: calculation.preview.adminFee,
+          startDate: calculation.startDate
+        }
+      };
+
+      this.loading.set(true);
+      this.creditCardService.charge(this.card.id, chargeRequest).subscribe({
+        next: (response) => {
+          this.loading.set(false);
+          this.snackBar.open(
+            `Compra en ${calculation.installmentsCount} cuotas creada exitosamente`,
+            'Cerrar',
+            { duration: 5000 }
+          );
+          // Recargar balance y planes
+          this.loadCardBalance();
+        },
+        error: (error) => {
+          this.loading.set(false);
+          this.snackBar.open(
+            `Error al crear la compra en cuotas: ${error.message}`,
+            'Cerrar',
+            { duration: 5000 }
+          );
+        }
+      });
+    }
+  }
+
+  onInstallmentPlanAction(action: InstallmentPlanAction): void {
+    switch (action.type) {
+      case 'view':
+        this.viewInstallmentPlanDetail(action.plan);
+        break;
+      case 'pay':
+        this.showPayInstallmentDialog(action.plan);
+        break;
+      case 'cancel':
+        this.cancelInstallmentPlan(action.plan);
+        break;
+    }
+  }
+
+  onInstallmentPlansLoaded(plans: InstallmentPlan[]): void {
+    this.installmentPlansCount.set(plans.length);
+  }
+
+  viewAllInstallmentPlans(): void {
+    // Aquí podrías navegar a una página dedicada o abrir un modal
+    console.log('Navigate to all installment plans view');
+  }
+
+  viewInstallmentPlanDetail(plan: InstallmentPlan): void {
+    // Aquí podrías abrir un modal con el detalle del plan
+    console.log('View plan detail:', plan);
+  }
+
+  showPayInstallmentDialog(plan: InstallmentPlan): void {
+    // Aquí podrías abrir un dialog para pagar la cuota
+    console.log('Pay installment for plan:', plan);
+  }
+
+  cancelInstallmentPlan(plan: InstallmentPlan): void {
+    // Aquí podrías mostrar confirmación y cancelar el plan
+    console.log('Cancel plan:', plan);
   }
 }

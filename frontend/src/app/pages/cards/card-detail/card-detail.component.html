@@ -260,6 +260,57 @@
       </div>
     </mat-tab>
 
+    <!-- TAB DE CUOTAS -->
+    <mat-tab 
+      *ngIf="card.cardType === CardType.CREDIT" 
+      label="Compras en Cuotas">
+      <div class="tab-content">
+        
+        <!-- Calculadora de Cuotas -->
+        <mat-card class="operation-card">
+          <mat-card-header>
+            <mat-card-title>Simular Compra en Cuotas</mat-card-title>
+            <mat-card-subtitle>Calcula y simula tu compra en cuotas</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <app-installment-calculator
+              [cardId]="card.id"
+              [showPreview]="true"
+              (calculationChanged)="onInstallmentCalculationChanged($event)"
+              (installmentsSelected)="onInstallmentsSelected($event)">
+            </app-installment-calculator>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Lista de Planes de Cuotas -->
+        <mat-card class="operation-card">
+          <mat-card-header>
+            <mat-card-title>Mis Planes de Cuotas</mat-card-title>
+            <mat-card-subtitle>Gestiona tus compras en cuotas activas</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <app-installment-plans-list
+              [cardId]="card.id"
+              [showCardInfo]="false"
+              [maxPlansToShow]="5"
+              [showPagination]="false"
+              (planAction)="onInstallmentPlanAction($event)"
+              (plansLoaded)="onInstallmentPlansLoaded($event)">
+            </app-installment-plans-list>
+            
+            <!-- Ver todos los planes -->
+            <div class="view-all-plans" *ngIf="installmentPlansCount > 5">
+              <button mat-stroked-button color="primary" (click)="viewAllInstallmentPlans()">
+                <mat-icon>visibility</mat-icon>
+                Ver todos los planes ({{ installmentPlansCount }})
+              </button>
+            </div>
+          </mat-card-content>
+        </mat-card>
+        
+      </div>
+    </mat-tab>
+
     <!-- TAB DE OPERACIONES DÉBITO -->
     <mat-tab 
       *ngIf="card.cardType === CardType.DEBIT" 

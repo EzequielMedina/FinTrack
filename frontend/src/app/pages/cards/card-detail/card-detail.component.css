@@ -271,3 +271,26 @@ mat-chip-set {
     color: #fff;
   }
 }
+
+/* Installment Components Styles */
+.view-all-plans {
+  margin-top: 16px;
+  text-align: center;
+}
+
+.view-all-plans button {
+  width: 100%;
+  max-width: 300px;
+}
+
+/* Responsive adjustments for installment components */
+@media (max-width: 768px) {
+  .tab-content app-installment-calculator,
+  .tab-content app-installment-plans-list {
+    margin: 0 -16px;
+  }
+  
+  .view-all-plans button {
+    font-size: 0.9rem;
+  }
+}

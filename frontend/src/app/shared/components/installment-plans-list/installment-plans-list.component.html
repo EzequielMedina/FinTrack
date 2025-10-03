@@ -1,0 +1,202 @@
+<div class="installment-plans-list">
+  <!-- Header -->
+  <div class="list-header">
+    <div class="header-content">
+      <h3 class="list-title">
+        <mat-icon>payment</mat-icon>
+        Planes de Cuotas
+        <mat-chip class="plans-count" *ngIf="hasPlans">{{ totalCount }}</mat-chip>
+      </h3>
+      <button mat-icon-button 
+              (click)="refresh()" 
+              [disabled]="isLoadingState"
+              matTooltip="Actualizar">
+        <mat-icon [class.spinning]="isLoadingState">refresh</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoadingState" class="loading-container">
+    <mat-progress-spinner mode="indeterminate" diameter="40"></mat-progress-spinner>
+    <p>Cargando planes de cuotas...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="hasError" class="error-container">
+    <mat-icon color="warn">error</mat-icon>
+    <p>{{ hasError }}</p>
+    <button mat-button color="primary" (click)="refresh()">
+      <mat-icon>refresh</mat-icon>
+      Reintentar
+    </button>
+  </div>
+
+  <!-- Plans List -->
+  <div *ngIf="!isLoadingState && !hasError" class="plans-container">
+    <!-- Plans Grid -->
+    <div *ngIf="hasPlans" class="plans-grid">
+      <mat-card *ngFor="let plan of currentPlans; trackBy: trackByPlanId" 
+                class="plan-card"
+                [class]="getStatusClass(plan.status)">
+        
+        <!-- Card Header -->
+        <mat-card-header class="plan-header">
+          <div class="plan-title-section">
+            <mat-card-title class="plan-title">
+              {{ getMerchantDisplay(plan) }}
+            </mat-card-title>
+            <mat-card-subtitle class="plan-subtitle">
+              <span class="plan-id">Plan #{{ plan.id.substring(0, 8) }}</span>
+              <span class="plan-date">{{ formatDate(plan.startDate) }}</span>
+            </mat-card-subtitle>
+          </div>
+          
+          <div class="status-section">
+            <mat-chip class="status-chip" [class]="getStatusClass(plan.status)">
+              <mat-icon>{{ getStatusIcon(plan.status) }}</mat-icon>
+              {{ getStatusText(plan.status) }}
+            </mat-chip>
+          </div>
+
+          <!-- Actions Menu -->
+          <button mat-icon-button 
+                  [matMenuTriggerFor]="actionsMenu"
+                  class="actions-button">
+            <mat-icon>more_vert</mat-icon>
+          </button>
+          <mat-menu #actionsMenu="matMenu">
+            <button mat-menu-item (click)="onViewPlan(plan)">
+              <mat-icon>visibility</mat-icon>
+              Ver detalle
+            </button>
+            <button mat-menu-item 
+                    (click)="onPayInstallment(plan)"
+                    [disabled]="!canPay(plan)">
+              <mat-icon>payment</mat-icon>
+              Pagar cuota
+            </button>
+            <mat-divider *ngIf="canCancel(plan)"></mat-divider>
+            <button mat-menu-item 
+                    (click)="onCancelPlan(plan)"
+                    [disabled]="!canCancel(plan)"
+                    class="cancel-action">
+              <mat-icon>cancel</mat-icon>
+              Cancelar plan
+            </button>
+          </mat-menu>
+        </mat-card-header>
+
+        <!-- Card Content -->
+        <mat-card-content class="plan-content">
+          <!-- Amount Summary -->
+          <div class="amount-summary">
+            <div class="amount-item primary">
+              <span class="amount-label">Total del Plan</span>
+              <span class="amount-value">{{ formatCurrency(plan.totalAmount) }}</span>
+            </div>
+            <div class="amount-item">
+              <span class="amount-label">Cuota Mensual</span>
+              <span class="amount-value accent">{{ formatCurrency(plan.installmentAmount) }}</span>
+            </div>
+            <div class="amount-item">
+              <span class="amount-label">Restante</span>
+              <span class="amount-value">{{ formatCurrency(plan.remainingAmount) }}</span>
+            </div>
+          </div>
+
+          <!-- Progress Section -->
+          <div class="progress-section">
+            <div class="progress-header">
+              <span class="progress-label">
+                Progreso: {{ plan.paidInstallments }} de {{ plan.installmentsCount }} cuotas
+              </span>
+              <span class="progress-percentage">{{ getProgressPercentage(plan) }}%</span>
+            </div>
+            <mat-progress-bar 
+              [value]="getProgressPercentage(plan)"
+              [color]="getProgressColor(plan)"
+              class="progress-bar">
+            </mat-progress-bar>
+          </div>
+
+          <!-- Next Payment Info -->
+          <div *ngIf="getNextPaymentInfo(plan) as nextPayment" class="next-payment">
+            <div class="next-payment-header">
+              <mat-icon>schedule</mat-icon>
+              <span>Próxima Cuota</span>
+            </div>
+            <div class="next-payment-details">
+              <div class="payment-amount">{{ formatCurrency(nextPayment.amount) }}</div>
+              <div class="payment-date">{{ formatDate(nextPayment.date) }}</div>
+              <div class="days-remaining" [class.overdue]="getDaysUntilNextPayment(plan) < 0">
+                <span *ngIf="getDaysUntilNextPayment(plan) > 0">
+                  En {{ getDaysUntilNextPayment(plan) }} días
+                </span>
+                <span *ngIf="getDaysUntilNextPayment(plan) === 0" class="due-today">
+                  Vence hoy
+                </span>
+                <span *ngIf="getDaysUntilNextPayment(plan) < 0" class="overdue">
+                  Vencida hace {{ Math.abs(getDaysUntilNextPayment(plan)) }} días
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Completed State -->
+          <div *ngIf="plan.status === InstallmentPlanStatus.COMPLETED" class="completed-state">
+            <mat-icon color="primary">check_circle</mat-icon>
+            <span>Plan completado exitosamente</span>
+          </div>
+
+          <!-- Cancelled State -->
+          <div *ngIf="plan.status === InstallmentPlanStatus.CANCELLED" class="cancelled-state">
+            <mat-icon color="warn">cancel</mat-icon>
+            <span>Plan cancelado</span>
+          </div>
+
+          <!-- Card Info (if enabled) -->
+          <div *ngIf="showCardInfo && plan.cardId" class="card-info">
+            <mat-icon>credit_card</mat-icon>
+            <span>Tarjeta: **** **** **** {{ plan.cardId.substring(plan.cardId.length - 4) }}</span>
+          </div>
+        </mat-card-content>
+
+        <!-- Card Actions -->
+        <mat-card-actions class="plan-actions">
+          <button mat-button color="primary" (click)="onViewPlan(plan)">
+            <mat-icon>visibility</mat-icon>
+            Ver Detalle
+          </button>
+          <button mat-raised-button 
+                  color="accent" 
+                  (click)="onPayInstallment(plan)"
+                  [disabled]="!canPay(plan)"
+                  *ngIf="canPay(plan)">
+            <mat-icon>payment</mat-icon>
+            Pagar Cuota
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!hasPlans" class="empty-state">
+      <mat-icon>inbox</mat-icon>
+      <h3>No hay planes de cuotas</h3>
+      <p>{{ emptyStateMessage }}</p>
+    </div>
+
+    <!-- Pagination -->
+    <mat-paginator 
+      *ngIf="showPaginationControls"
+      [length]="totalCount"
+      [pageSize]="pageSize()"
+      [pageIndex]="currentPage()"
+      [pageSizeOptions]="[5, 10, 20, 50]"
+      (page)="onPageChange($event)"
+      showFirstLastButtons
+      class="plans-paginator">
+    </mat-paginator>
+  </div>
+</div>

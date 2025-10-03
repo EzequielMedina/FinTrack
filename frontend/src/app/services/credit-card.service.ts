@@ -3,12 +3,19 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
-import { Card } from '../models';
+import { Card, ChargeWithInstallmentsRequest, ChargeWithInstallmentsResponse } from '../models';
+import { InstallmentService } from './installment.service';
 
 export interface CreditCardChargeRequest {
   amount: number;
   description: string;
   reference?: string;
+  installments?: {
+    count: number;
+    interestRate?: number;
+    adminFee?: number;
+    startDate?: string;
+  };
 }
 
 export interface CreditCardPaymentRequest {
@@ -43,16 +50,47 @@ export interface CreditCardBalanceResponse {
 @Injectable({ providedIn: 'root' })
 export class CreditCardService {
   private readonly http = inject(HttpClient);
+  private readonly installmentService = inject(InstallmentService);
   private readonly apiUrl = `${environment.accountServiceUrl}/cards`;
 
   /**
-   * Make a charge to a credit card
+   * Make a charge to a credit card (with optional installments)
    */
-  charge(cardId: string, chargeData: CreditCardChargeRequest): Observable<CreditCardBalanceResponse> {
+  charge(cardId: string, chargeData: CreditCardChargeRequest): Observable<CreditCardBalanceResponse | ChargeWithInstallmentsResponse> {
+    // If installments are requested, use the installment service
+    if (chargeData.installments && chargeData.installments.count > 1) {
+      return this.chargeWithInstallments(cardId, chargeData);
+    }
+
+    // Regular charge without installments
     return this.http.post<any>(`${this.apiUrl}/${cardId}/charge`, chargeData).pipe(
       map(response => this.mapToCreditCardBalanceResponse(response)),
       catchError(error => {
         console.error('Error charging credit card:', error);
+        throw this.handleCreditCardError(error);
+      })
+    );
+  }
+
+  /**
+   * Make a charge with installments
+   */
+  chargeWithInstallments(cardId: string, chargeData: CreditCardChargeRequest): Observable<ChargeWithInstallmentsResponse> {
+    if (!chargeData.installments) {
+      throw new Error('Installment information is required');
+    }
+
+    const installmentRequest: ChargeWithInstallmentsRequest = {
+      cardId,
+      amount: chargeData.amount,
+      description: chargeData.description,
+      installmentsCount: chargeData.installments.count,
+      reference: chargeData.reference
+    };
+
+    return this.installmentService.createInstallmentPlan(installmentRequest).pipe(
+      catchError(error => {
+        console.error('Error charging credit card with installments:', error);
         throw this.handleCreditCardError(error);
       })
     );
