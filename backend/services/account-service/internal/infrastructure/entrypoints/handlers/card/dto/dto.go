@@ -61,8 +61,19 @@ type CardResponse struct {
 	ClosingDate *time.Time `json:"closing_date,omitempty"`
 	DueDate     *time.Time `json:"due_date,omitempty"`
 
+	// Installment plans summary (optional, when requested)
+	InstallmentPlans *InstallmentPlansSummary `json:"installment_plans,omitempty"`
+
 	// Security fields (encrypted data - never exposed in response)
 	// EncryptedNumber and KeyFingerprint are intentionally omitted for security
+}
+
+// InstallmentPlansSummary represents a summary of installment plans for a card
+type InstallmentPlansSummary struct {
+	TotalActivePlans       int     `json:"total_active_plans"`
+	TotalOutstandingAmount float64 `json:"total_outstanding_amount"`
+	NextPaymentDue        *time.Time `json:"next_payment_due,omitempty"`
+	NextPaymentAmount     float64 `json:"next_payment_amount"`
 }
 
 // Credit Card Financial Operations DTOs
@@ -79,6 +90,19 @@ type CreditCardPaymentRequest struct {
 	Amount        float64 `json:"amount" binding:"required,min=0.01"`
 	PaymentMethod string  `json:"payment_method" binding:"required,oneof=bank_transfer debit_card cash"`
 	Reference     string  `json:"reference,omitempty" binding:"max=50"`
+}
+
+// CreditCardChargeWithInstallmentsRequest represents a charge to a credit card with installments
+type CreditCardChargeWithInstallmentsRequest struct {
+	Amount            float64   `json:"amount" binding:"required,min=0.01"`
+	InstallmentsCount int       `json:"installments_count" binding:"required,min=1,max=24"`
+	StartDate         time.Time `json:"start_date" binding:"required"`
+	Description       string    `json:"description" binding:"required,min=3,max=255"`
+	MerchantName      string    `json:"merchant_name,omitempty" binding:"max=100"`
+	MerchantID        string    `json:"merchant_id,omitempty" binding:"max=50"`
+	InterestRate      float64   `json:"interest_rate,omitempty" binding:"min=0,max=100"`
+	AdminFee         float64   `json:"admin_fee,omitempty" binding:"min=0"`
+	Reference         string    `json:"reference,omitempty" binding:"max=50"`
 }
 
 // CreditCardBalanceResponse represents the balance information for a credit card
@@ -207,4 +231,12 @@ func ToDebitCardBalanceResponse(card *entities.Card) DebitCardBalanceResponse {
 		AccountBalance:   accountBalance,
 		AvailableBalance: accountBalance, // Same as account balance for debit cards
 	}
+}
+
+// ChargeWithInstallmentsResponse represents the response after charging a card with installments
+type ChargeWithInstallmentsResponse struct {
+	InstallmentPlan         *entities.InstallmentPlan `json:"installment_plan"`
+	Card                   *entities.Card            `json:"card"`
+	FirstInstallmentCharged bool                      `json:"first_installment_charged"`
+	TransactionID          string                    `json:"transaction_id,omitempty"`
 }

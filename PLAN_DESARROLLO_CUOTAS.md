@@ -58,41 +58,48 @@ Implementar un sistema completo de cuotas para tarjetas de crédito que permita 
 
 ## 🔧 FASE 2: BACKEND - REPOSITORIES Y SERVICIOS
 
-### 2.1 Repositories (Account-Service)
-- [ ] Crear `installment_plan_repository.go`
-  - [ ] Interface InstallmentPlanRepositoryInterface
-  - [ ] Implementación MySQL con GORM
-  - [ ] Métodos CRUD básicos
-  - [ ] Consultas especializadas (GetByCard, GetActive, etc.)
-- [ ] Crear `installment_repository.go`
-  - [ ] Interface InstallmentRepositoryInterface
-  - [ ] Implementación MySQL con GORM
-  - [ ] Métodos CRUD y consultas (GetByPlan, GetOverdue, etc.)
-- [ ] Actualizar `card_repository.go`
-  - [ ] Agregar método GetWithInstallmentPlans
-  - [ ] Preload de relaciones de cuotas
+### 2.1 Repositories (Account-Service) ✅ COMPLETADA
+- [x] Crear `installment_plan_repository.go`
+  - [x] Interface InstallmentPlanRepositoryInterface
+  - [x] Implementación MySQL con GORM
+  - [x] Métodos CRUD básicos
+  - [x] Consultas especializadas (GetByCard, GetActive, etc.)
+- [x] Crear `installment_repository.go`
+  - [x] Interface InstallmentRepositoryInterface
+  - [x] Implementación MySQL con GORM
+  - [x] Métodos CRUD y consultas (GetByPlan, GetOverdue, etc.)
+- [x] Crear `installment_plan_audit_repository.go`
+  - [x] Interface InstallmentPlanAuditRepositoryInterface
+  - [x] Implementación MySQL con GORM
+  - [x] Métodos de auditoría y estadísticas
+- [x] Actualizar `card_repository.go`
+  - [x] Agregar método GetWithInstallmentPlans
+  - [x] Preload de relaciones de cuotas
 
-### 2.2 Services (Account-Service)
-- [ ] Crear `installment_service.go`
-  - [ ] Interface InstallmentServiceInterface
-  - [ ] Calculadora de cuotas (CalculateInstallmentPlan)
-  - [ ] Creación de planes (CreateInstallmentPlan)
-  - [ ] Gestión de pagos (PayInstallment)
-  - [ ] Consultas (GetInstallmentPlans, GetInstallmentDetails)
-- [ ] Actualizar `card_service.go`
-  - [ ] Modificar ChargeCard para soporte de cuotas
-  - [ ] Agregar ChargeCardWithInstallments
-  - [ ] Integrar con InstallmentService
+### 2.2 Services (Account-Service) ✅ COMPLETADA
+- [x] Crear `installment_service.go`
+  - [x] Interface InstallmentServiceInterface
+  - [x] Calculadora de cuotas (CalculateInstallmentPlan)
+  - [x] Creación de planes (CreateInstallmentPlan)
+  - [x] Gestión de pagos (PayInstallment)
+  - [x] Consultas (GetInstallmentPlans, GetInstallmentDetails)
+- [x] Crear `card_service.go`
+  - [x] Implementar CardServiceInterface completa
+  - [x] Modificar ChargeCard para soporte tradicional
+  - [x] Agregar ChargeCardWithInstallments
+  - [x] Integrar con InstallmentService
 
-### 2.3 DTOs y Request/Response Models
-- [ ] Crear `installment_dto.go`
-  - [ ] CreateInstallmentPlanRequest
-  - [ ] InstallmentPreviewRequest/Response
-  - [ ] PayInstallmentRequest
-  - [ ] InstallmentPlanResponse, InstallmentResponse
-- [ ] Actualizar `card_dto.go`
-  - [ ] Agregar CreditCardChargeWithInstallmentsRequest
-  - [ ] Modificar responses para incluir datos de cuotas
+### 2.3 DTOs y Request/Response Models ✅ COMPLETADA
+- [x] Actualizar `installment_dto.go` (ya existía)
+  - [x] CreateInstallmentPlanRequest
+  - [x] InstallmentPreviewRequest/Response
+  - [x] PayInstallmentRequest
+  - [x] InstallmentPlanResponse, InstallmentResponse
+- [x] Actualizar `card_dto.go`
+  - [x] Agregar CreditCardChargeWithInstallmentsRequest
+  - [x] Agregar ChargeWithInstallmentsResponse
+  - [x] Modificar CardResponse para incluir resumen de cuotas
+  - [x] Agregar InstallmentPlansSummary
 
 ---
 

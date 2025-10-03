@@ -145,3 +145,44 @@ func (r *CardRepository) GetByIDWithAccount(cardID string) (*entities.Card, erro
 	}
 	return &card, nil
 }
+
+// GetWithInstallmentPlans retrieves a card with its installment plans preloaded
+func (r *CardRepository) GetWithInstallmentPlans(cardID string) (*entities.Card, error) {
+	var card entities.Card
+	err := r.db.
+		Preload("Account").
+		Preload("InstallmentPlans", "status IN (?, ?, ?)", "active", "suspended", "pending").
+		Preload("InstallmentPlans.Installments", "status IN (?, ?)", "pending", "overdue").
+		Where("id = ? AND deleted_at IS NULL", cardID).
+		First(&card).Error
+	if err != nil {
+		return nil, err
+	}
+	return &card, nil
+}
+
+// GetByAccountWithInstallmentPlans retrieves all cards for an account with installment plans preloaded
+func (r *CardRepository) GetByAccountWithInstallmentPlans(accountID string, limit, offset int) ([]*entities.Card, int64, error) {
+	var cards []*entities.Card
+	var total int64
+
+	// Count total cards for the account
+	err := r.db.Model(&entities.Card{}).
+		Where("account_id = ? AND deleted_at IS NULL", accountID).
+		Count(&total).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// Get cards with installment plans preloaded
+	err = r.db.
+		Preload("InstallmentPlans", "status IN (?, ?, ?)", "active", "suspended", "pending").
+		Preload("InstallmentPlans.Installments", "status IN (?, ?)", "pending", "overdue").
+		Where("account_id = ? AND deleted_at IS NULL", accountID).
+		Limit(limit).
+		Offset(offset).
+		Order("created_at DESC").
+		Find(&cards).Error
+
+	return cards, total, err
+}

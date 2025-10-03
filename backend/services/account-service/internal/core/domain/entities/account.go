@@ -461,104 +461,104 @@ func (e *ValidationError) Error() string {
 
 // InstallmentPlan represents a credit card installment payment plan
 type InstallmentPlan struct {
-	ID               string                `gorm:"type:varchar(36);primaryKey" json:"id"`
-	TransactionID    string                `gorm:"type:varchar(36);not null;index" json:"transaction_id"`
-	CardID           string                `gorm:"type:varchar(36);not null;index" json:"card_id"`
-	UserID           string                `gorm:"type:varchar(36);not null;index" json:"user_id"`
-	
+	ID            string `gorm:"type:varchar(36);primaryKey" json:"id"`
+	TransactionID string `gorm:"type:varchar(36);not null;index" json:"transaction_id"`
+	CardID        string `gorm:"type:varchar(36);not null;index" json:"card_id"`
+	UserID        string `gorm:"type:varchar(36);not null;index" json:"user_id"`
+
 	// Plan details
-	TotalAmount       float64               `gorm:"type:decimal(15,2);not null" json:"total_amount"`
-	InstallmentsCount int                   `gorm:"type:int;not null" json:"installments_count"`
-	InstallmentAmount float64               `gorm:"type:decimal(15,2);not null" json:"installment_amount"`
-	StartDate         time.Time             `gorm:"type:date;not null" json:"start_date"`
-	
+	TotalAmount       float64   `gorm:"type:decimal(15,2);not null" json:"total_amount"`
+	InstallmentsCount int       `gorm:"type:int;not null" json:"installments_count"`
+	InstallmentAmount float64   `gorm:"type:decimal(15,2);not null" json:"installment_amount"`
+	StartDate         time.Time `gorm:"type:date;not null" json:"start_date"`
+
 	// Merchant information
-	MerchantName      string                `gorm:"type:varchar(255)" json:"merchant_name,omitempty"`
-	MerchantID        string                `gorm:"type:varchar(100)" json:"merchant_id,omitempty"`
-	Description       string                `gorm:"type:text" json:"description,omitempty"`
-	
+	MerchantName string `gorm:"type:varchar(255)" json:"merchant_name,omitempty"`
+	MerchantID   string `gorm:"type:varchar(100)" json:"merchant_id,omitempty"`
+	Description  string `gorm:"type:text" json:"description,omitempty"`
+
 	// Status tracking
-	Status            InstallmentPlanStatus `gorm:"type:varchar(20);not null;default:'active'" json:"status"`
-	PaidInstallments  int                   `gorm:"type:int;not null;default:0" json:"paid_installments"`
-	RemainingAmount   float64               `gorm:"type:decimal(15,2);not null" json:"remaining_amount"`
-	
+	Status           InstallmentPlanStatus `gorm:"type:varchar(20);not null;default:'active'" json:"status"`
+	PaidInstallments int                   `gorm:"type:int;not null;default:0" json:"paid_installments"`
+	RemainingAmount  float64               `gorm:"type:decimal(15,2);not null" json:"remaining_amount"`
+
 	// Interest and fees (for future enhancement)
-	InterestRate      float64               `gorm:"type:decimal(5,2);default:0.00" json:"interest_rate"`
-	TotalInterest     float64               `gorm:"type:decimal(15,2);default:0.00" json:"total_interest"`
-	AdminFee          float64               `gorm:"type:decimal(15,2);default:0.00" json:"admin_fee"`
-	
+	InterestRate  float64 `gorm:"type:decimal(5,2);default:0.00" json:"interest_rate"`
+	TotalInterest float64 `gorm:"type:decimal(15,2);default:0.00" json:"total_interest"`
+	AdminFee      float64 `gorm:"type:decimal(15,2);default:0.00" json:"admin_fee"`
+
 	// Audit fields
-	CreatedAt         time.Time             `gorm:"autoCreateTime" json:"created_at"`
-	UpdatedAt         time.Time             `gorm:"autoUpdateTime" json:"updated_at"`
-	CompletedAt       *time.Time            `gorm:"type:timestamp;null" json:"completed_at,omitempty"`
-	CancelledAt       *time.Time            `gorm:"type:timestamp;null" json:"cancelled_at,omitempty"`
-	
+	CreatedAt   time.Time  `gorm:"autoCreateTime" json:"created_at"`
+	UpdatedAt   time.Time  `gorm:"autoUpdateTime" json:"updated_at"`
+	CompletedAt *time.Time `gorm:"type:timestamp;null" json:"completed_at,omitempty"`
+	CancelledAt *time.Time `gorm:"type:timestamp;null" json:"cancelled_at,omitempty"`
+
 	// Relationships
-	Card              Card                  `gorm:"foreignKey:CardID" json:"card,omitempty"`
-	Installments      []Installment         `gorm:"foreignKey:PlanID;constraint:OnDelete:CASCADE" json:"installments,omitempty"`
+	Card         Card          `gorm:"foreignKey:CardID" json:"card,omitempty"`
+	Installments []Installment `gorm:"foreignKey:PlanID;constraint:OnDelete:CASCADE" json:"installments,omitempty"`
 }
 
 // Installment represents an individual installment payment
 type Installment struct {
-	ID                    string            `gorm:"type:varchar(36);primaryKey" json:"id"`
-	PlanID                string            `gorm:"type:varchar(36);not null;index" json:"plan_id"`
-	InstallmentNumber     int               `gorm:"type:int;not null" json:"installment_number"`
-	
+	ID                string `gorm:"type:varchar(36);primaryKey" json:"id"`
+	PlanID            string `gorm:"type:varchar(36);not null;index" json:"plan_id"`
+	InstallmentNumber int    `gorm:"type:int;not null" json:"installment_number"`
+
 	// Payment details
-	Amount                float64           `gorm:"type:decimal(15,2);not null" json:"amount"`
-	DueDate               time.Time         `gorm:"type:date;not null" json:"due_date"`
-	PaidDate              *time.Time        `gorm:"type:timestamp;null" json:"paid_date,omitempty"`
-	Status                InstallmentStatus `gorm:"type:varchar(20);not null;default:'pending'" json:"status"`
-	
+	Amount   float64           `gorm:"type:decimal(15,2);not null" json:"amount"`
+	DueDate  time.Time         `gorm:"type:date;not null" json:"due_date"`
+	PaidDate *time.Time        `gorm:"type:timestamp;null" json:"paid_date,omitempty"`
+	Status   InstallmentStatus `gorm:"type:varchar(20);not null;default:'pending'" json:"status"`
+
 	// Payment information
-	PaidAmount            float64           `gorm:"type:decimal(15,2);default:0.00" json:"paid_amount"`
-	RemainingAmount       float64           `gorm:"type:decimal(15,2);not null" json:"remaining_amount"`
-	PaymentMethod         string            `gorm:"type:varchar(30)" json:"payment_method,omitempty"`
-	PaymentReference      string            `gorm:"type:varchar(100)" json:"payment_reference,omitempty"`
-	
+	PaidAmount       float64 `gorm:"type:decimal(15,2);default:0.00" json:"paid_amount"`
+	RemainingAmount  float64 `gorm:"type:decimal(15,2);not null" json:"remaining_amount"`
+	PaymentMethod    string  `gorm:"type:varchar(30)" json:"payment_method,omitempty"`
+	PaymentReference string  `gorm:"type:varchar(100)" json:"payment_reference,omitempty"`
+
 	// Transaction references
-	PaymentTransactionID  *string           `gorm:"type:varchar(36);null" json:"payment_transaction_id,omitempty"`
-	
+	PaymentTransactionID *string `gorm:"type:varchar(36);null" json:"payment_transaction_id,omitempty"`
+
 	// Late fees and penalties (for future enhancement)
-	LateFee               float64           `gorm:"type:decimal(15,2);default:0.00" json:"late_fee"`
-	PenaltyAmount         float64           `gorm:"type:decimal(15,2);default:0.00" json:"penalty_amount"`
-	GracePeriodDays       int               `gorm:"type:int;default:0" json:"grace_period_days"`
-	
+	LateFee         float64 `gorm:"type:decimal(15,2);default:0.00" json:"late_fee"`
+	PenaltyAmount   float64 `gorm:"type:decimal(15,2);default:0.00" json:"penalty_amount"`
+	GracePeriodDays int     `gorm:"type:int;default:0" json:"grace_period_days"`
+
 	// Audit fields
-	CreatedAt             time.Time         `gorm:"autoCreateTime" json:"created_at"`
-	UpdatedAt             time.Time         `gorm:"autoUpdateTime" json:"updated_at"`
-	
+	CreatedAt time.Time `gorm:"autoCreateTime" json:"created_at"`
+	UpdatedAt time.Time `gorm:"autoUpdateTime" json:"updated_at"`
+
 	// Relationships
-	Plan                  InstallmentPlan   `gorm:"foreignKey:PlanID" json:"plan,omitempty"`
+	Plan InstallmentPlan `gorm:"foreignKey:PlanID" json:"plan,omitempty"`
 }
 
 // InstallmentPlanAudit represents audit trail for installment plan changes
 type InstallmentPlanAudit struct {
-	ID                    string      `gorm:"type:varchar(36);primaryKey" json:"id"`
-	PlanID                string      `gorm:"type:varchar(36);not null;index" json:"plan_id"`
-	Action                string      `gorm:"type:varchar(50);not null" json:"action"`
-	
+	ID     string `gorm:"type:varchar(36);primaryKey" json:"id"`
+	PlanID string `gorm:"type:varchar(36);not null;index" json:"plan_id"`
+	Action string `gorm:"type:varchar(50);not null" json:"action"`
+
 	// Change tracking
-	OldStatus             *string     `gorm:"type:varchar(20)" json:"old_status,omitempty"`
-	NewStatus             *string     `gorm:"type:varchar(20)" json:"new_status,omitempty"`
-	OldPaidInstallments   *int        `gorm:"type:int" json:"old_paid_installments,omitempty"`
-	NewPaidInstallments   *int        `gorm:"type:int" json:"new_paid_installments,omitempty"`
-	OldRemainingAmount    *float64    `gorm:"type:decimal(15,2)" json:"old_remaining_amount,omitempty"`
-	NewRemainingAmount    *float64    `gorm:"type:decimal(15,2)" json:"new_remaining_amount,omitempty"`
-	
+	OldStatus           *string  `gorm:"type:varchar(20)" json:"old_status,omitempty"`
+	NewStatus           *string  `gorm:"type:varchar(20)" json:"new_status,omitempty"`
+	OldPaidInstallments *int     `gorm:"type:int" json:"old_paid_installments,omitempty"`
+	NewPaidInstallments *int     `gorm:"type:int" json:"new_paid_installments,omitempty"`
+	OldRemainingAmount  *float64 `gorm:"type:decimal(15,2)" json:"old_remaining_amount,omitempty"`
+	NewRemainingAmount  *float64 `gorm:"type:decimal(15,2)" json:"new_remaining_amount,omitempty"`
+
 	// Additional context
-	InstallmentID         *string     `gorm:"type:varchar(36)" json:"installment_id,omitempty"`
-	PaymentAmount         *float64    `gorm:"type:decimal(15,2)" json:"payment_amount,omitempty"`
-	ChangedBy             string      `gorm:"type:varchar(36);not null" json:"changed_by"`
-	ChangeReason          string      `gorm:"type:text" json:"change_reason,omitempty"`
-	IPAddress             string      `gorm:"type:varchar(45)" json:"ip_address,omitempty"`
-	UserAgent             string      `gorm:"type:text" json:"user_agent,omitempty"`
-	
+	InstallmentID *string  `gorm:"type:varchar(36)" json:"installment_id,omitempty"`
+	PaymentAmount *float64 `gorm:"type:decimal(15,2)" json:"payment_amount,omitempty"`
+	ChangedBy     string   `gorm:"type:varchar(36);not null" json:"changed_by"`
+	ChangeReason  string   `gorm:"type:text" json:"change_reason,omitempty"`
+	IPAddress     string   `gorm:"type:varchar(45)" json:"ip_address,omitempty"`
+	UserAgent     string   `gorm:"type:text" json:"user_agent,omitempty"`
+
 	// Metadata (JSON for flexible tracking)
-	Metadata              map[string]interface{} `gorm:"type:json" json:"metadata,omitempty"`
-	
+	Metadata map[string]interface{} `gorm:"type:json" json:"metadata,omitempty"`
+
 	// Timestamp
-	CreatedAt             time.Time   `gorm:"autoCreateTime" json:"created_at"`
+	CreatedAt time.Time `gorm:"autoCreateTime" json:"created_at"`
 }
 
 // TableName returns the table name for the InstallmentPlan model
@@ -729,7 +729,7 @@ func (ip *InstallmentPlan) GetRemainingInstallments() int {
 
 // IsOverdue checks if the installment is overdue
 func (i *Installment) IsOverdue() bool {
-	return i.Status == InstallmentStatusOverdue || 
+	return i.Status == InstallmentStatusOverdue ||
 		(i.Status == InstallmentStatusPending && i.DueDate.Before(time.Now()))
 }
 
@@ -740,9 +740,9 @@ func (i *Installment) IsPaid() bool {
 
 // CanPay checks if the installment can be paid
 func (i *Installment) CanPay() bool {
-	return i.Status == InstallmentStatusPending || 
-		   i.Status == InstallmentStatusOverdue || 
-		   i.Status == InstallmentStatusPartial
+	return i.Status == InstallmentStatusPending ||
+		i.Status == InstallmentStatusOverdue ||
+		i.Status == InstallmentStatusPartial
 }
 
 // GetDaysOverdue calculates days overdue (0 if not overdue)
@@ -771,22 +771,22 @@ func (i *Installment) ProcessPayment(amount float64, paymentMethod, reference st
 	if !i.CanPay() {
 		return &ValidationError{Field: "status", Message: "installment cannot be paid in current status"}
 	}
-	
+
 	if amount <= 0 {
 		return &ValidationError{Field: "amount", Message: "payment amount must be positive"}
 	}
-	
+
 	if amount > i.RemainingAmount {
 		return &ValidationError{Field: "amount", Message: "payment amount exceeds remaining amount"}
 	}
-	
+
 	// Update payment information
 	i.PaidAmount += amount
 	i.RemainingAmount -= amount
 	i.PaymentMethod = paymentMethod
 	i.PaymentReference = reference
 	i.PaymentTransactionID = transactionID
-	
+
 	// Update status based on payment
 	if i.RemainingAmount <= 0.01 { // Allow for small rounding differences
 		i.Status = InstallmentStatusPaid
@@ -796,7 +796,7 @@ func (i *Installment) ProcessPayment(amount float64, paymentMethod, reference st
 	} else {
 		i.Status = InstallmentStatusPartial
 	}
-	
+
 	return nil
 }
 
@@ -805,7 +805,7 @@ func (i *Installment) Cancel() error {
 	if i.Status == InstallmentStatusPaid {
 		return &ValidationError{Field: "status", Message: "cannot cancel paid installment"}
 	}
-	
+
 	i.Status = InstallmentStatusCancelled
 	return nil
 }
@@ -813,8 +813,8 @@ func (i *Installment) Cancel() error {
 // IsValidInstallmentPlanStatus checks if the status is valid
 func IsValidInstallmentPlanStatus(status InstallmentPlanStatus) bool {
 	switch status {
-	case InstallmentPlanStatusActive, InstallmentPlanStatusCompleted, 
-		 InstallmentPlanStatusCancelled, InstallmentPlanStatusSuspended:
+	case InstallmentPlanStatusActive, InstallmentPlanStatusCompleted,
+		InstallmentPlanStatusCancelled, InstallmentPlanStatusSuspended:
 		return true
 	default:
 		return false
@@ -825,7 +825,7 @@ func IsValidInstallmentPlanStatus(status InstallmentPlanStatus) bool {
 func IsValidInstallmentStatus(status InstallmentStatus) bool {
 	switch status {
 	case InstallmentStatusPending, InstallmentStatusPaid, InstallmentStatusOverdue,
-		 InstallmentStatusCancelled, InstallmentStatusPartial:
+		InstallmentStatusCancelled, InstallmentStatusPartial:
 		return true
 	default:
 		return false
@@ -839,11 +839,11 @@ func (c *Card) CanCreateInstallmentPlan(amount float64) bool {
 	if !c.IsActive() {
 		return false
 	}
-	
+
 	if c.CardType != CardTypeCredit {
 		return false
 	}
-	
+
 	// Check available credit
 	availableCredit := c.GetAvailableBalance()
 	return availableCredit >= amount
@@ -873,9 +873,9 @@ func (c *Card) GetAvailableCreditWithInstallments() float64 {
 	if c.CardType != CardTypeCredit || c.CreditLimit == nil {
 		return 0
 	}
-	
+
 	baseAvailable := c.GetAvailableBalance()
 	commitments := c.GetTotalInstallmentCommitments()
-	
+
 	return baseAvailable - commitments
 }
