@@ -115,10 +115,14 @@ export interface PayInstallmentRequest {
 export interface ChargeWithInstallmentsRequest {
   cardId: string;
   amount: number;
+  totalAmount: number;
   installmentsCount: number;
+  startDate: string;
   description: string;
   merchantName?: string;
   reference?: string;
+  interestRate?: number;
+  adminFee?: number;
 }
 
 export interface ChargeWithInstallmentsResponse {

@@ -3,6 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
+import { AuthService } from './auth.service';
 import {
   InstallmentPlan,
   Installment,
@@ -23,6 +24,7 @@ import {
 @Injectable({ providedIn: 'root' })
 export class InstallmentService {
   private readonly http = inject(HttpClient);
+  private readonly authService = inject(AuthService);
   private readonly apiUrl = `${environment.accountServiceUrl}`;
 
   /**
@@ -40,7 +42,15 @@ export class InstallmentService {
    */
   createInstallmentPlan(request: ChargeWithInstallmentsRequest): Observable<ChargeWithInstallmentsResponse> {
     const url = `${this.apiUrl}/cards/${request.cardId}/charge-installments`;
-    return this.http.post<ChargeWithInstallmentsResponse>(url, request).pipe(
+    
+    const currentUser = this.authService.getCurrentUser();
+    const headers: Record<string, string> = {};
+    
+    if (currentUser) {
+      headers['X-User-ID'] = currentUser.id;
+    }
+    
+    return this.http.post<ChargeWithInstallmentsResponse>(url, request, { headers }).pipe(
       catchError(this.handleError)
     );
   }

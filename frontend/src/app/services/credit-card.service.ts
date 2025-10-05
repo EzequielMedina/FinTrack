@@ -83,9 +83,14 @@ export class CreditCardService {
     const installmentRequest: ChargeWithInstallmentsRequest = {
       cardId,
       amount: chargeData.amount,
-      description: chargeData.description,
+      totalAmount: chargeData.amount, // This will be the base amount, backend will calculate total with interest
+      description: chargeData.description || 'Compra en cuotas',
       installmentsCount: chargeData.installments.count,
-      reference: chargeData.reference
+      startDate: chargeData.installments.startDate || new Date().toISOString(),
+      reference: chargeData.reference || '',
+      merchantName: 'FinTrack Store',
+      interestRate: chargeData.installments.interestRate || 0,
+      adminFee: chargeData.installments.adminFee || 0
     };
 
     return this.installmentService.createInstallmentPlan(installmentRequest).pipe(

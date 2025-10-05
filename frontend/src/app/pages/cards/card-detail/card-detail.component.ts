@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input, OnInit, signal, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnInit, signal, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -61,6 +61,9 @@ export class CardDetailComponent implements OnInit {
   // Installment properties
   installmentPlansCount = signal(0);
   currentInstallmentCalculation = signal<InstallmentCalculatorResult | null>(null);
+
+  // ViewChild for installment calculator
+  @ViewChild('installmentCalculator') installmentCalculator!: InstallmentCalculatorComponent;
 
   // Form groups
   chargeForm!: FormGroup;
@@ -273,12 +276,12 @@ export class CardDetailComponent implements OnInit {
     if (calculation && this.card.cardType === CardType.CREDIT) {
       // Crear la compra con cuotas
       const chargeRequest = {
-        amount: calculation.preview.totalAmount,
+        amount: calculation.preview.totalAmount, // Base amount without interests
         description: 'Compra en cuotas',
         installments: {
           count: calculation.installmentsCount,
-          interestRate: calculation.preview.interestRate,
-          adminFee: calculation.preview.adminFee,
+          interestRate: calculation.preview.interestRate || 0,
+          adminFee: calculation.preview.adminFee || 0,
           startDate: calculation.startDate
         }
       };
@@ -294,6 +297,11 @@ export class CardDetailComponent implements OnInit {
           );
           // Recargar balance y planes
           this.loadCardBalance();
+          
+          // Reset the installment calculator after successful creation
+          if (this.installmentCalculator) {
+            this.installmentCalculator.resetCalculator();
+          }
         },
         error: (error) => {
           this.loading.set(false);

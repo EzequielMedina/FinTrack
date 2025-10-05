@@ -89,6 +89,41 @@ func (s *InstallmentService) CreateInstallmentPlan(req *carddto.CreateInstallmen
 		return nil, fmt.Errorf("failed to create installment plan: %w", err)
 	}
 
+	// Crear cuotas individuales
+	fmt.Printf("DEBUG - Creating %d individual installments for plan %s\n", req.InstallmentsCount, createdPlan.ID)
+	installmentAmount := req.TotalAmount / float64(req.InstallmentsCount)
+	
+	for i := 1; i <= req.InstallmentsCount; i++ {
+		// Calcular fecha de vencimiento (mensual)
+		dueDate := req.StartDate.AddDate(0, i-1, 0)
+		
+		installment := &entities.Installment{
+			ID:                uuid.New().String(),
+			PlanID:            createdPlan.ID,
+			InstallmentNumber: i,
+			Amount:            installmentAmount,
+			DueDate:           dueDate,
+			Status:            entities.InstallmentStatusPending,
+			PaidAmount:        0.0,
+			RemainingAmount:   installmentAmount,
+			LateFee:           0.0,
+			PenaltyAmount:     0.0,
+			GracePeriodDays:   7,
+			CreatedAt:         time.Now(),
+			UpdatedAt:         time.Now(),
+		}
+		
+		fmt.Printf("DEBUG - Creating installment %d: Amount=%.2f, DueDate=%v\n", 
+			i, installmentAmount, dueDate)
+		
+		_, err := s.installmentRepo.Create(installment)
+		if err != nil {
+			fmt.Printf("ERROR - Failed to create installment %d: %v\n", i, err)
+			return nil, fmt.Errorf("failed to create installment %d: %w", i, err)
+		}
+		fmt.Printf("DEBUG - Successfully created installment %d\n", i)
+	}
+
 	// Registrar transacción en transaction service (async)
 	go func() {
 		// Obtener información de la cuenta de la tarjeta

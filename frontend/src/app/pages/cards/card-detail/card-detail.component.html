@@ -274,6 +274,7 @@
           </mat-card-header>
           <mat-card-content>
             <app-installment-calculator
+              #installmentCalculator
               [cardId]="card.id"
               [showPreview]="true"
               (calculationChanged)="onInstallmentCalculationChanged($event)"

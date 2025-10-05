@@ -154,7 +154,11 @@ func (s *InstallmentService) CreateInstallmentPlan(req *dto.CreateInstallmentPla
 	}
 
 	// Create individual installments
-	for _, installmentPreview := range preview.Installments {
+	fmt.Printf("DEBUG - Creating %d installments for plan %s\n", len(preview.Installments), savedPlan.ID)
+	for i, installmentPreview := range preview.Installments {
+		fmt.Printf("DEBUG - Creating installment %d: Number=%d, Amount=%.2f, DueDate=%v\n",
+			i+1, installmentPreview.Number, installmentPreview.Amount, installmentPreview.DueDate)
+
 		installment := &entities.Installment{
 			ID:                uuid.New().String(),
 			PlanID:            savedPlan.ID,
@@ -171,10 +175,13 @@ func (s *InstallmentService) CreateInstallmentPlan(req *dto.CreateInstallmentPla
 			UpdatedAt:         time.Now(),
 		}
 
+		fmt.Printf("DEBUG - About to create installment: %+v\n", installment)
 		_, err := s.installmentRepo.Create(installment)
 		if err != nil {
+			fmt.Printf("ERROR - Failed to create installment %d: %v\n", installmentPreview.Number, err)
 			return nil, fmt.Errorf("failed to create installment %d: %w", installmentPreview.Number, err)
 		}
+		fmt.Printf("DEBUG - Successfully created installment %d\n", installmentPreview.Number)
 	}
 
 	// Create audit record
@@ -419,8 +426,8 @@ func (s *InstallmentService) PayInstallment(req *dto.PayInstallmentRequest) (*en
 	// Process payment logic
 	installment.PaidAmount += req.Amount
 	installment.RemainingAmount -= req.Amount
-	installment.PaymentMethod = req.PaymentMethod
-	installment.PaymentReference = req.PaymentReference
+	installment.PaymentMethod = &req.PaymentMethod
+	installment.PaymentReference = &req.PaymentReference
 	installment.UpdatedAt = time.Now()
 
 	if installment.RemainingAmount <= 0.01 { // Allow for small rounding differences

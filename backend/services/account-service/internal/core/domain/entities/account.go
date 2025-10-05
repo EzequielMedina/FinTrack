@@ -511,10 +511,10 @@ type Installment struct {
 	Status   InstallmentStatus `gorm:"type:varchar(20);not null;default:'pending'" json:"status"`
 
 	// Payment information
-	PaidAmount       float64 `gorm:"type:decimal(15,2);default:0.00" json:"paid_amount"`
-	RemainingAmount  float64 `gorm:"type:decimal(15,2);not null" json:"remaining_amount"`
-	PaymentMethod    string  `gorm:"type:varchar(30)" json:"payment_method,omitempty"`
-	PaymentReference string  `gorm:"type:varchar(100)" json:"payment_reference,omitempty"`
+	PaidAmount       float64  `gorm:"type:decimal(15,2);default:0.00" json:"paid_amount"`
+	RemainingAmount  float64  `gorm:"type:decimal(15,2);not null" json:"remaining_amount"`
+	PaymentMethod    *string  `gorm:"type:varchar(30);null" json:"payment_method,omitempty"`
+	PaymentReference *string  `gorm:"type:varchar(100);null" json:"payment_reference,omitempty"`
 
 	// Transaction references
 	PaymentTransactionID *string `gorm:"type:varchar(36);null" json:"payment_transaction_id,omitempty"`
@@ -783,8 +783,8 @@ func (i *Installment) ProcessPayment(amount float64, paymentMethod, reference st
 	// Update payment information
 	i.PaidAmount += amount
 	i.RemainingAmount -= amount
-	i.PaymentMethod = paymentMethod
-	i.PaymentReference = reference
+	i.PaymentMethod = &paymentMethod
+	i.PaymentReference = &reference
 	i.PaymentTransactionID = transactionID
 
 	// Update status based on payment

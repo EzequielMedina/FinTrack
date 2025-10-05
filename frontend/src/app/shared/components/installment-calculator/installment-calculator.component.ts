@@ -187,17 +187,19 @@ export class InstallmentCalculatorComponent implements OnInit, OnChanges {
   }
 
   private formatDateForAPI(date: Date): string {
-    return date.toISOString().split('T')[0];
+    // Send full ISO string for Go time.Time parsing
+    return date.toISOString();
   }
 
   private emitCalculationResult(preview: InstallmentPreview) {
+    const formValue = this.calculatorForm().value;
     const result: InstallmentCalculatorResult = {
       installmentsCount: preview.installmentsCount,
       installmentAmount: preview.installmentAmount,
       totalToPay: preview.totalToPay,
       totalInterest: preview.totalInterest,
       adminFee: preview.adminFee,
-      startDate: preview.startDate,
+      startDate: this.formatDateForAPI(formValue.startDate), // Use form value instead of preview
       preview
     };
 
@@ -232,13 +234,14 @@ export class InstallmentCalculatorComponent implements OnInit, OnChanges {
   onSelectInstallments() {
     const currentPreview = this.preview();
     if (currentPreview) {
+      const formValue = this.calculatorForm().value;
       const result: InstallmentCalculatorResult = {
         installmentsCount: currentPreview.installmentsCount,
         installmentAmount: currentPreview.installmentAmount,
         totalToPay: currentPreview.totalToPay,
         totalInterest: currentPreview.totalInterest,
         adminFee: currentPreview.adminFee,
-        startDate: currentPreview.startDate,
+        startDate: this.formatDateForAPI(formValue.startDate), // Use form value instead of preview
         preview: currentPreview
       };
       
@@ -293,5 +296,28 @@ export class InstallmentCalculatorComponent implements OnInit, OnChanges {
       return preview.totalToPay - preview.totalAmount;
     }
     return 0;
+  }
+
+  // Public method to reset the calculator
+  resetCalculator(): void {
+    // Reset form to initial values
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    this.calculatorForm.set(this.fb.group({
+      amount: [1000, [Validators.required, Validators.min(1)]],
+      installmentsCount: [6, [Validators.required, Validators.min(1), Validators.max(24)]],
+      startDate: [tomorrow.toISOString().split('T')[0], Validators.required],
+      interestRate: [15, [Validators.min(0), Validators.max(100)]],
+      adminFee: [0, [Validators.min(0)]],
+      description: ['Compra en cuotas'],
+      merchantName: ['FinTrack Store'],
+      calculateNow: [false]
+    }));
+
+    // Reset signals
+    this.preview.set(null);
+    this.isCalculating.set(false);
+    this.error.set(null);
   }
 }

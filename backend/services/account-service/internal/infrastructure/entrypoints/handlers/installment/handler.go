@@ -1,6 +1,9 @@
 package installment
 
 import (
+	"bytes"
+	"fmt"
+	"io"
 	"net/http"
 	"strconv"
 	"time"
@@ -99,13 +102,30 @@ func (h *Handler) ChargeCardWithInstallments(c *gin.Context) {
 	}
 
 	var req dto.CreateInstallmentPlanRequest
+
+	// DEBUG: Log incoming request body
+	bodyBytes, _ := c.GetRawData()
+	fmt.Printf("DEBUG - Incoming request body: %s\n", string(bodyBytes))
+
+	// Reset body for binding
+	c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+
 	if err := c.ShouldBindJSON(&req); err != nil {
+		fmt.Printf("DEBUG - Binding error: %v\n", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
+	fmt.Printf("DEBUG - Parsed request: %+v\n", req)
+
 	// Set card ID from URL parameter
 	req.CardID = cardID
+
+	// Validate that CardID is set
+	if req.CardID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "card ID is required"})
+		return
+	}
 
 	// Set user context from middleware (would be set by auth middleware)
 	// For now, we'll use a placeholder - in real implementation this comes from JWT

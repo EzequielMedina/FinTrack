@@ -119,15 +119,15 @@ export class InstallmentPlansListComponent implements OnInit, OnDestroy {
       })
     ).subscribe({
       next: (response: InstallmentPlansListResponse) => {
-        let plansToShow = response.plans;
+        let plansToShow = response.plans || [];
         
         // Apply maxPlansToShow limit if specified
-        if (this.maxPlansToShow > 0) {
+        if (this.maxPlansToShow > 0 && plansToShow.length > 0) {
           plansToShow = plansToShow.slice(0, this.maxPlansToShow);
         }
         
         this.plans.set(plansToShow);
-        this.totalPlans.set(response.total);
+        this.totalPlans.set(response.total || 0);
         this.isLoading.set(false);
         this.plansLoaded.emit(plansToShow);
       },

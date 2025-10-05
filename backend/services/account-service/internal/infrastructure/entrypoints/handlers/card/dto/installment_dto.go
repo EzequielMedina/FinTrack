@@ -8,15 +8,15 @@ import (
 
 // CreateInstallmentPlanRequest represents the request to create an installment plan
 type CreateInstallmentPlanRequest struct {
-	CardID            string    `json:"card_id" binding:"required"`
-	TotalAmount       float64   `json:"total_amount" binding:"required,gt=0"`
-	InstallmentsCount int       `json:"installments_count" binding:"required,min=1,max=24"`
-	StartDate         time.Time `json:"start_date" binding:"required"`
+	CardID            string    `json:"cardId,omitempty"` // Set from URL parameter, not from request body
+	TotalAmount       float64   `json:"totalAmount" binding:"required,gt=0"`
+	InstallmentsCount int       `json:"installmentsCount" binding:"required,min=1,max=24"`
+	StartDate         time.Time `json:"startDate" binding:"required"`
 	Description       string    `json:"description"`
-	MerchantName      string    `json:"merchant_name"`
-	MerchantID        string    `json:"merchant_id"`
-	InterestRate      float64   `json:"interest_rate,omitempty"`
-	AdminFee          float64   `json:"admin_fee,omitempty"`
+	MerchantName      string    `json:"merchantName"`
+	MerchantID        string    `json:"merchantId"`
+	InterestRate      float64   `json:"interestRate,omitempty"`
+	AdminFee          float64   `json:"adminFee,omitempty"`
 	Reference         string    `json:"reference"`
 
 	// User context (usually from authentication)
@@ -27,22 +27,22 @@ type CreateInstallmentPlanRequest struct {
 // InstallmentPreviewRequest represents the request to preview installment calculations
 type InstallmentPreviewRequest struct {
 	Amount            float64   `json:"amount" binding:"required,gt=0"`
-	InstallmentsCount int       `json:"installments_count" binding:"required,min=1,max=24"`
-	StartDate         time.Time `json:"start_date" binding:"required"`
-	InterestRate      float64   `json:"interest_rate,omitempty"`
-	AdminFee          float64   `json:"admin_fee,omitempty"`
+	InstallmentsCount int       `json:"installmentsCount" binding:"required,min=1,max=24"`
+	StartDate         time.Time `json:"startDate" binding:"required"`
+	InterestRate      float64   `json:"interestRate,omitempty"`
+	AdminFee          float64   `json:"adminFee,omitempty"`
 }
 
 // InstallmentPreviewResponse represents the preview of an installment plan
 type InstallmentPreviewResponse struct {
-	TotalAmount       float64                  `json:"total_amount"`
-	InstallmentsCount int                      `json:"installments_count"`
-	InstallmentAmount float64                  `json:"installment_amount"`
-	StartDate         time.Time                `json:"start_date"`
-	InterestRate      float64                  `json:"interest_rate"`
-	TotalInterest     float64                  `json:"total_interest"`
-	AdminFee          float64                  `json:"admin_fee"`
-	TotalToPay        float64                  `json:"total_to_pay"`
+	TotalAmount       float64                  `json:"totalAmount"`
+	InstallmentsCount int                      `json:"installmentsCount"`
+	InstallmentAmount float64                  `json:"installmentAmount"`
+	StartDate         time.Time                `json:"startDate"`
+	InterestRate      float64                  `json:"interestRate"`
+	TotalInterest     float64                  `json:"totalInterest"`
+	AdminFee          float64                  `json:"adminFee"`
+	TotalToPay        float64                  `json:"totalToPay"`
 	Installments      []InstallmentPreviewItem `json:"installments"`
 }
 
@@ -50,10 +50,10 @@ type InstallmentPreviewResponse struct {
 type InstallmentPreviewItem struct {
 	Number             int       `json:"number"`
 	Amount             float64   `json:"amount"`
-	DueDate            time.Time `json:"due_date"`
+	DueDate            time.Time `json:"dueDate"`
 	Principal          float64   `json:"principal"`
 	Interest           float64   `json:"interest"`
-	RemainingPrincipal float64   `json:"remaining_principal"`
+	RemainingPrincipal float64   `json:"remainingPrincipal"`
 }
 
 // PayInstallmentRequest represents the request to pay an installment
@@ -292,6 +292,14 @@ func MapInstallmentPlanToResponse(plan *entities.InstallmentPlan, includeInstall
 	return response
 }
 
+// Helper functions for pointer to string conversion
+func stringPtrToString(ptr *string) string {
+	if ptr == nil {
+		return ""
+	}
+	return *ptr
+}
+
 // MapInstallmentToResponse maps an Installment entity to InstallmentResponse
 func MapInstallmentToResponse(installment *entities.Installment) *InstallmentResponse {
 	return &InstallmentResponse{
@@ -304,8 +312,8 @@ func MapInstallmentToResponse(installment *entities.Installment) *InstallmentRes
 		Status:               installment.Status,
 		PaidAmount:           installment.PaidAmount,
 		RemainingAmount:      installment.RemainingAmount,
-		PaymentMethod:        installment.PaymentMethod,
-		PaymentReference:     installment.PaymentReference,
+		PaymentMethod:        stringPtrToString(installment.PaymentMethod),
+		PaymentReference:     stringPtrToString(installment.PaymentReference),
 		PaymentTransactionID: installment.PaymentTransactionID,
 		LateFee:              installment.LateFee,
 		PenaltyAmount:        installment.PenaltyAmount,
@@ -343,8 +351,8 @@ func ToInstallmentResponse(installment *entities.Installment) InstallmentRespons
 		Status:               installment.Status,
 		PaidAmount:           installment.PaidAmount,
 		RemainingAmount:      installment.RemainingAmount,
-		PaymentMethod:        installment.PaymentMethod,
-		PaymentReference:     installment.PaymentReference,
+		PaymentMethod:        stringPtrToString(installment.PaymentMethod),
+		PaymentReference:     stringPtrToString(installment.PaymentReference),
 		PaymentTransactionID: installment.PaymentTransactionID,
 		LateFee:              installment.LateFee,
 		PenaltyAmount:        installment.PenaltyAmount,
