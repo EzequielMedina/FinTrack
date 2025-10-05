@@ -92,11 +92,11 @@ func (s *InstallmentService) CreateInstallmentPlan(req *carddto.CreateInstallmen
 	// Crear cuotas individuales
 	fmt.Printf("DEBUG - Creating %d individual installments for plan %s\n", req.InstallmentsCount, createdPlan.ID)
 	installmentAmount := req.TotalAmount / float64(req.InstallmentsCount)
-	
+
 	for i := 1; i <= req.InstallmentsCount; i++ {
 		// Calcular fecha de vencimiento (mensual)
 		dueDate := req.StartDate.AddDate(0, i-1, 0)
-		
+
 		installment := &entities.Installment{
 			ID:                uuid.New().String(),
 			PlanID:            createdPlan.ID,
@@ -112,10 +112,10 @@ func (s *InstallmentService) CreateInstallmentPlan(req *carddto.CreateInstallmen
 			CreatedAt:         time.Now(),
 			UpdatedAt:         time.Now(),
 		}
-		
-		fmt.Printf("DEBUG - Creating installment %d: Amount=%.2f, DueDate=%v\n", 
+
+		fmt.Printf("DEBUG - Creating installment %d: Amount=%.2f, DueDate=%v\n",
 			i, installmentAmount, dueDate)
-		
+
 		_, err := s.installmentRepo.Create(installment)
 		if err != nil {
 			fmt.Printf("ERROR - Failed to create installment %d: %v\n", i, err)
