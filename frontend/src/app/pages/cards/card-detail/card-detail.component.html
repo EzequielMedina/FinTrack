@@ -291,6 +291,7 @@
           </mat-card-header>
           <mat-card-content>
             <app-installment-plans-list
+              #installmentPlansList
               [cardId]="card.id"
               [showCardInfo]="false"
               [maxPlansToShow]="5"

@@ -300,18 +300,20 @@ export class InstallmentCalculatorComponent implements OnInit, OnChanges {
 
   // Public method to reset the calculator
   resetCalculator(): void {
-    // Reset form to initial values
+    console.log('🔄 resetCalculator() called - resetting form and signals');
+    
+    // Reset form to empty/default values
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     
     this.calculatorForm.set(this.fb.group({
-      amount: [1000, [Validators.required, Validators.min(1)]],
-      installmentsCount: [6, [Validators.required, Validators.min(1), Validators.max(24)]],
+      amount: ['', [Validators.required, Validators.min(1)]],
+      installmentsCount: ['', [Validators.required, Validators.min(1), Validators.max(24)]],
       startDate: [tomorrow.toISOString().split('T')[0], Validators.required],
-      interestRate: [15, [Validators.min(0), Validators.max(100)]],
-      adminFee: [0, [Validators.min(0)]],
-      description: ['Compra en cuotas'],
-      merchantName: ['FinTrack Store'],
+      interestRate: ['', [Validators.min(0), Validators.max(100)]],
+      adminFee: ['', [Validators.min(0)]],
+      description: [''],
+      merchantName: [''],
       calculateNow: [false]
     }));
 
@@ -319,5 +321,7 @@ export class InstallmentCalculatorComponent implements OnInit, OnChanges {
     this.preview.set(null);
     this.isCalculating.set(false);
     this.error.set(null);
+    
+    console.log('✅ resetCalculator() completed - form and signals reset');
   }
 }

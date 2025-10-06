@@ -12,18 +12,20 @@ import (
 )
 
 type InstallmentService struct {
-	installmentRepo     ports.InstallmentRepositoryInterface
-	installmentPlanRepo ports.InstallmentPlanRepositoryInterface
-	cardRepo            ports.CardRepositoryInterface
-	transactionClient   *clients.TransactionClient
+	installmentRepo      ports.InstallmentRepositoryInterface
+	installmentPlanRepo  ports.InstallmentPlanRepositoryInterface
+	installmentAuditRepo ports.InstallmentPlanAuditRepositoryInterface
+	cardRepo             ports.CardRepositoryInterface
+	transactionClient    *clients.TransactionClient
 }
 
-func NewInstallmentService(installmentRepo ports.InstallmentRepositoryInterface, installmentPlanRepo ports.InstallmentPlanRepositoryInterface, cardRepo ports.CardRepositoryInterface) *InstallmentService {
+func NewInstallmentService(installmentRepo ports.InstallmentRepositoryInterface, installmentPlanRepo ports.InstallmentPlanRepositoryInterface, installmentAuditRepo ports.InstallmentPlanAuditRepositoryInterface, cardRepo ports.CardRepositoryInterface) *InstallmentService {
 	return &InstallmentService{
-		installmentRepo:     installmentRepo,
-		installmentPlanRepo: installmentPlanRepo,
-		cardRepo:            cardRepo,
-		transactionClient:   clients.NewTransactionClient(),
+		installmentRepo:      installmentRepo,
+		installmentPlanRepo:  installmentPlanRepo,
+		installmentAuditRepo: installmentAuditRepo,
+		cardRepo:             cardRepo,
+		transactionClient:    clients.NewTransactionClient(),
 	}
 }
 
@@ -90,7 +92,8 @@ func (s *InstallmentService) CreateInstallmentPlan(req *carddto.CreateInstallmen
 	}
 
 	// Crear cuotas individuales
-	fmt.Printf("DEBUG - Creating %d individual installments for plan %s\n", req.InstallmentsCount, createdPlan.ID)
+	fmt.Printf("🟢🟢🟢 INSTALLMENT_SERVICE - About to create %d individual installments for plan %s 🟢🟢🟢\n", req.InstallmentsCount, createdPlan.ID)
+	fmt.Printf("🟢🟢🟢 INSTALLMENT_SERVICE - TotalAmount: %.2f, UserID: %s 🟢🟢🟢\n", req.TotalAmount, req.UserID)
 	installmentAmount := req.TotalAmount / float64(req.InstallmentsCount)
 
 	for i := 1; i <= req.InstallmentsCount; i++ {
@@ -124,6 +127,8 @@ func (s *InstallmentService) CreateInstallmentPlan(req *carddto.CreateInstallmen
 		fmt.Printf("DEBUG - Successfully created installment %d\n", i)
 	}
 
+	fmt.Printf("🔥🔥🔥 DEBUG - BEFORE TRANSACTION CLIENT CALL 🔥🔥🔥\n")
+
 	// Registrar transacción en transaction service (async)
 	go func() {
 		// Obtener información de la cuenta de la tarjeta
@@ -149,6 +154,8 @@ func (s *InstallmentService) CreateInstallmentPlan(req *carddto.CreateInstallmen
 		}
 	}()
 
+	// El plan de cuotas se ha creado exitosamente
+	// La carga de la tarjeta se manejará en el CardService
 	return createdPlan, nil
 }
 
@@ -321,8 +328,10 @@ func (s *InstallmentService) GetUpcomingInstallments(userID string, days int, li
 
 // GetInstallmentHistory obtiene el historial de auditoría de una cuota
 func (s *InstallmentService) GetInstallmentHistory(installmentID string) ([]*entities.InstallmentPlanAudit, error) {
-	// Implementación básica - se puede extender con repository de auditoría
-	return nil, fmt.Errorf("audit history not implemented yet")
+	if s.installmentAuditRepo == nil {
+		return nil, fmt.Errorf("audit repository not available")
+	}
+	return s.installmentAuditRepo.GetByInstallment(installmentID)
 }
 
 // GetInstallmentSummary obtiene resumen de cuotas por usuario

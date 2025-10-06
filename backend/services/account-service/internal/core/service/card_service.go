@@ -360,6 +360,8 @@ func (s *CardService) ProcessDebitTransaction(cardID string, amount float64, des
 
 // ChargeCardWithInstallments processes a credit card charge with installment plan
 func (s *CardService) ChargeCardWithInstallments(req *dto.CreateInstallmentPlanRequest) (*dto.ChargeWithInstallmentsResponse, error) {
+	fmt.Printf("🚨🚨🚨 DEBUG - ChargeCardWithInstallments called with CardID: %s, TotalAmount: %.2f 🚨🚨🚨\n", req.CardID, req.TotalAmount)
+	
 	// Verificar que la tarjeta existe y obtener información con cuenta
 	card, err := s.cardRepo.GetByIDWithAccount(req.CardID)
 	if err != nil {
@@ -376,13 +378,27 @@ func (s *CardService) ChargeCardWithInstallments(req *dto.CreateInstallmentPlanR
 		return nil, fmt.Errorf("failed to create installment plan: %w", err)
 	}
 
-	// Cargar el primer pago de la cuota (opcional - depende de la lógica de negocio)
-	firstInstallmentCharged := false
-	// Aquí podrías implementar lógica para cargar la primera cuota inmediatamente
+	// Cargar el monto total inmediatamente
+	fmt.Printf("DEBUG - About to charge card %s with total amount %.2f\n", req.CardID, req.TotalAmount)
+	chargedCard, err := s.ChargeCard(req.CardID, req.TotalAmount,
+		fmt.Sprintf("Purchase with %d installments - %s", installmentPlan.InstallmentsCount, req.Description),
+		req.Reference)
+	if err != nil {
+		fmt.Printf("DEBUG - Card charge failed: %v\n", err)
+		// Tratar de cancelar el plan de cuotas si falla el cargo de tarjeta
+		_, cancelErr := s.installmentService.CancelInstallmentPlan(installmentPlan.ID,
+			"Card charge failed for purchase", req.InitiatedBy)
+		if cancelErr != nil {
+			fmt.Printf("Warning: failed to cancel installment plan after charge failure: %v\n", cancelErr)
+		}
+		return nil, fmt.Errorf("failed to charge card for purchase: %w", err)
+	}
+	fmt.Printf("DEBUG - Card charged successfully with new balance: %.2f\n", chargedCard.Balance)
+	firstInstallmentCharged := true
 
 	return &dto.ChargeWithInstallmentsResponse{
 		InstallmentPlan:         installmentPlan,
-		Card:                    card,
+		Card:                    chargedCard, // Usar la tarjeta actualizada después del cargo
 		FirstInstallmentCharged: firstInstallmentCharged,
 		TransactionID:           installmentPlan.TransactionID,
 	}, nil

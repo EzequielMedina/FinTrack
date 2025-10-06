@@ -50,10 +50,11 @@ func New(cfg *config.Config) (*Application, error) {
 	cardRepo := mysqlrepo.NewCardRepository(gormDB)
 	installmentRepo := mysqlrepo.NewInstallmentRepository(gormDB)
 	installmentPlanRepo := mysqlrepo.NewInstallmentPlanRepository(gormDB)
+	installmentAuditRepo := mysqlrepo.NewInstallmentPlanAuditRepository(gormDB)
 
 	// services
 	accountSvc := service.NewAccountService(accountRepo)
-	installmentSvc := service.NewInstallmentService(installmentRepo, installmentPlanRepo, cardRepo)
+	installmentSvc := service.NewInstallmentService(installmentRepo, installmentPlanRepo, installmentAuditRepo, cardRepo)
 	cardSvc := service.NewCardService(cardRepo, accountRepo, installmentSvc)
 
 	return &Application{

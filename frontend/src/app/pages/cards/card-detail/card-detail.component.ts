@@ -62,8 +62,9 @@ export class CardDetailComponent implements OnInit {
   installmentPlansCount = signal(0);
   currentInstallmentCalculation = signal<InstallmentCalculatorResult | null>(null);
 
-  // ViewChild for installment calculator
+  // ViewChild for installment calculator and plans list
   @ViewChild('installmentCalculator') installmentCalculator!: InstallmentCalculatorComponent;
+  @ViewChild('installmentPlansList') installmentPlansList!: InstallmentPlansListComponent;
 
   // Form groups
   chargeForm!: FormGroup;
@@ -300,7 +301,16 @@ export class CardDetailComponent implements OnInit {
           
           // Reset the installment calculator after successful creation
           if (this.installmentCalculator) {
+            console.log('🔄 Calling resetCalculator() on installment calculator');
             this.installmentCalculator.resetCalculator();
+            console.log('✅ resetCalculator() called successfully');
+          } else {
+            console.warn('⚠️ installmentCalculator ViewChild not found');
+          }
+          
+          // Refresh the installment plans list to show the new plan
+          if (this.installmentPlansList) {
+            this.installmentPlansList.refresh();
           }
         },
         error: (error) => {

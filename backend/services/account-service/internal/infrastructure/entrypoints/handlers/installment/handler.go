@@ -95,11 +95,15 @@ func (h *Handler) PreviewInstallmentPlan(c *gin.Context) {
 // @Failure 500 {object} map[string]string "Internal server error"
 // @Router /api/cards/{cardId}/charge-installments [post]
 func (h *Handler) ChargeCardWithInstallments(c *gin.Context) {
+	fmt.Printf("⭐⭐⭐ HANDLER - ChargeCardWithInstallments STARTED ⭐⭐⭐\n")
+	
 	cardID := c.Param("cardId")
 	if cardID == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "card ID is required"})
 		return
 	}
+	
+	fmt.Printf("⭐⭐⭐ HANDLER - Processing request for CardID: %s ⭐⭐⭐\n", cardID)
 
 	var req dto.CreateInstallmentPlanRequest
 
@@ -142,11 +146,14 @@ func (h *Handler) ChargeCardWithInstallments(c *gin.Context) {
 	req.InitiatedBy = userID
 
 	// Create charge with installments
+	fmt.Printf("🎯🎯🎯 HANDLER - About to call cardService.ChargeCardWithInstallments for CardID: %s 🎯🎯🎯\n", req.CardID)
 	response, err := h.cardService.ChargeCardWithInstallments(&req)
 	if err != nil {
+		fmt.Printf("🎯🎯🎯 HANDLER - ERROR from cardService: %v 🎯🎯🎯\n", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	fmt.Printf("🎯🎯🎯 HANDLER - SUCCESS from cardService 🎯🎯🎯\n")
 
 	c.JSON(http.StatusCreated, response)
 }
