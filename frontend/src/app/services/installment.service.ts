@@ -172,11 +172,37 @@ export class InstallmentService {
   }
 
   /**
+   * Get installments by plan ID
+   */
+  getInstallmentsByPlan(planId: string): Observable<Installment[]> {
+    const url = `${this.apiUrl}/installment-plans/${planId}/installments`;
+    
+    const currentUser = this.authService.getCurrentUser();
+    const headers: Record<string, string> = {};
+    
+    if (currentUser) {
+      headers['X-User-ID'] = currentUser.id;
+    }
+    
+    return this.http.get<Installment[]>(url, { headers }).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  /**
    * Pay a specific installment
    */
   payInstallment(request: PayInstallmentRequest): Observable<Installment> {
-    const url = `${this.apiUrl}/installments/${request.installmentId}/pay`;
-    return this.http.post<Installment>(url, request).pipe(
+    const url = `${this.apiUrl}/installments/${request.installment_id}/pay`;
+    
+    const currentUser = this.authService.getCurrentUser();
+    const headers: Record<string, string> = {};
+    
+    if (currentUser) {
+      headers['X-User-ID'] = currentUser.id;
+    }
+    
+    return this.http.post<Installment>(url, request, { headers }).pipe(
       catchError(this.handleError)
     );
   }
@@ -187,7 +213,15 @@ export class InstallmentService {
   cancelInstallmentPlan(planId: string, reason: string): Observable<InstallmentPlan> {
     const url = `${this.apiUrl}/installment-plans/${planId}/cancel`;
     const body = { reason };
-    return this.http.post<InstallmentPlan>(url, body).pipe(
+    
+    const currentUser = this.authService.getCurrentUser();
+    const headers: Record<string, string> = {};
+    
+    if (currentUser) {
+      headers['X-User-ID'] = currentUser.id;
+    }
+    
+    return this.http.post<InstallmentPlan>(url, body, { headers }).pipe(
       catchError(this.handleError)
     );
   }

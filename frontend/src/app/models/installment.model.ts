@@ -2,7 +2,8 @@ export enum InstallmentStatus {
   PENDING = 'pending',
   PAID = 'paid',
   OVERDUE = 'overdue',
-  CANCELLED = 'cancelled'
+  CANCELLED = 'cancelled',
+  PARTIAL = 'partial'
 }
 
 export enum InstallmentPlanStatus {
@@ -14,15 +15,26 @@ export enum InstallmentPlanStatus {
 
 export interface Installment {
   id: string;
-  planId: string;
-  installmentNumber: number;
+  plan_id: string;
+  installment_number: number;
   amount: number;
-  dueDate: string;
+  due_date: string;
   status: InstallmentStatus;
+  paid_date?: string;
+  paid_amount?: number;
+  remaining_amount: number;
+  created_at: string;
+  updated_at: string;
+  
+  // Computed properties for compatibility
+  planId?: string;
+  installmentNumber?: number;
+  dueDate?: string;
   paidDate?: string;
   paidAmount?: number;
-  createdAt: string;
-  updatedAt: string;
+  remainingAmount?: number;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface InstallmentPlan {
@@ -106,10 +118,14 @@ export interface InstallmentPreviewRequest {
 }
 
 export interface PayInstallmentRequest {
-  installmentId: string;
+  installment_id: string;
   amount: number;
-  paymentMethod?: string;
+  payment_method: string;
+  payment_reference?: string;
   reference?: string;
+  notes?: string;
+  account_id?: string;
+  account_type?: string;
 }
 
 export interface ChargeWithInstallmentsRequest {

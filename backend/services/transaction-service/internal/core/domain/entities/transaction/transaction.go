@@ -29,6 +29,10 @@ const (
 	TransactionTypeAccountTransfer TransactionType = "account_transfer"
 	TransactionTypeAccountDeposit  TransactionType = "account_deposit"
 	TransactionTypeAccountWithdraw TransactionType = "account_withdraw"
+
+	// Installment transactions
+	TransactionTypeInstallmentPayment TransactionType = "installment_payment"
+	TransactionTypeInstallmentRefund  TransactionType = "installment_refund"
 )
 
 // TransactionStatus represents the current status of a transaction

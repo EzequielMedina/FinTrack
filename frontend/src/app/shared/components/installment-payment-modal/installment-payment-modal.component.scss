@@ -1,0 +1,499 @@
+.installment-payment-modal {
+  max-width: 900px;
+  width: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    border-bottom: 1px solid #e0e0e0;
+    background: linear-gradient(135deg, #3f51b5 0%, #2196f3 100%);
+    color: white;
+    margin: -24px -24px 0 -24px;
+
+    .header-content {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+
+      .header-icon {
+        font-size: 32px;
+        width: 32px;
+        height: 32px;
+      }
+
+      .header-text {
+        h2 {
+          margin: 0;
+          font-size: 24px;
+          font-weight: 500;
+        }
+
+        .subtitle {
+          margin: 4px 0 0 0;
+          opacity: 0.8;
+          font-size: 14px;
+        }
+      }
+    }
+
+    .close-button {
+      color: white;
+    }
+  }
+
+  .modal-content {
+    padding: 24px;
+    overflow-y: auto;
+    flex: 1;
+
+    .loading-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      padding: 40px;
+      text-align: center;
+
+      p {
+        color: #666;
+        margin: 0;
+      }
+    }
+
+    .content-container {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+  }
+
+  .plan-summary-card {
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-top: 12px;
+
+      .summary-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+
+        .label {
+          font-size: 12px;
+          color: #666;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+
+        .value {
+          font-size: 16px;
+          font-weight: 500;
+
+          &.success {
+            color: #4caf50;
+          }
+
+          &.warn {
+            color: #ff9800;
+          }
+        }
+
+        .progress-container {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+
+          mat-progress-bar {
+            flex: 1;
+          }
+
+          .progress-text {
+            font-size: 12px;
+            color: #666;
+            min-width: 35px;
+          }
+        }
+      }
+    }
+  }
+
+  .quick-actions-card {
+    .action-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 12px;
+
+      .action-button {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 140px;
+
+        mat-icon {
+          font-size: 18px;
+          width: 18px;
+          height: 18px;
+        }
+      }
+    }
+  }
+
+  .installments-card {
+    .installments-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-height: 400px;
+      overflow-y: auto;
+      margin-top: 12px;
+
+      .installment-item {
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 16px;
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        transition: all 0.2s ease;
+        cursor: pointer;
+
+        &:hover:not(.disabled) {
+          border-color: #3f51b5;
+          background-color: #fafafa;
+        }
+
+        &.selected {
+          border-color: #3f51b5;
+          background-color: #e8eaf6;
+        }
+
+        &.overdue {
+          border-color: #f44336;
+          background-color: #ffebee;
+        }
+
+        &.paid {
+          border-color: #4caf50;
+          background-color: #e8f5e8;
+          opacity: 0.7;
+        }
+
+        &.disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+
+        .installment-checkbox {
+          margin-top: 4px;
+        }
+
+        .installment-content {
+          flex: 1;
+
+          .installment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+
+            .installment-number {
+              display: flex;
+              align-items: center;
+              gap: 8px;
+
+              mat-icon {
+                font-size: 20px;
+                width: 20px;
+                height: 20px;
+              }
+
+              .number {
+                font-weight: 500;
+                font-size: 16px;
+              }
+            }
+
+            .installment-amount {
+              display: flex;
+              align-items: center;
+              gap: 8px;
+
+              .amount {
+                font-size: 18px;
+                font-weight: 600;
+                color: #2196f3;
+              }
+
+              .status-chip {
+                font-size: 11px;
+                height: 20px;
+                border-radius: 10px;
+              }
+            }
+          }
+
+          .installment-details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+
+            .detail-item {
+              display: flex;
+              align-items: center;
+              gap: 4px;
+              font-size: 12px;
+              color: #666;
+
+              mat-icon {
+                font-size: 14px;
+                width: 14px;
+                height: 14px;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .payment-form-card {
+    .payment-form {
+      margin-top: 12px;
+
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-bottom: 16px;
+
+        @media (max-width: 600px) {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .form-field {
+        width: 100%;
+
+        &.full-width {
+          grid-column: 1 / -1;
+        }
+      }
+
+      // Payment method option styling
+      .payment-method-option {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+
+        .method-label {
+          font-weight: 500;
+          margin-bottom: 2px;
+        }
+
+        .method-description {
+          font-size: 12px;
+          color: rgba(0, 0, 0, 0.6);
+        }
+      }
+
+      // Account option styling
+      .account-option {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        padding: 8px 0;
+
+        .account-info {
+          display: flex;
+          flex-direction: column;
+
+          .account-name {
+            font-weight: 500;
+            font-size: 14px;
+          }
+
+          .account-type {
+            font-size: 12px;
+            color: rgba(0, 0, 0, 0.6);
+          }
+        }
+
+        .account-balance {
+          text-align: right;
+
+          .balance-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: #4caf50;
+          }
+        }
+      }
+
+      // Payment validation styling
+      .payment-validation {
+        margin: 16px 0;
+        padding: 12px;
+        background-color: #ffebee;
+        border-radius: 4px;
+        border-left: 4px solid #f44336;
+
+        mat-error {
+          margin: 0;
+          font-size: 14px;
+        }
+      }
+    }
+  }
+
+  .modal-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    border-top: 1px solid #e0e0e0;
+    margin: 0 -24px -24px -24px;
+    background-color: #fafafa;
+
+    .payment-summary {
+      .summary-text {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+
+        .count {
+          font-size: 12px;
+          color: #666;
+        }
+
+        .total {
+          font-size: 16px;
+          font-weight: 600;
+          color: #2196f3;
+        }
+      }
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 12px;
+
+      .pay-button {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 160px;
+        justify-content: center;
+
+        mat-spinner {
+          margin-right: 8px;
+        }
+      }
+    }
+  }
+}
+
+// Card titles styling
+mat-card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px !important;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .installment-payment-modal {
+    max-width: 95vw;
+    
+    .modal-header {
+      .header-content {
+        gap: 12px;
+
+        .header-icon {
+          font-size: 24px;
+          width: 24px;
+          height: 24px;
+        }
+
+        .header-text h2 {
+          font-size: 20px;
+        }
+      }
+    }
+
+    .plan-summary-card .summary-grid {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .quick-actions-card .action-buttons {
+      justify-content: center;
+
+      .action-button {
+        min-width: 120px;
+      }
+    }
+
+    .installments-card .installments-list {
+      max-height: 300px;
+
+      .installment-item .installment-content .installment-details {
+        flex-direction: column;
+        gap: 8px;
+      }
+    }
+
+    .modal-actions {
+      flex-direction: column;
+      gap: 12px;
+      align-items: stretch;
+
+      .action-buttons {
+        justify-content: center;
+      }
+    }
+  }
+}
+
+// Animation for selection
+.installment-item {
+  transform: scale(1);
+  transition: transform 0.1s ease;
+}
+
+.installment-item.selected {
+  transform: scale(1.02);
+}
+
+// Custom scrollbar for installments list
+.installments-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.installments-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.installments-list::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.installments-list::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}

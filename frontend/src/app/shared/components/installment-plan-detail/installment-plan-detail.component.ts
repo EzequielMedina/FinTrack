@@ -118,14 +118,23 @@ export class InstallmentPlanDetailComponent implements OnInit, OnChanges {
       
       installments.push({
         id: `${plan.id}-${i}`,
-        planId: plan.id,
-        installmentNumber: i,
+        plan_id: plan.id,
+        installment_number: i,
         amount: plan.installmentAmount,
-        dueDate: dueDate.toISOString().split('T')[0],
+        due_date: dueDate.toISOString().split('T')[0],
         status: isPaid ? InstallmentStatus.PAID : 
                 isOverdue ? InstallmentStatus.OVERDUE : 
                 InstallmentStatus.PENDING,
+        paid_date: isPaid ? dueDate.toISOString().split('T')[0] : undefined,
+        remaining_amount: isPaid ? 0 : plan.installmentAmount,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        // Legacy properties for backward compatibility
+        planId: plan.id,
+        installmentNumber: i,
+        dueDate: dueDate.toISOString().split('T')[0],
         paidDate: isPaid ? dueDate.toISOString().split('T')[0] : undefined,
+        remainingAmount: isPaid ? 0 : plan.installmentAmount,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       });
@@ -140,7 +149,7 @@ export class InstallmentPlanDetailComponent implements OnInit, OnChanges {
       type: 'pay',
       installmentId: installment.id,
       installment,
-      planId: installment.planId
+      planId: installment.plan_id
     });
   }
 

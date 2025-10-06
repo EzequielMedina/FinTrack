@@ -26,6 +26,7 @@ export interface IAccountService {
   createAccount(accountData: CreateAccountRequest): Observable<Account>;
   getAccountById(accountId: string): Observable<Account>;
   getAccountsByUser(userId: string, page?: number, pageSize?: number): Observable<AccountsListResponse>;
+  getAccountsByUserAndTypes(userId: string, accountTypes: string[]): Observable<Account[]>;
   updateAccount(accountId: string, updateData: UpdateAccountRequest): Observable<Account>;
   deleteAccount(accountId: string): Observable<void>;
   
@@ -123,6 +124,27 @@ export class AccountService implements IAccountService {
         }
         
         throw this.handleHttpError(error);
+      })
+    );
+  }
+
+  getAccountsByUserAndTypes(userId: string, accountTypes: string[]): Observable<Account[]> {
+    const params = new HttpParams()
+      .set('account_types', accountTypes.join(','))
+      .set('page', '1')
+      .set('pageSize', '100'); // Get all accounts of specified types
+
+    return this.http.get<any>(`${this.apiUrl}/user/${userId}`, { params }).pipe(
+      map(response => {
+        // Handle direct array response or response with data/accounts property
+        const accounts = Array.isArray(response) ? response : (response.data || response.accounts || []);
+        return accounts
+          .filter((item: any) => accountTypes.includes(item.account_type))
+          .map((item: any) => this.mapBackendResponseToAccount(item));
+      }),
+      catchError(error => {
+        console.error('Error getting accounts by user and types:', error);
+        return of([]); // Return empty array on error
       })
     );
   }

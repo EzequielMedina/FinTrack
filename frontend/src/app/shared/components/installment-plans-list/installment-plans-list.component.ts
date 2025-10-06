@@ -312,12 +312,6 @@ export class InstallmentPlansListComponent implements OnInit, OnDestroy {
   }
 
   getMerchantDisplay(plan: InstallmentPlan): string {
-    console.log('🔍 DEBUG getMerchantDisplay - Plan:', {
-      id: plan.id?.substring(0, 8),
-      merchantName: plan.merchantName,
-      description: plan.description,
-      result: plan.description || plan.merchantName || 'Compra en cuotas'
-    });
     // Priorizar la descripción personalizada sobre el merchant name
     return plan.description || plan.merchantName || 'Compra en cuotas';
   }

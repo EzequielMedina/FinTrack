@@ -573,3 +573,61 @@ func (h *Handler) CancelInstallmentPlan(c *gin.Context) {
 	response := dto.ToInstallmentPlanResponse(plan)
 	c.JSON(http.StatusOK, response)
 }
+
+// GetInstallmentsByPlan retrieves all installments for a specific plan
+// @Summary Get installments by plan
+// @Description Get all installments for a specific installment plan
+// @Tags Installments
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param planId path string true "Installment Plan ID"
+// @Success 200 {array} dto.InstallmentResponse "List of installments"
+// @Failure 400 {object} map[string]string "Invalid request data"
+// @Failure 404 {object} map[string]string "Plan not found"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Router /api/installment-plans/{planId}/installments [get]
+func (h *Handler) GetInstallmentsByPlan(c *gin.Context) {
+	planID := c.Param("planId")
+	if planID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "plan ID is required"})
+		return
+	}
+
+	// Get user ID from context for authorization
+	userID := c.GetString("user_id")
+	if userID == "" {
+		userID = c.GetHeader("X-User-ID")
+		if userID == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "user not authenticated"})
+			return
+		}
+	}
+
+	// First verify that the plan belongs to the user
+	plan, err := h.installmentService.GetInstallmentPlan(planID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "installment plan not found"})
+		return
+	}
+
+	if plan.UserID != userID {
+		c.JSON(http.StatusForbidden, gin.H{"error": "access denied to this installment plan"})
+		return
+	}
+
+	// Get installments for the plan
+	installments, err := h.installmentService.GetInstallmentsByPlan(planID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to retrieve installments"})
+		return
+	}
+
+	// Convert to response format
+	var response []dto.InstallmentResponse
+	for _, installment := range installments {
+		response = append(response, dto.ToInstallmentResponse(installment))
+	}
+
+	c.JSON(http.StatusOK, response)
+}

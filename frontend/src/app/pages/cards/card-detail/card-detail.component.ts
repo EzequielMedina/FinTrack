@@ -11,13 +11,17 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { Card, CardType, InstallmentPlan } from '../../../models';
 import { CreditCardService, CreditCardBalanceResponse } from '../../../services/credit-card.service';
 import { DebitCardService, DebitCardBalanceResponse } from '../../../services/debit-card.service';
+import { InstallmentService } from '../../../services/installment.service';
 import { 
   InstallmentCalculatorComponent, 
-  InstallmentPlansListComponent
+  InstallmentPlansListComponent,
+  InstallmentPlanDetailModalComponent
 } from '../../../shared/components';
+import { InstallmentPaymentModalComponent } from '../../../shared/components/installment-payment-modal/installment-payment-modal.component';
 import type { 
   InstallmentCalculatorResult,
   InstallmentPlanAction 
@@ -38,6 +42,7 @@ import type {
     MatChipsModule,
     MatDividerModule,
     MatTabsModule,
+    MatDialogModule,
     InstallmentCalculatorComponent,
     InstallmentPlansListComponent
   ],
@@ -48,8 +53,10 @@ import type {
 export class CardDetailComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly dialog = inject(MatDialog);
   private readonly creditCardService = inject(CreditCardService);
   private readonly debitCardService = inject(DebitCardService);
+  private readonly installmentService = inject(InstallmentService);
 
   @Input() card!: Card;
 
@@ -355,17 +362,85 @@ export class CardDetailComponent implements OnInit {
   }
 
   viewInstallmentPlanDetail(plan: InstallmentPlan): void {
-    // Aquí podrías abrir un modal con el detalle del plan
-    console.log('View plan detail:', plan);
+    // Abrir modal con el detalle completo del plan
+    const dialogRef = this.dialog.open(InstallmentPlanDetailModalComponent, {
+      width: '800px',
+      maxWidth: '90vw',
+      maxHeight: '90vh',
+      data: { plan },
+      panelClass: 'installment-detail-modal'
+    });
+
+    // Opcional: manejar acciones cuando se cierre el modal
+    dialogRef.afterClosed().subscribe(result => {
+      // Aquí podrías manejar acciones post-cierre si es necesario
+      console.log('Modal cerrado');
+    });
   }
 
   showPayInstallmentDialog(plan: InstallmentPlan): void {
-    // Aquí podrías abrir un dialog para pagar la cuota
-    console.log('Pay installment for plan:', plan);
+    const dialogRef = this.dialog.open(InstallmentPaymentModalComponent, {
+      width: '90vw',
+      maxWidth: '900px',
+      height: '90vh',
+      maxHeight: '800px',
+      data: { installmentPlan: plan },
+      panelClass: 'installment-payment-modal',
+      disableClose: false
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result && result.success) {
+        this.showSuccessMessage(`✅ ${result.paidCount} cuota(s) pagada(s) exitosamente`);
+        this.onRefreshInstallmentPlans(); // Refrescar la lista
+        this.loadCardBalance(); // Refrescar el balance
+      }
+    });
   }
 
   cancelInstallmentPlan(plan: InstallmentPlan): void {
-    // Aquí podrías mostrar confirmación y cancelar el plan
-    console.log('Cancel plan:', plan);
+    // Mostrar confirmación antes de cancelar
+    const confirmed = confirm(
+      `¿Estás seguro de que deseas cancelar el plan de cuotas "${plan.description || 'Compra en cuotas'}"?\n\n` +
+      `Esto cancelará todas las cuotas pendientes por un total de $${plan.remainingAmount.toLocaleString()}.`
+    );
+    
+    if (confirmed) {
+      this.installmentService.cancelInstallmentPlan(plan.id, 'Cancelado por el usuario').subscribe({
+        next: () => {
+          this.showSuccessMessage('Plan de cuotas cancelado exitosamente');
+          this.onRefreshInstallmentPlans(); // Refrescar la lista
+          this.loadCardBalance(); // Refrescar el balance
+        },
+        error: (error: any) => {
+          console.error('Error canceling installment plan:', error);
+          this.showErrorMessage('Error al cancelar el plan de cuotas');
+        }
+      });
+    }
+  }
+
+  private showSuccessMessage(message: string): void {
+    this.snackBar.open(message, 'Cerrar', {
+      duration: 3000,
+      panelClass: ['success-snackbar']
+    });
+  }
+
+  private showErrorMessage(message: string): void {
+    this.snackBar.open(message, 'Cerrar', {
+      duration: 5000,
+      panelClass: ['error-snackbar']
+    });
+  }
+
+  private getStatusText(status: string): string {
+    switch (status) {
+      case 'active': return 'Activo';
+      case 'completed': return 'Completado';
+      case 'cancelled': return 'Cancelado';
+      case 'overdue': return 'Vencido';
+      default: return status;
+    }
   }
 }
