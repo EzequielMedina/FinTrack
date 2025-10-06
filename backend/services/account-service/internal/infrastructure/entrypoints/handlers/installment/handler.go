@@ -96,13 +96,13 @@ func (h *Handler) PreviewInstallmentPlan(c *gin.Context) {
 // @Router /api/cards/{cardId}/charge-installments [post]
 func (h *Handler) ChargeCardWithInstallments(c *gin.Context) {
 	fmt.Printf("⭐⭐⭐ HANDLER - ChargeCardWithInstallments STARTED ⭐⭐⭐\n")
-	
+
 	cardID := c.Param("cardId")
 	if cardID == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "card ID is required"})
 		return
 	}
-	
+
 	fmt.Printf("⭐⭐⭐ HANDLER - Processing request for CardID: %s ⭐⭐⭐\n", cardID)
 
 	var req dto.CreateInstallmentPlanRequest

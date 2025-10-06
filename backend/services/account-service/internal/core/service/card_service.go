@@ -361,7 +361,7 @@ func (s *CardService) ProcessDebitTransaction(cardID string, amount float64, des
 // ChargeCardWithInstallments processes a credit card charge with installment plan
 func (s *CardService) ChargeCardWithInstallments(req *dto.CreateInstallmentPlanRequest) (*dto.ChargeWithInstallmentsResponse, error) {
 	fmt.Printf("🚨🚨🚨 DEBUG - ChargeCardWithInstallments called with CardID: %s, TotalAmount: %.2f 🚨🚨🚨\n", req.CardID, req.TotalAmount)
-	
+
 	// Verificar que la tarjeta existe y obtener información con cuenta
 	card, err := s.cardRepo.GetByIDWithAccount(req.CardID)
 	if err != nil {
