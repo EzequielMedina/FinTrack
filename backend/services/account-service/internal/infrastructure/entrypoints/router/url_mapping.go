@@ -91,10 +91,10 @@ func MapRoutes(r *gin.Engine, h *Handlers, cfg *config.Config, application *app.
 		// Direct installment operations
 		installments := api.Group("/installment-plans")
 		{
-			installments.GET("", h.Installment.GetUserInstallmentPlans)               // GET /api/installment-plans
-			installments.GET("/:planId", h.Installment.GetInstallmentPlan)            // GET /api/installment-plans/:planId
+			installments.GET("", h.Installment.GetUserInstallmentPlans)                    // GET /api/installment-plans
+			installments.GET("/:planId", h.Installment.GetInstallmentPlan)                 // GET /api/installment-plans/:planId
 			installments.GET("/:planId/installments", h.Installment.GetInstallmentsByPlan) // GET /api/installment-plans/:planId/installments
-			installments.POST("/:planId/cancel", h.Installment.CancelInstallmentPlan) // POST /api/installment-plans/:planId/cancel
+			installments.POST("/:planId/cancel", h.Installment.CancelInstallmentPlan)      // POST /api/installment-plans/:planId/cancel
 		}
 
 		// Individual installment operations
