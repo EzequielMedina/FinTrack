@@ -121,13 +121,19 @@ export class InstallmentPlansListComponent implements OnInit, OnDestroy {
       next: (response: InstallmentPlansListResponse) => {
         let plansToShow = response.plans || [];
         
+        // Apply status filter if specified (for cardId-based requests)
+        if (this.statusFilter && this.cardId) {
+          plansToShow = plansToShow.filter(plan => plan.status === this.statusFilter);
+        }
+        
         // Apply maxPlansToShow limit if specified
         if (this.maxPlansToShow > 0 && plansToShow.length > 0) {
           plansToShow = plansToShow.slice(0, this.maxPlansToShow);
         }
         
         this.plans.set(plansToShow);
-        this.totalPlans.set(response.total || 0);
+        // For filtered results, show filtered count
+        this.totalPlans.set(this.statusFilter && this.cardId ? plansToShow.length : (response.total || 0));
         this.isLoading.set(false);
         this.plansLoaded.emit(plansToShow);
       },
