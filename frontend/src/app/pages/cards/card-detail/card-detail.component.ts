@@ -278,7 +278,7 @@ export class CardDetailComponent implements OnInit {
       // Crear la compra con cuotas
       const chargeRequest = {
         amount: calculation.preview.totalAmount, // Base amount without interests
-        description: 'Compra en cuotas',
+        description: calculation.description || 'Compra en cuotas', // Usar descripción personalizada o por defecto
         installments: {
           count: calculation.installmentsCount,
           interestRate: calculation.preview.interestRate || 0,

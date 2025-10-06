@@ -40,6 +40,18 @@
         </mat-form-field>
       </div>
 
+      <!-- Descripción del plan -->
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Descripción del plan (opcional)</mat-label>
+          <input matInput 
+                 formControlName="description"
+                 placeholder="Ej: Compra supermercado, Pago dentista, etc."
+                 maxlength="100">
+          <mat-hint>Ayúdate a identificar para qué es este plan de cuotas</mat-hint>
+        </mat-form-field>
+      </div>
+
       <!-- Cantidad de cuotas -->
       <div class="form-row">
         <mat-form-field appearance="outline" class="full-width">

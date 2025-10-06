@@ -23,6 +23,7 @@ export interface InstallmentCalculatorResult {
   totalInterest: number;
   adminFee: number;
   startDate: string;
+  description?: string;
   preview: InstallmentPreview;
 }
 
@@ -98,6 +99,7 @@ export class InstallmentCalculatorComponent implements OnInit, OnChanges {
     
     return this.fb.group({
       amount: [this.amount, [Validators.required, Validators.min(1000), Validators.max(500000)]],
+      description: [''], // Campo opcional para descripción del plan
       installmentsCount: [this.defaultInstallments, [Validators.required, Validators.min(1), Validators.max(24)]],
       startDate: [tomorrow, [Validators.required]],
       calculateNow: [true]
@@ -200,6 +202,7 @@ export class InstallmentCalculatorComponent implements OnInit, OnChanges {
       totalInterest: preview.totalInterest,
       adminFee: preview.adminFee,
       startDate: this.formatDateForAPI(formValue.startDate), // Use form value instead of preview
+      description: formValue.description?.trim() || undefined, // Incluir descripción del formulario
       preview
     };
 
@@ -242,6 +245,7 @@ export class InstallmentCalculatorComponent implements OnInit, OnChanges {
         totalInterest: currentPreview.totalInterest,
         adminFee: currentPreview.adminFee,
         startDate: this.formatDateForAPI(formValue.startDate), // Use form value instead of preview
+        description: formValue.description?.trim() || undefined, // Incluir descripción del formulario
         preview: currentPreview
       };
       
