@@ -85,6 +85,31 @@
           </mat-card-content>
         </mat-card>
 
+        <!-- Planes de Cuotas para Tarjetas de Crédito -->
+        <mat-card *ngIf="card.cardType === CardType.CREDIT" class="operation-card">
+          <mat-card-header>
+            <mat-card-title>Mis Planes de Cuotas</mat-card-title>
+            <mat-card-subtitle>Gestiona tus compras en cuotas activas</mat-card-subtitle>
+            <button 
+              mat-icon-button 
+              (click)="onRefreshInstallmentPlans()"
+              [disabled]="loading()">
+              <mat-icon>refresh</mat-icon>
+            </button>
+          </mat-card-header>
+          <mat-card-content>
+            <app-installment-plans-list
+              #installmentPlansList
+              [cardId]="card.id"
+              [showCardInfo]="false"
+              [maxPlansToShow]="10"
+              [showPagination]="true"
+              (planAction)="onInstallmentPlanAction($event)"
+              (plansLoaded)="onInstallmentPlansLoaded($event)">
+            </app-installment-plans-list>
+          </mat-card-content>
+        </mat-card>
+
         <!-- Balance de Tarjeta de Débito -->
         <mat-card *ngIf="card.cardType === CardType.DEBIT" class="balance-card debit-balance">
           <mat-card-header>
@@ -116,70 +141,23 @@
     <!-- TAB DE OPERACIONES CRÉDITO -->
     <mat-tab 
       *ngIf="card.cardType === CardType.CREDIT" 
-      label="Operaciones de Crédito">
+      label="Operaciones">
       <div class="tab-content">
         
-        <!-- Hacer Cargo -->
+        <!-- Compra en Cuotas -->
         <mat-card class="operation-card">
           <mat-card-header>
-            <mat-card-title>Realizar Compra</mat-card-title>
-            <mat-card-subtitle>Cargar un gasto a la tarjeta</mat-card-subtitle>
+            <mat-card-title>Compra en Cuotas</mat-card-title>
+            <mat-card-subtitle>Calcula y realiza tu compra en cuotas</mat-card-subtitle>
           </mat-card-header>
           <mat-card-content>
-            <form [formGroup]="chargeForm" (ngSubmit)="onCharge()">
-              <div class="form-row">
-                <mat-form-field>
-                  <mat-label>Monto</mat-label>
-                  <input 
-                    matInput 
-                    type="number" 
-                    formControlName="amount" 
-                    placeholder="0.00"
-                    min="0.01"
-                    step="0.01">
-                  <span matTextPrefix>$</span>
-                  <mat-error *ngIf="chargeForm.get('amount')?.hasError('required')">
-                    El monto es requerido
-                  </mat-error>
-                  <mat-error *ngIf="chargeForm.get('amount')?.hasError('min')">
-                    El monto debe ser mayor a 0
-                  </mat-error>
-                </mat-form-field>
-
-                <mat-form-field>
-                  <mat-label>Descripción</mat-label>
-                  <input 
-                    matInput 
-                    formControlName="description" 
-                    placeholder="Ej: Compra en supermercado">
-                  <mat-error *ngIf="chargeForm.get('description')?.hasError('required')">
-                    La descripción es requerida
-                  </mat-error>
-                </mat-form-field>
-              </div>
-
-              <mat-form-field class="full-width">
-                <mat-label>Referencia (Opcional)</mat-label>
-                <input 
-                  matInput 
-                  formControlName="reference" 
-                  placeholder="Número de transacción o referencia">
-              </mat-form-field>
-
-              <div class="form-actions">
-                <span class="available-info">
-                  Crédito disponible: {{ getAvailableCreditFormatted() }}
-                </span>
-                <button 
-                  mat-raised-button 
-                  color="primary" 
-                  type="submit"
-                  [disabled]="!chargeForm.valid || isFormDisabled()">
-                  <mat-icon>shopping_cart</mat-icon>
-                  Realizar Compra
-                </button>
-              </div>
-            </form>
+            <app-installment-calculator
+              #installmentCalculator
+              [cardId]="card.id"
+              [showPreview]="true"
+              (calculationChanged)="onInstallmentCalculationChanged($event)"
+              (installmentsSelected)="onInstallmentsSelected($event)">
+            </app-installment-calculator>
           </mat-card-content>
         </mat-card>
 
@@ -254,59 +232,6 @@
                 </button>
               </div>
             </form>
-          </mat-card-content>
-        </mat-card>
-        
-      </div>
-    </mat-tab>
-
-    <!-- TAB DE CUOTAS -->
-    <mat-tab 
-      *ngIf="card.cardType === CardType.CREDIT" 
-      label="Compras en Cuotas">
-      <div class="tab-content">
-        
-        <!-- Calculadora de Cuotas -->
-        <mat-card class="operation-card">
-          <mat-card-header>
-            <mat-card-title>Simular Compra en Cuotas</mat-card-title>
-            <mat-card-subtitle>Calcula y simula tu compra en cuotas</mat-card-subtitle>
-          </mat-card-header>
-          <mat-card-content>
-            <app-installment-calculator
-              #installmentCalculator
-              [cardId]="card.id"
-              [showPreview]="true"
-              (calculationChanged)="onInstallmentCalculationChanged($event)"
-              (installmentsSelected)="onInstallmentsSelected($event)">
-            </app-installment-calculator>
-          </mat-card-content>
-        </mat-card>
-
-        <!-- Lista de Planes de Cuotas -->
-        <mat-card class="operation-card">
-          <mat-card-header>
-            <mat-card-title>Mis Planes de Cuotas</mat-card-title>
-            <mat-card-subtitle>Gestiona tus compras en cuotas activas</mat-card-subtitle>
-          </mat-card-header>
-          <mat-card-content>
-            <app-installment-plans-list
-              #installmentPlansList
-              [cardId]="card.id"
-              [showCardInfo]="false"
-              [maxPlansToShow]="5"
-              [showPagination]="false"
-              (planAction)="onInstallmentPlanAction($event)"
-              (plansLoaded)="onInstallmentPlansLoaded($event)">
-            </app-installment-plans-list>
-            
-            <!-- Ver todos los planes -->
-            <div class="view-all-plans" *ngIf="installmentPlansCount > 5">
-              <button mat-stroked-button color="primary" (click)="viewAllInstallmentPlans()">
-                <mat-icon>visibility</mat-icon>
-                Ver todos los planes ({{ installmentPlansCount }})
-              </button>
-            </div>
           </mat-card-content>
         </mat-card>
         

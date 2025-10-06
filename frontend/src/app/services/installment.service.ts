@@ -68,7 +68,39 @@ export class InstallmentService {
       .set('page', page.toString())
       .set('pageSize', pageSize.toString());
 
-    return this.http.get<InstallmentPlansListResponse>(url, { params }).pipe(
+    return this.http.get<{data: any[], pagination: any}>(url, { params }).pipe(
+      map(response => {
+        // Transform backend response to frontend format
+        return {
+          plans: response.data.map(plan => ({
+            id: plan.id,
+            transactionId: plan.transaction_id,
+            cardId: plan.card_id,
+            userId: plan.user_id,
+            totalAmount: plan.total_amount,
+            installmentsCount: plan.installments_count,
+            installmentAmount: plan.installment_amount,
+            startDate: plan.start_date,
+            merchantName: plan.merchant_name,
+            merchantId: plan.merchant_id,
+            description: plan.description,
+            status: plan.status,
+            paidInstallments: plan.paid_installments,
+            remainingAmount: plan.remaining_amount,
+            interestRate: plan.interest_rate,
+            totalInterest: plan.total_interest,
+            adminFee: plan.admin_fee,
+            createdAt: plan.created_at,
+            updatedAt: plan.updated_at,
+            completedAt: plan.completed_at,
+            cancelledAt: plan.cancelled_at
+          })),
+          total: response.pagination.total_items,
+          page: response.pagination.current_page,
+          pageSize: response.pagination.page_size,
+          totalPages: response.pagination.total_pages
+        };
+      }),
       catchError(this.handleError)
     );
   }
@@ -102,7 +134,39 @@ export class InstallmentService {
       params = params.set('status', status);
     }
 
-    return this.http.get<InstallmentPlansListResponse>(url, { params }).pipe(
+    return this.http.get<{data: any[], pagination: any}>(url, { params }).pipe(
+      map(response => {
+        // Transform backend response to frontend format
+        return {
+          plans: response.data.map(plan => ({
+            id: plan.id,
+            transactionId: plan.transaction_id,
+            cardId: plan.card_id,
+            userId: plan.user_id,
+            totalAmount: plan.total_amount,
+            installmentsCount: plan.installments_count,
+            installmentAmount: plan.installment_amount,
+            startDate: plan.start_date,
+            merchantName: plan.merchant_name,
+            merchantId: plan.merchant_id,
+            description: plan.description,
+            status: plan.status,
+            paidInstallments: plan.paid_installments,
+            remainingAmount: plan.remaining_amount,
+            interestRate: plan.interest_rate,
+            totalInterest: plan.total_interest,
+            adminFee: plan.admin_fee,
+            createdAt: plan.created_at,
+            updatedAt: plan.updated_at,
+            completedAt: plan.completed_at,
+            cancelledAt: plan.cancelled_at
+          })),
+          total: response.pagination.total_items,
+          page: response.pagination.current_page,
+          pageSize: response.pagination.page_size,
+          totalPages: response.pagination.total_pages
+        };
+      }),
       catchError(this.handleError)
     );
   }

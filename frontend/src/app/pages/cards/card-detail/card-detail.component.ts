@@ -343,6 +343,12 @@ export class CardDetailComponent implements OnInit {
     this.installmentPlansCount.set(plans.length);
   }
 
+  onRefreshInstallmentPlans(): void {
+    if (this.installmentPlansList) {
+      this.installmentPlansList.refresh();
+    }
+  }
+
   viewAllInstallmentPlans(): void {
     // Aquí podrías navegar a una página dedicada o abrir un modal
     console.log('Navigate to all installment plans view');
