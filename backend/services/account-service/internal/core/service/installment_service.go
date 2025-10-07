@@ -317,18 +317,18 @@ func (s *InstallmentService) checkAndUpdatePlanStatusIfCompleted(planID string) 
 			fmt.Printf("Warning: Failed to get card for automatic payment: %v\n", err)
 		} else if cardWithAccount.CardType == "credit" && cardWithAccount.Balance > 0 {
 			// Realizar pago automático a la tarjeta por el monto total del plan
-			fmt.Printf("🔓 Making automatic payment to credit card for completed plan - Card balance: %.2f, Plan amount: %.2f\n", 
+			fmt.Printf("🔓 Making automatic payment to credit card for completed plan - Card balance: %.2f, Plan amount: %.2f\n",
 				cardWithAccount.Balance, plan.TotalAmount)
-			
+
 			// Reducir el balance de la tarjeta de crédito por el monto total del plan
 			cardWithAccount.Balance -= plan.TotalAmount
 			cardWithAccount.UpdatedAt = time.Now()
-			
+
 			_, err = s.cardRepo.Update(cardWithAccount)
 			if err != nil {
 				fmt.Printf("ERROR: Failed to make automatic payment to credit card after plan completion: %v\n", err)
 			} else {
-				fmt.Printf("✅ Automatic payment completed - Credit card balance reduced to: %.2f (Available credit increased by %.2f)\n", 
+				fmt.Printf("✅ Automatic payment completed - Credit card balance reduced to: %.2f (Available credit increased by %.2f)\n",
 					cardWithAccount.Balance, plan.TotalAmount)
 			}
 		}
@@ -352,12 +352,12 @@ func (s *InstallmentService) checkAndUpdatePlanStatusIfCompleted(planID string) 
 				MerchantName:  plan.MerchantName,
 				ReferenceID:   fmt.Sprintf("plan-completed-%s", plan.ID),
 				Metadata: map[string]interface{}{
-					"installmentPlanId":  plan.ID,
-					"cardId":             plan.CardID,
-					"totalInstallments":  plan.InstallmentsCount,
-					"paidInstallments":   paidCount,
-					"category":           "installment_plan_completion",
-					"recordOnly":         true, // Solo registro, no afecta balances
+					"installmentPlanId": plan.ID,
+					"cardId":            plan.CardID,
+					"totalInstallments": plan.InstallmentsCount,
+					"paidInstallments":  paidCount,
+					"category":          "installment_plan_completion",
+					"recordOnly":        true, // Solo registro, no afecta balances
 				},
 			})
 			if err != nil {

@@ -51,11 +51,11 @@ const (
 type PaymentMethod string
 
 const (
-	PaymentMethodCash                PaymentMethod = "cash"
-	PaymentMethodBankTransfer        PaymentMethod = "bank_transfer"
-	PaymentMethodCreditCard          PaymentMethod = "credit_card"
-	PaymentMethodDebitCard           PaymentMethod = "debit_card"
-	PaymentMethodWallet              PaymentMethod = "wallet"
+	PaymentMethodCash                  PaymentMethod = "cash"
+	PaymentMethodBankTransfer          PaymentMethod = "bank_transfer"
+	PaymentMethodCreditCard            PaymentMethod = "credit_card"
+	PaymentMethodDebitCard             PaymentMethod = "debit_card"
+	PaymentMethodWallet                PaymentMethod = "wallet"
 	PaymentMethodInstallmentCompletion PaymentMethod = "installment_completion"
 )
 

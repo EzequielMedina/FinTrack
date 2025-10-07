@@ -63,7 +63,7 @@ type PayInstallmentRequest struct {
 	PaymentMethod    string  `json:"payment_method" binding:"required"`
 	PaymentReference string  `json:"payment_reference"`
 	Notes            string  `json:"notes"`
-	
+
 	// Account information for payment source
 	AccountID   string `json:"account_id" binding:"required"`
 	AccountType string `json:"account_type" binding:"required"`
