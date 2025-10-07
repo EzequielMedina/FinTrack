@@ -71,6 +71,7 @@ func main() {
 
 	// Health check endpoint
 	r.GET("/health", func(c *gin.Context) {
+		fmt.Printf("🩺 Health check called - service is using modified code! 🩺\n")
 		c.JSON(200, gin.H{
 			"service": "account-service",
 			"status":  "healthy",

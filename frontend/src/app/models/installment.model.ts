@@ -124,8 +124,8 @@ export interface PayInstallmentRequest {
   payment_reference?: string;
   reference?: string;
   notes?: string;
-  account_id?: string;
-  account_type?: string;
+  account_id: string;      // Required - consistent with backend
+  account_type: string;    // Required - consistent with backend
 }
 
 export interface ChargeWithInstallmentsRequest {

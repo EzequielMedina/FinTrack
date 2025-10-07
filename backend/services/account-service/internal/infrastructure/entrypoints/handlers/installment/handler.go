@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -262,8 +263,14 @@ func (h *Handler) PayInstallment(c *gin.Context) {
 		return
 	}
 
+	// Read and preserve the body for logging
+	bodyBytes, _ := io.ReadAll(c.Request.Body)
+	c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+
 	var req dto.PayInstallmentRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
+		log.Printf("❌ Error binding JSON for installment %s: %v", installmentID, err)
+		log.Printf("🔍 Raw request body: %s", string(bodyBytes))
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -283,12 +290,18 @@ func (h *Handler) PayInstallment(c *gin.Context) {
 	req.UserID = userID
 	req.InitiatedBy = userID
 
+	// Log the parsed request for debugging AFTER setting all fields
+	log.Printf("✅ Successfully parsed request for installment %s: %+v", installmentID, req)
+
 	// Process payment
+	log.Printf("🔄 Calling installment service PayInstallment with request: %+v", req)
 	installment, err := h.installmentService.PayInstallment(&req)
 	if err != nil {
+		log.Printf("❌ InstallmentService.PayInstallment error: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	log.Printf("✅ InstallmentService.PayInstallment success: %+v", installment)
 
 	// Convert to response format
 	response := dto.ToInstallmentResponse(installment)

@@ -16,15 +16,17 @@ type InstallmentService struct {
 	installmentPlanRepo  ports.InstallmentPlanRepositoryInterface
 	installmentAuditRepo ports.InstallmentPlanAuditRepositoryInterface
 	cardRepo             ports.CardRepositoryInterface
+	accountRepo          ports.AccountRepositoryInterface // Mantenemos para validaciones básicas
 	transactionClient    *clients.TransactionClient
 }
 
-func NewInstallmentService(installmentRepo ports.InstallmentRepositoryInterface, installmentPlanRepo ports.InstallmentPlanRepositoryInterface, installmentAuditRepo ports.InstallmentPlanAuditRepositoryInterface, cardRepo ports.CardRepositoryInterface) *InstallmentService {
+func NewInstallmentService(installmentRepo ports.InstallmentRepositoryInterface, installmentPlanRepo ports.InstallmentPlanRepositoryInterface, installmentAuditRepo ports.InstallmentPlanAuditRepositoryInterface, cardRepo ports.CardRepositoryInterface, accountRepo ports.AccountRepositoryInterface) *InstallmentService {
 	return &InstallmentService{
 		installmentRepo:      installmentRepo,
 		installmentPlanRepo:  installmentPlanRepo,
 		installmentAuditRepo: installmentAuditRepo,
 		cardRepo:             cardRepo,
+		accountRepo:          accountRepo, // Mantenemos para validaciones básicas
 		transactionClient:    clients.NewTransactionClient(),
 	}
 }
@@ -170,8 +172,9 @@ func (s *InstallmentService) GetInstallmentPlan(planID string) (*entities.Instal
 	return s.installmentPlanRepo.GetByIDWithInstallments(planID)
 }
 
-// PayInstallment procesa el pago de una cuota
+// PayInstallment procesa el pago de una cuota usando el transaction-service
 func (s *InstallmentService) PayInstallment(req *carddto.PayInstallmentRequest) (*entities.Installment, error) {
+	fmt.Printf("🔥🔥🔥 PayInstallment called for installment ID: %s 🔥🔥🔥\n", req.InstallmentID)
 	// Obtener la cuota
 	installment, err := s.installmentRepo.GetByID(req.InstallmentID)
 	if err != nil {
@@ -186,7 +189,59 @@ func (s *InstallmentService) PayInstallment(req *carddto.PayInstallmentRequest) 
 		return nil, fmt.Errorf("payment amount insufficient. Required: %.2f, provided: %.2f", installment.Amount, req.Amount)
 	}
 
-	// Marcar como pagada
+	// Obtener la cuenta desde la cual se va a pagar (solo para validación)
+	paymentAccount, err := s.accountRepo.GetByID(req.AccountID)
+	if err != nil {
+		return nil, fmt.Errorf("payment account not found: %w", err)
+	}
+
+	// Verificar que la cuenta pertenece al usuario
+	if paymentAccount.UserID != req.UserID {
+		return nil, fmt.Errorf("payment account does not belong to user")
+	}
+
+	// Verificar que la cuenta esté activa
+	if !paymentAccount.IsActive {
+		return nil, fmt.Errorf("payment account is not active")
+	}
+
+	// Obtener el plan para metadata
+	plan, err := s.installmentPlanRepo.GetByID(installment.PlanID)
+	if err != nil {
+		return nil, fmt.Errorf("installment plan not found: %w", err)
+	}
+
+	// Crear transacción en el transaction-service
+	// El transaction-service se encarga de validar saldo y hacer el descuento
+	transactionReq := clients.CreateTransactionRequest{
+		Type:          "installment_payment",
+		Amount:        req.Amount,
+		Currency:      "ARS",
+		FromAccountID: &req.AccountID, // Cuenta desde la cual se paga
+		ToAccountID:   nil,            // Pago de deuda
+		Description:   fmt.Sprintf("Installment #%d payment: %s", installment.InstallmentNumber, plan.Description),
+		PaymentMethod: req.PaymentMethod,
+		MerchantName:  plan.MerchantName,
+		ReferenceID:   req.PaymentReference,
+		Metadata: map[string]interface{}{
+			"installmentId":      req.InstallmentID,
+			"installmentPlanId":  plan.ID,
+			"installmentNumber":  installment.InstallmentNumber,
+			"cardId":             plan.CardID,
+			"category":           "installment_payment",
+			"paymentAccountId":   req.AccountID,
+			"paymentAccountType": req.AccountType,
+			"notes":              req.Notes,
+		},
+	}
+
+	// Llamar al transaction-service para procesar el pago
+	_, err = s.transactionClient.CreateTransaction(req.UserID, transactionReq)
+	if err != nil {
+		return nil, fmt.Errorf("failed to process payment transaction: %w", err)
+	}
+
+	// Si la transacción fue exitosa, marcar la cuota como pagada
 	installment.Status = "paid"
 	now := time.Now()
 	installment.PaidDate = &now
@@ -194,41 +249,132 @@ func (s *InstallmentService) PayInstallment(req *carddto.PayInstallmentRequest) 
 	// Actualizar en base de datos
 	updatedInstallment, err := s.installmentRepo.Update(installment)
 	if err != nil {
-		return nil, fmt.Errorf("failed to update installment: %w", err)
+		// TODO: En caso de error, podríamos implementar compensación
+		// llamando al transaction-service para revertir la transacción
+		return nil, fmt.Errorf("failed to update installment status: %w", err)
 	}
 
-	// Registrar pago en transaction service (async)
-	go func() {
-		// Obtener el plan para metadata
-		plan, err := s.installmentPlanRepo.GetByID(installment.PlanID)
-		if err != nil {
-			fmt.Printf("Warning: Failed to get installment plan for transaction recording: %v\n", err)
-			return
-		}
-
-		// Obtener información de la tarjeta y cuenta
-		cardWithAccount, err := s.cardRepo.GetByIDWithAccount(plan.CardID)
-		if err != nil {
-			fmt.Printf("Warning: Failed to get card account for transaction recording: %v\n", err)
-			return
-		}
-
-		_, err = s.transactionClient.CreateInstallmentPaymentTransaction(
-			plan.UserID,
-			cardWithAccount.Account.ID,
-			plan.CardID,
-			req.Amount,
-			req.InstallmentID,
-			plan.ID,
-			fmt.Sprintf("%d", installment.InstallmentNumber),
-			plan.Description,
-		)
-		if err != nil {
-			fmt.Printf("Warning: Failed to record installment payment transaction: %v\n", err)
-		}
-	}()
+	// Verificar si todas las cuotas del plan están pagadas
+	fmt.Printf("🔍 About to check plan completion for plan ID: %s\n", plan.ID)
+	err = s.checkAndUpdatePlanStatusIfCompleted(plan.ID)
+	if err != nil {
+		// Log el error pero no falla la operación principal
+		fmt.Printf("⚠️ Warning: Failed to check/update plan completion status: %v\n", err)
+	} else {
+		fmt.Printf("✅ Plan completion check finished successfully for plan ID: %s\n", plan.ID)
+	}
 
 	return updatedInstallment, nil
+}
+
+// checkAndUpdatePlanStatusIfCompleted verifica si todas las cuotas están pagadas y actualiza el estado del plan
+func (s *InstallmentService) checkAndUpdatePlanStatusIfCompleted(planID string) error {
+	fmt.Printf("🎯 checkAndUpdatePlanStatusIfCompleted called for plan ID: %s\n", planID)
+	// Obtener todas las cuotas del plan
+	installments, err := s.installmentRepo.GetByPlan(planID)
+	if err != nil {
+		return fmt.Errorf("failed to get installments for plan %s: %w", planID, err)
+	}
+
+	// Contar cuotas pagadas y verificar si todas están pagadas
+	paidCount := 0
+	allPaid := true
+	for _, installment := range installments {
+		if installment.Status == "paid" {
+			paidCount++
+		} else {
+			allPaid = false
+		}
+	}
+
+	// Obtener el plan para actualizar
+	plan, err := s.installmentPlanRepo.GetByID(planID)
+	if err != nil {
+		return fmt.Errorf("failed to get plan %s: %w", planID, err)
+	}
+
+	// Actualizar el contador de cuotas pagadas
+	plan.PaidInstallments = paidCount
+	plan.RemainingAmount = plan.TotalAmount - (float64(paidCount) * plan.InstallmentAmount)
+
+	// Si todas están pagadas, marcar el plan como completado
+	if allPaid && plan.Status == "active" {
+		plan.Status = "completed"
+		now := time.Now()
+		plan.CompletedAt = &now
+		plan.RemainingAmount = 0.0
+
+		_, err = s.installmentPlanRepo.Update(plan)
+		if err != nil {
+			return fmt.Errorf("failed to update plan status to completed: %w", err)
+		}
+
+		fmt.Printf("✅ Plan %s marked as completed - all %d installments paid\n", planID, len(installments))
+
+		// Liberar el saldo de la tarjeta de crédito mediante un pago automático
+		cardWithAccount, err := s.cardRepo.GetByIDWithAccount(plan.CardID)
+		if err != nil {
+			fmt.Printf("Warning: Failed to get card for automatic payment: %v\n", err)
+		} else if cardWithAccount.CardType == "credit" && cardWithAccount.Balance > 0 {
+			// Realizar pago automático a la tarjeta por el monto total del plan
+			fmt.Printf("🔓 Making automatic payment to credit card for completed plan - Card balance: %.2f, Plan amount: %.2f\n", 
+				cardWithAccount.Balance, plan.TotalAmount)
+			
+			// Reducir el balance de la tarjeta de crédito por el monto total del plan
+			cardWithAccount.Balance -= plan.TotalAmount
+			cardWithAccount.UpdatedAt = time.Now()
+			
+			_, err = s.cardRepo.Update(cardWithAccount)
+			if err != nil {
+				fmt.Printf("ERROR: Failed to make automatic payment to credit card after plan completion: %v\n", err)
+			} else {
+				fmt.Printf("✅ Automatic payment completed - Credit card balance reduced to: %.2f (Available credit increased by %.2f)\n", 
+					cardWithAccount.Balance, plan.TotalAmount)
+			}
+		}
+
+		// Registrar transacción de completado del plan (async)
+		go func() {
+			// Obtener información de la tarjeta y cuenta para el registro
+			cardWithAccount, err := s.cardRepo.GetByIDWithAccount(plan.CardID)
+			if err != nil {
+				fmt.Printf("Warning: Failed to get card account for plan completion transaction recording: %v\n", err)
+				return
+			}
+
+			_, err = s.transactionClient.CreateTransaction(plan.UserID, clients.CreateTransactionRequest{
+				Type:          "installment_plan_completion",
+				Amount:        plan.TotalAmount,
+				Currency:      "ARS",
+				FromAccountID: &cardWithAccount.Account.ID,
+				Description:   fmt.Sprintf("Installment plan completed: %s", plan.Description),
+				PaymentMethod: "installment_completion",
+				MerchantName:  plan.MerchantName,
+				ReferenceID:   fmt.Sprintf("plan-completed-%s", plan.ID),
+				Metadata: map[string]interface{}{
+					"installmentPlanId":  plan.ID,
+					"cardId":             plan.CardID,
+					"totalInstallments":  plan.InstallmentsCount,
+					"paidInstallments":   paidCount,
+					"category":           "installment_plan_completion",
+					"recordOnly":         true, // Solo registro, no afecta balances
+				},
+			})
+			if err != nil {
+				fmt.Printf("Warning: Failed to record plan completion transaction: %v\n", err)
+			}
+		}()
+	} else {
+		// Solo actualizar el contador de cuotas pagadas
+		_, err = s.installmentPlanRepo.Update(plan)
+		if err != nil {
+			return fmt.Errorf("failed to update plan paid installments count: %w", err)
+		}
+
+		fmt.Printf("📊 Plan %s updated - %d/%d installments paid\n", planID, paidCount, len(installments))
+	}
+
+	return nil
 }
 
 // GetInstallmentPlansByUser obtiene planes por usuario

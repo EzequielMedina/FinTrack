@@ -279,6 +279,10 @@ func (s *TransactionService) executeTransaction(transaction *domaintransaction.T
 		return s.executePurchaseOrPayment(transaction)
 	case domaintransaction.TransactionTypeCreditPayment:
 		return s.executeCreditPayment(transaction)
+	case domaintransaction.TransactionTypeInstallmentPayment:
+		return s.executeInstallmentPayment(transaction)
+	case domaintransaction.TransactionTypeInstallmentRefund:
+		return s.executeInstallmentRefund(transaction)
 	default:
 		// For other transaction types, no balance update is needed
 		return nil
@@ -373,6 +377,18 @@ func (s *TransactionService) rollbackWithdrawal(transaction *domaintransaction.T
 		fmt.Sprintf("rollback-%s", transaction.ID),
 	)
 	return err
+}
+
+// executeInstallmentPayment handles installment payment transactions
+func (s *TransactionService) executeInstallmentPayment(transaction *domaintransaction.Transaction) error {
+	// Installment payments are withdrawals from the paying account
+	return s.executeWithdrawal(transaction)
+}
+
+// executeInstallmentRefund handles installment refund transactions
+func (s *TransactionService) executeInstallmentRefund(transaction *domaintransaction.Transaction) error {
+	// Installment refunds are deposits to the account
+	return s.executeDeposit(transaction)
 }
 
 // GetTransactionByID retrieves a transaction by its ID with proper authorization

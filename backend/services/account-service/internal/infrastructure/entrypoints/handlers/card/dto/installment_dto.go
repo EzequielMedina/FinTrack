@@ -58,10 +58,15 @@ type InstallmentPreviewItem struct {
 
 // PayInstallmentRequest represents the request to pay an installment
 type PayInstallmentRequest struct {
-	InstallmentID    string  `json:"installment_id" binding:"required"`
+	InstallmentID    string  `json:"installment_id"` // Not required in JSON since it comes from URL
 	Amount           float64 `json:"amount" binding:"required,gt=0"`
 	PaymentMethod    string  `json:"payment_method" binding:"required"`
 	PaymentReference string  `json:"payment_reference"`
+	Notes            string  `json:"notes"`
+	
+	// Account information for payment source
+	AccountID   string `json:"account_id" binding:"required"`
+	AccountType string `json:"account_type" binding:"required"`
 
 	// User context (usually from authentication)
 	UserID      string `json:"-"` // Set by middleware

@@ -372,6 +372,16 @@ export class InstallmentPaymentModalComponent implements OnInit {
     const formValue = this.paymentForm.value;
     const selectedAccount = this.getSelectedAccount();
     
+    // Validate that an account is selected
+    if (!selectedAccount) {
+      this.snackBar.open('⚠️ Debe seleccionar una cuenta para el pago', 'Cerrar', { 
+        duration: 3000,
+        panelClass: ['error-snackbar']
+      });
+      this.isProcessingPayment = false;
+      return;
+    }
+    
     // Process each selected installment
     const paymentPromises = Array.from(this.selectedInstallments).map(installmentId => {
       const installment = this.installments.find(inst => inst.id === installmentId);
@@ -383,10 +393,13 @@ export class InstallmentPaymentModalComponent implements OnInit {
         payment_method: formValue.paymentMethod,
         payment_reference: `${formValue.paymentReference}-${installment.installment_number}`,
         notes: formValue.notes || '',
-        // Add account information
-        account_id: selectedAccount?.id,
-        account_type: selectedAccount?.accountType
+        // Add account information - use string values directly
+        account_id: selectedAccount.id,
+        account_type: selectedAccount.accountType.toString() // Ensure string conversion
       };
+
+      console.log('🔍 Sending payment request:', paymentRequest);
+      console.log('🔍 Selected account details:', selectedAccount);
 
       return this.installmentService.payInstallment(paymentRequest).toPromise();
     });

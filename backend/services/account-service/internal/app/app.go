@@ -54,7 +54,7 @@ func New(cfg *config.Config) (*Application, error) {
 
 	// services
 	accountSvc := service.NewAccountService(accountRepo)
-	installmentSvc := service.NewInstallmentService(installmentRepo, installmentPlanRepo, installmentAuditRepo, cardRepo)
+	installmentSvc := service.NewInstallmentService(installmentRepo, installmentPlanRepo, installmentAuditRepo, cardRepo, accountRepo)
 	cardSvc := service.NewCardService(cardRepo, accountRepo, installmentSvc)
 
 	return &Application{

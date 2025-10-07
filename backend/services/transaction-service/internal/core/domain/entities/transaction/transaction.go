@@ -31,8 +31,9 @@ const (
 	TransactionTypeAccountWithdraw TransactionType = "account_withdraw"
 
 	// Installment transactions
-	TransactionTypeInstallmentPayment TransactionType = "installment_payment"
-	TransactionTypeInstallmentRefund  TransactionType = "installment_refund"
+	TransactionTypeInstallmentPayment    TransactionType = "installment_payment"
+	TransactionTypeInstallmentRefund     TransactionType = "installment_refund"
+	TransactionTypeInstallmentCompletion TransactionType = "installment_plan_completion"
 )
 
 // TransactionStatus represents the current status of a transaction
@@ -50,11 +51,12 @@ const (
 type PaymentMethod string
 
 const (
-	PaymentMethodCash         PaymentMethod = "cash"
-	PaymentMethodBankTransfer PaymentMethod = "bank_transfer"
-	PaymentMethodCreditCard   PaymentMethod = "credit_card"
-	PaymentMethodDebitCard    PaymentMethod = "debit_card"
-	PaymentMethodWallet       PaymentMethod = "wallet"
+	PaymentMethodCash                PaymentMethod = "cash"
+	PaymentMethodBankTransfer        PaymentMethod = "bank_transfer"
+	PaymentMethodCreditCard          PaymentMethod = "credit_card"
+	PaymentMethodDebitCard           PaymentMethod = "debit_card"
+	PaymentMethodWallet              PaymentMethod = "wallet"
+	PaymentMethodInstallmentCompletion PaymentMethod = "installment_completion"
 )
 
 // Transaction represents a financial transaction in the system
@@ -120,7 +122,8 @@ func IsValidTransactionType(transType TransactionType) bool {
 	case TransactionTypeWalletDeposit, TransactionTypeWalletWithdrawal, TransactionTypeWalletTransfer,
 		TransactionTypeCreditCharge, TransactionTypeCreditPayment, TransactionTypeCreditRefund,
 		TransactionTypeDebitPurchase, TransactionTypeDebitWithdrawal, TransactionTypeDebitRefund,
-		TransactionTypeAccountTransfer, TransactionTypeAccountDeposit, TransactionTypeAccountWithdraw:
+		TransactionTypeAccountTransfer, TransactionTypeAccountDeposit, TransactionTypeAccountWithdraw,
+		TransactionTypeInstallmentPayment, TransactionTypeInstallmentRefund, TransactionTypeInstallmentCompletion:
 		return true
 	default:
 		return false
@@ -142,7 +145,7 @@ func IsValidTransactionStatus(status TransactionStatus) bool {
 func IsValidPaymentMethod(method PaymentMethod) bool {
 	switch method {
 	case PaymentMethodCash, PaymentMethodBankTransfer, PaymentMethodCreditCard,
-		PaymentMethodDebitCard, PaymentMethodWallet:
+		PaymentMethodDebitCard, PaymentMethodWallet, PaymentMethodInstallmentCompletion:
 		return true
 	default:
 		return false
