@@ -68,5 +68,43 @@ func MapRoutes(r *gin.Engine, h *Handlers, cfg *config.Config, application *app.
 			accounts.PUT("/:id/cards/:cardId/unblock", h.Card.UnblockCard)        // PUT /api/accounts/:id/cards/:cardId/unblock
 			accounts.PUT("/:id/cards/:cardId/set-default", h.Card.SetDefaultCard) // PUT /api/accounts/:id/cards/:cardId/set-default
 		}
+
+		// Direct card operations (financial transactions)
+		cards := api.Group("/cards")
+		{
+			// Card balance queries
+			cards.GET("/:cardId/balance", h.Card.GetCardBalance) // GET /api/cards/:cardId/balance
+
+			// Credit card operations
+			cards.POST("/:cardId/charge", h.Card.ChargeCard)   // POST /api/cards/:cardId/charge
+			cards.POST("/:cardId/payment", h.Card.PaymentCard) // POST /api/cards/:cardId/payment
+
+			// Debit card operations
+			cards.POST("/:cardId/transaction", h.Card.ProcessDebitTransaction) // POST /api/cards/:cardId/transaction
+
+			// Installment operations
+			cards.POST("/:cardId/installments/preview", h.Installment.PreviewInstallmentPlan)    // POST /api/cards/:cardId/installments/preview
+			cards.POST("/:cardId/charge-installments", h.Installment.ChargeCardWithInstallments) // POST /api/cards/:cardId/charge-installments
+			cards.GET("/:cardId/installment-plans", h.Installment.GetInstallmentPlansByCard)     // GET /api/cards/:cardId/installment-plans
+		}
+
+		// Direct installment operations
+		installments := api.Group("/installment-plans")
+		{
+			installments.GET("", h.Installment.GetUserInstallmentPlans)                    // GET /api/installment-plans
+			installments.GET("/:planId", h.Installment.GetInstallmentPlan)                 // GET /api/installment-plans/:planId
+			installments.GET("/:planId/installments", h.Installment.GetInstallmentsByPlan) // GET /api/installment-plans/:planId/installments
+			installments.POST("/:planId/cancel", h.Installment.CancelInstallmentPlan)      // POST /api/installment-plans/:planId/cancel
+		}
+
+		// Individual installment operations
+		installmentItems := api.Group("/installments")
+		{
+			installmentItems.POST("/:installmentId/pay", h.Installment.PayInstallment)     // POST /api/installments/:installmentId/pay
+			installmentItems.GET("/overdue", h.Installment.GetOverdueInstallments)         // GET /api/installments/overdue
+			installmentItems.GET("/upcoming", h.Installment.GetUpcomingInstallments)       // GET /api/installments/upcoming
+			installmentItems.GET("/summary", h.Installment.GetInstallmentSummary)          // GET /api/installments/summary
+			installmentItems.GET("/monthly-load", h.Installment.GetMonthlyInstallmentLoad) // GET /api/installments/monthly-load
+		}
 	}
 }

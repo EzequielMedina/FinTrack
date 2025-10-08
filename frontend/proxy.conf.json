@@ -23,6 +23,18 @@
     "changeOrigin": true,
     "logLevel": "info"
   },
+  "/api/cards/**": {
+    "target": "http://localhost:8082",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "info"
+  },
+  "/api/v1/transactions/**": {
+    "target": "http://localhost:8083",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "info"
+  },
   "/api/**": {
     "target": "http://localhost:8081",
     "secure": false,

@@ -13,10 +13,11 @@ import (
 )
 
 type Application struct {
-	Config         *config.Config
-	DB             *gorm.DB
-	AccountService *service.AccountService
-	CardService    *service.CardService
+	Config             *config.Config
+	DB                 *gorm.DB
+	AccountService     *service.AccountService
+	CardService        *service.CardService
+	InstallmentService *service.InstallmentService
 }
 
 func New(cfg *config.Config) (*Application, error) {
@@ -39,7 +40,7 @@ func New(cfg *config.Config) (*Application, error) {
 	sqlDB.SetMaxIdleConns(5)
 	sqlDB.SetConnMaxLifetime(5 * time.Minute)
 
-	// Auto-migrate tables
+	// Auto-migrate tables (excluding installment tables that are managed via SQL migrations)
 	if err := gormDB.AutoMigrate(&entities.Account{}, &entities.Card{}); err != nil {
 		return nil, fmt.Errorf("failed to migrate tables: %w", err)
 	}
@@ -47,16 +48,21 @@ func New(cfg *config.Config) (*Application, error) {
 	// repositories
 	accountRepo := mysqlrepo.NewAccountRepository(gormDB)
 	cardRepo := mysqlrepo.NewCardRepository(gormDB)
+	installmentRepo := mysqlrepo.NewInstallmentRepository(gormDB)
+	installmentPlanRepo := mysqlrepo.NewInstallmentPlanRepository(gormDB)
+	installmentAuditRepo := mysqlrepo.NewInstallmentPlanAuditRepository(gormDB)
 
 	// services
 	accountSvc := service.NewAccountService(accountRepo)
-	cardSvc := service.NewCardService(cardRepo, accountRepo)
+	installmentSvc := service.NewInstallmentService(installmentRepo, installmentPlanRepo, installmentAuditRepo, cardRepo, accountRepo)
+	cardSvc := service.NewCardService(cardRepo, accountRepo, installmentSvc)
 
 	return &Application{
-		Config:         cfg,
-		DB:             gormDB,
-		AccountService: accountSvc,
-		CardService:    cardSvc,
+		Config:             cfg,
+		DB:                 gormDB,
+		AccountService:     accountSvc,
+		CardService:        cardSvc,
+		InstallmentService: installmentSvc,
 	}, nil
 }
 

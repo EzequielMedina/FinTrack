@@ -52,6 +52,16 @@
   margin-bottom: 16px;
 }
 
+.form-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.half-width {
+  flex: 1;
+}
+
 .expiration-row {
   display: flex;
   gap: 16px;

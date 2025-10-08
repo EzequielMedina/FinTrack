@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/fintrack/account-service/internal/core/domain/entities"
 	"github.com/fintrack/account-service/internal/core/errors"
 	"github.com/fintrack/account-service/internal/core/ports"
 	"github.com/fintrack/account-service/internal/infrastructure/entrypoints/handlers/card/dto"
@@ -330,6 +331,162 @@ func (h *Handler) SetDefaultCard(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
+// CREDIT CARD FINANCIAL OPERATIONS
+
+// ChargeCard processes a charge to a credit card
+// @Summary Charge credit card
+// @Description Process a purchase/charge to a credit card
+// @Tags Cards
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param cardId path string true "Card ID"
+// @Param charge body dto.CreditCardChargeRequest true "Charge data"
+// @Success 200 {object} dto.CreditCardBalanceResponse "Charge processed successfully"
+// @Failure 400 {object} map[string]string "Invalid request data"
+// @Failure 404 {object} map[string]string "Card not found"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Router /api/cards/{cardId}/charge [post]
+func (h *Handler) ChargeCard(c *gin.Context) {
+	cardID := c.Param("cardId")
+	if cardID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "card ID is required"})
+		return
+	}
+
+	var req dto.CreditCardChargeRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	card, err := h.cardService.ChargeCard(cardID, req.Amount, req.Description, req.Reference)
+	if err != nil {
+		status := h.getErrorStatus(err)
+		c.JSON(status, gin.H{"error": err.Error()})
+		return
+	}
+
+	response := dto.ToCreditCardBalanceResponse(card)
+	c.JSON(http.StatusOK, response)
+}
+
+// PaymentCard processes a payment to a credit card
+// @Summary Pay credit card
+// @Description Process a payment to reduce credit card debt
+// @Tags Cards
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param cardId path string true "Card ID"
+// @Param payment body dto.CreditCardPaymentRequest true "Payment data"
+// @Success 200 {object} dto.CreditCardBalanceResponse "Payment processed successfully"
+// @Failure 400 {object} map[string]string "Invalid request data"
+// @Failure 404 {object} map[string]string "Card not found"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Router /api/cards/{cardId}/payment [post]
+func (h *Handler) PaymentCard(c *gin.Context) {
+	cardID := c.Param("cardId")
+	if cardID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "card ID is required"})
+		return
+	}
+
+	var req dto.CreditCardPaymentRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	card, err := h.cardService.PaymentCard(cardID, req.Amount, req.PaymentMethod, req.Reference)
+	if err != nil {
+		status := h.getErrorStatus(err)
+		c.JSON(status, gin.H{"error": err.Error()})
+		return
+	}
+
+	response := dto.ToCreditCardBalanceResponse(card)
+	c.JSON(http.StatusOK, response)
+}
+
+// GetCardBalance gets the balance information for a card
+// @Summary Get card balance
+// @Description Get balance information for either credit or debit card
+// @Tags Cards
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param cardId path string true "Card ID"
+// @Success 200 {object} dto.CreditCardBalanceResponse "Credit card balance"
+// @Success 200 {object} dto.DebitCardBalanceResponse "Debit card balance"
+// @Failure 400 {object} map[string]string "Invalid card ID"
+// @Failure 404 {object} map[string]string "Card not found"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Router /api/cards/{cardId}/balance [get]
+func (h *Handler) GetCardBalance(c *gin.Context) {
+	cardID := c.Param("cardId")
+	if cardID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "card ID is required"})
+		return
+	}
+
+	card, err := h.cardService.GetCardByIDWithAccount(cardID)
+	if err != nil {
+		status := h.getErrorStatus(err)
+		c.JSON(status, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return different response based on card type
+	if card.CardType == entities.CardTypeCredit {
+		response := dto.ToCreditCardBalanceResponse(card)
+		c.JSON(http.StatusOK, response)
+	} else {
+		response := dto.ToDebitCardBalanceResponse(card)
+		c.JSON(http.StatusOK, response)
+	}
+}
+
+// DEBIT CARD OPERATIONS
+
+// ProcessDebitTransaction processes a transaction with a debit card
+// @Summary Process debit transaction
+// @Description Process a purchase/withdrawal with a debit card
+// @Tags Cards
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param cardId path string true "Card ID"
+// @Param transaction body dto.DebitCardTransactionRequest true "Transaction data"
+// @Success 200 {object} dto.DebitCardBalanceResponse "Transaction processed successfully"
+// @Failure 400 {object} map[string]string "Invalid request data"
+// @Failure 404 {object} map[string]string "Card not found"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Router /api/cards/{cardId}/transaction [post]
+func (h *Handler) ProcessDebitTransaction(c *gin.Context) {
+	cardID := c.Param("cardId")
+	if cardID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "card ID is required"})
+		return
+	}
+
+	var req dto.DebitCardTransactionRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	card, err := h.cardService.ProcessDebitTransaction(cardID, req.Amount, req.Description, req.MerchantName, req.Reference)
+	if err != nil {
+		status := h.getErrorStatus(err)
+		c.JSON(status, gin.H{"error": err.Error()})
+		return
+	}
+
+	response := dto.ToDebitCardBalanceResponse(card)
+	c.JSON(http.StatusOK, response)
+}
+
 // Helper methods
 func (h *Handler) getPaginationParams(c *gin.Context) (int, int) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
@@ -383,4 +540,67 @@ func (h *Handler) getErrorStatus(err error) int {
 
 	// Default to internal server error for unhandled cases
 	return http.StatusInternalServerError
+}
+
+// ChargeCardWithInstallments charges a credit card with installment plan
+// @Summary Charge card with installments
+// @Description Create a purchase on a credit card with installment plan
+// @Tags Cards
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path string true "Card ID"
+// @Param charge body dto.CreditCardChargeWithInstallmentsRequest true "Charge with installments data"
+// @Success 201 {object} dto.ChargeWithInstallmentsResponse "Purchase created with installments"
+// @Failure 400 {object} map[string]string "Invalid request data"
+// @Failure 404 {object} map[string]string "Card not found"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Router /api/cards/{id}/charge-installments [post]
+func (h *Handler) ChargeCardWithInstallments(c *gin.Context) {
+	cardID := c.Param("id")
+	if cardID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "card ID is required"})
+		return
+	}
+
+	var req dto.CreditCardChargeWithInstallmentsRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Convert to CreateInstallmentPlanRequest
+	installmentReq := &dto.CreateInstallmentPlanRequest{
+		CardID:            cardID,
+		TotalAmount:       req.Amount,
+		InstallmentsCount: req.InstallmentsCount,
+		StartDate:         req.StartDate,
+		Description:       req.Description,
+		MerchantName:      req.MerchantName,
+		MerchantID:        req.MerchantID,
+		InterestRate:      req.InterestRate,
+		AdminFee:          req.AdminFee,
+		Reference:         req.Reference,
+	}
+
+	// Set user context from middleware
+	userID := c.GetString("user_id")
+	if userID == "" {
+		userID = c.GetHeader("X-User-ID")
+		if userID == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "user not authenticated"})
+			return
+		}
+	}
+	installmentReq.UserID = userID
+	installmentReq.InitiatedBy = userID
+
+	// Create charge with installments
+	response, err := h.cardService.ChargeCardWithInstallments(installmentReq)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, response)
 }

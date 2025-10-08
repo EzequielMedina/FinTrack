@@ -33,13 +33,29 @@ export interface Card {
   isDefault: boolean;            // Default card for the account
   nickname?: string;             // Custom name for the card
   
+  // Balance field - usage depends on card type:
+  // - Credit cards: debt amount (positive = owed to bank)
+  // - Debit cards: always 0 (uses account balance)
+  balance: number;
+  
   // Credit card specific fields
   creditLimit?: number;
   closingDate?: string;
   dueDate?: string;
   
+  // Installment plans summary (only for credit cards)
+  installmentPlans?: InstallmentPlansSummary;
+  
   createdAt: string;
   updatedAt: string;
+}
+
+export interface InstallmentPlansSummary {
+  activePlans: number;
+  totalDebt: number;
+  monthlyPayment: number;
+  nextPaymentDue?: string;
+  overdueCount: number;
 }
 
 export interface CreateCardRequest {
@@ -119,4 +135,21 @@ export interface CardFormErrors {
   creditLimit?: string;
   closingDate?: string;
   dueDate?: string;
+}
+
+// Installment-related responses
+export interface CardWithInstallmentsResponse {
+  card: Card;
+  installmentPlans: any[]; // Will be typed as InstallmentPlan[] when imported
+  installmentsSummary: InstallmentPlansSummary;
+}
+
+export interface CardTransactionResponse {
+  transactionId: string;
+  card: Card;
+  amount: number;
+  type: 'charge' | 'payment' | 'installment_charge';
+  installmentPlan?: any; // Will be typed as InstallmentPlan when imported
+  success: boolean;
+  message?: string;
 }

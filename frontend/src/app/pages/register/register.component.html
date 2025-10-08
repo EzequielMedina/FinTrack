@@ -100,8 +100,10 @@
         [disabled]="loading() || registerForm.invalid"
       >
         @if (loading()) {
-          <mat-icon class="spinner">refresh</mat-icon>
-          Creando cuenta...
+          <ng-container>
+            <mat-icon class="spinner">refresh</mat-icon>
+            Creando cuenta...
+          </ng-container>
         } @else {
           Crear cuenta
         }

@@ -744,9 +744,12 @@ export class AccountFormComponent implements OnInit {
       closingDate: formValue.accountType === AccountType.CREDIT && formValue.closingDate 
         ? formValue.closingDate.toISOString().split('T')[0] : undefined,
       dueDate: formValue.accountType === AccountType.CREDIT && formValue.dueDate 
-        ? formValue.dueDate.toISOString().split('T')[0] : undefined,
-      dni: formValue.dni
+        ? formValue.dueDate.toISOString().split('T')[0] : undefined
     };
+    // Solo agregar dni si es billetera virtual
+    if (formValue.accountType === AccountType.WALLET && formValue.dni) {
+      (request as any).dni = formValue.dni;
+    }
 
     this.accountService.createAccount(request).subscribe({
       next: (newAccount) => {
@@ -775,9 +778,12 @@ export class AccountFormComponent implements OnInit {
       closingDate: formValue.accountType === AccountType.CREDIT && formValue.closingDate 
         ? formValue.closingDate.toISOString().split('T')[0] : undefined,
       dueDate: formValue.accountType === AccountType.CREDIT && formValue.dueDate 
-        ? formValue.dueDate.toISOString().split('T')[0] : undefined,
-      dni: formValue.dni
+        ? formValue.dueDate.toISOString().split('T')[0] : undefined
     };
+    // Solo agregar dni si es billetera virtual
+    if (formValue.accountType === AccountType.WALLET && formValue.dni) {
+      (request as any).dni = formValue.dni;
+    }
 
     this.accountService.updateAccount(this.data.account!.id, request).subscribe({
       next: (updatedAccount) => {

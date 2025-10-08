@@ -38,22 +38,22 @@
         </mat-error>
       </mat-form-field>
 
-      <button 
-        mat-raised-button 
-        color="primary" 
+      <button
+        mat-raised-button
+        color="primary"
         type="submit"
         class="login-button"
         [disabled]="loading() || loginForm.invalid"
       >
         @if (loading()) {
-          <mat-icon class="spinner">refresh</mat-icon>
-          Iniciando sesión...
+          <ng-container>
+            <mat-icon class="spinner">refresh</mat-icon>
+            Iniciando sesión...
+          </ng-container>
         } @else {
           Iniciar sesión
         }
-      </button>
-
-      @if (error()) {
+      </button>      @if (error()) {
         <div class="error-message">
           <mat-icon>error</mat-icon>
           {{ error() }}

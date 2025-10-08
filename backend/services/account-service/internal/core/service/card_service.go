@@ -6,19 +6,24 @@ import (
 
 	"github.com/fintrack/account-service/internal/core/domain/entities"
 	"github.com/fintrack/account-service/internal/core/ports"
+	"github.com/fintrack/account-service/internal/infrastructure/clients"
 	"github.com/fintrack/account-service/internal/infrastructure/entrypoints/handlers/card/dto"
 	"github.com/google/uuid"
 )
 
 type CardService struct {
-	cardRepo    ports.CardRepositoryInterface
-	accountRepo ports.AccountRepositoryInterface // To validate account exists
+	cardRepo           ports.CardRepositoryInterface
+	accountRepo        ports.AccountRepositoryInterface  // To validate account exists
+	installmentService ports.InstallmentServiceInterface // To handle installment plans
+	transactionClient  *clients.TransactionClient        // To record transactions
 }
 
-func NewCardService(cardRepo ports.CardRepositoryInterface, accountRepo ports.AccountRepositoryInterface) *CardService {
+func NewCardService(cardRepo ports.CardRepositoryInterface, accountRepo ports.AccountRepositoryInterface, installmentService ports.InstallmentServiceInterface) *CardService {
 	return &CardService{
-		cardRepo:    cardRepo,
-		accountRepo: accountRepo,
+		cardRepo:           cardRepo,
+		accountRepo:        accountRepo,
+		installmentService: installmentService,
+		transactionClient:  clients.NewTransactionClient(),
 	}
 }
 
@@ -221,4 +226,180 @@ func (s *CardService) SetDefaultCard(cardID string) (*entities.Card, error) {
 	}
 
 	return updatedCard, nil
+}
+
+// GetCardByIDWithAccount gets a card by ID with account preloaded
+func (s *CardService) GetCardByIDWithAccount(cardID string) (*entities.Card, error) {
+	card, err := s.cardRepo.GetByIDWithAccount(cardID)
+	if err != nil {
+		return nil, fmt.Errorf("card not found: %w", err)
+	}
+	return card, nil
+}
+
+// CREDIT CARD FINANCIAL OPERATIONS
+
+// ChargeCard processes a charge to a credit card
+func (s *CardService) ChargeCard(cardID string, amount float64, description, reference string) (*entities.Card, error) {
+	// Get card with account data
+	card, err := s.cardRepo.GetByIDWithAccount(cardID)
+	if err != nil {
+		return nil, fmt.Errorf("card not found: %w", err)
+	}
+
+	// Validate that it's a credit card
+	if card.CardType != entities.CardTypeCredit {
+		return nil, fmt.Errorf("charges can only be made to credit cards")
+	}
+
+	// Use the business logic from the entity
+	if err := card.Charge(amount); err != nil {
+		return nil, fmt.Errorf("failed to charge card: %w", err)
+	}
+
+	// Save updated card
+	updatedCard, err := s.cardRepo.Update(card)
+	if err != nil {
+		return nil, fmt.Errorf("failed to save card charge: %w", err)
+	}
+
+	return updatedCard, nil
+}
+
+// PaymentCard processes a payment to a credit card
+func (s *CardService) PaymentCard(cardID string, amount float64, paymentMethod, reference string) (*entities.Card, error) {
+	// Get card
+	card, err := s.cardRepo.GetByID(cardID)
+	if err != nil {
+		return nil, fmt.Errorf("card not found: %w", err)
+	}
+
+	// Use the business logic from the entity
+	if err := card.Payment(amount); err != nil {
+		return nil, fmt.Errorf("failed to process payment: %w", err)
+	}
+
+	// Save updated card
+	updatedCard, err := s.cardRepo.Update(card)
+	if err != nil {
+		return nil, fmt.Errorf("failed to save card payment: %w", err)
+	}
+
+	return updatedCard, nil
+}
+
+// DEBIT CARD OPERATIONS
+
+// ProcessDebitTransaction processes a transaction with a debit card
+func (s *CardService) ProcessDebitTransaction(cardID string, amount float64, description, merchantName, reference string) (*entities.Card, error) {
+	// Get card with account data
+	card, err := s.cardRepo.GetByIDWithAccount(cardID)
+	if err != nil {
+		return nil, fmt.Errorf("card not found: %w", err)
+	}
+
+	// Validate that it's a debit card
+	if card.CardType != entities.CardTypeDebit {
+		return nil, fmt.Errorf("transactions can only be made with debit cards")
+	}
+
+	// Use the business logic from the entity
+	if err := card.Charge(amount); err != nil {
+		return nil, fmt.Errorf("failed to process transaction: %w", err)
+	}
+
+	// Save updated account (debit cards deduct from account balance)
+	if err := s.accountRepo.Update(&card.Account); err != nil {
+		return nil, fmt.Errorf("failed to update account balance: %w", err)
+	}
+
+	// Record transaction in transaction service (async, don't fail if this fails)
+	go func() {
+		userID := card.Account.UserID // Assuming account has UserID field
+		if err := s.transactionClient.CreateDebitCardTransaction(
+			userID,
+			card.Account.ID,
+			cardID,
+			amount,
+			description,
+			merchantName,
+			reference,
+		); err != nil {
+			// Log error but don't fail the transaction
+			fmt.Printf("Warning: failed to record transaction in transaction service: %v\n", err)
+		}
+	}()
+
+	// Get updated card with new account balance
+	updatedCard, err := s.cardRepo.GetByIDWithAccount(cardID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get updated card: %w", err)
+	}
+
+	// Record transaction in transaction service (async, only for logging - does not modify balance)
+	go func() {
+		// Use a default user ID - in a real implementation, this should come from the request context
+		userID := "system"
+		err := s.transactionClient.CreateDebitCardTransaction(
+			userID,
+			card.Account.ID,
+			cardID,
+			amount,
+			description,
+			merchantName,
+			reference,
+		)
+		if err != nil {
+			// Log error but don't fail the main transaction
+			fmt.Printf("Warning: Failed to record transaction in transaction service: %v\n", err)
+		}
+	}()
+
+	return updatedCard, nil
+}
+
+// ChargeCardWithInstallments processes a credit card charge with installment plan
+func (s *CardService) ChargeCardWithInstallments(req *dto.CreateInstallmentPlanRequest) (*dto.ChargeWithInstallmentsResponse, error) {
+	fmt.Printf("🚨🚨🚨 DEBUG - ChargeCardWithInstallments called with CardID: %s, TotalAmount: %.2f 🚨🚨🚨\n", req.CardID, req.TotalAmount)
+
+	// Verificar que la tarjeta existe y obtener información con cuenta
+	card, err := s.cardRepo.GetByIDWithAccount(req.CardID)
+	if err != nil {
+		return nil, fmt.Errorf("card not found: %w", err)
+	}
+
+	if card.CardType != "credit" {
+		return nil, fmt.Errorf("installment plans are only available for credit cards")
+	}
+
+	// Crear el plan de cuotas usando InstallmentService
+	installmentPlan, err := s.installmentService.CreateInstallmentPlan(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create installment plan: %w", err)
+	}
+
+	// Cargar el monto total inmediatamente
+	fmt.Printf("DEBUG - About to charge card %s with total amount %.2f\n", req.CardID, req.TotalAmount)
+	chargedCard, err := s.ChargeCard(req.CardID, req.TotalAmount,
+		fmt.Sprintf("Purchase with %d installments - %s", installmentPlan.InstallmentsCount, req.Description),
+		req.Reference)
+	if err != nil {
+		fmt.Printf("DEBUG - Card charge failed: %v\n", err)
+		// Tratar de cancelar el plan de cuotas si falla el cargo de tarjeta
+		_, cancelErr := s.installmentService.CancelInstallmentPlan(installmentPlan.ID,
+			"Card charge failed for purchase", req.InitiatedBy)
+		if cancelErr != nil {
+			fmt.Printf("Warning: failed to cancel installment plan after charge failure: %v\n", cancelErr)
+		}
+		return nil, fmt.Errorf("failed to charge card for purchase: %w", err)
+	}
+	fmt.Printf("DEBUG - Card charged successfully with new balance: %.2f\n", chargedCard.Balance)
+	firstInstallmentCharged := true
+
+	return &dto.ChargeWithInstallmentsResponse{
+		InstallmentPlan:         installmentPlan,
+		Card:                    chargedCard, // Usar la tarjeta actualizada después del cargo
+		FirstInstallmentCharged: firstInstallmentCharged,
+		TransactionID:           installmentPlan.TransactionID,
+	}, nil
 }

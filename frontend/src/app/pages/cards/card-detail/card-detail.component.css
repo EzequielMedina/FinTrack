@@ -1,0 +1,296 @@
+.card-detail-container {
+  padding: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.card-info {
+  margin-bottom: 24px;
+}
+
+.card-status {
+  margin: 16px 0;
+}
+
+.card-details {
+  margin-top: 16px;
+}
+
+.card-details p {
+  margin: 8px 0;
+}
+
+.operations-tabs {
+  margin-top: 16px;
+}
+
+.tab-content {
+  padding: 24px 16px;
+}
+
+/* Balance Cards */
+.balance-card {
+  margin-bottom: 24px;
+}
+
+.balance-card mat-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.balance-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.balance-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px;
+  border-radius: 8px;
+  background-color: #f5f5f5;
+}
+
+.balance-item.debt {
+  background-color: #ffebee;
+  border: 1px solid #ffcdd2;
+}
+
+.balance-item.available {
+  background-color: #e8f5e8;
+  border: 1px solid #c8e6c9;
+}
+
+.balance-item.payment {
+  background-color: #fff3e0;
+  border: 1px solid #ffcc02;
+}
+
+.balance-item .label {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.balance-item .amount {
+  font-size: 1.2rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+.debt-amount {
+  color: #d32f2f;
+}
+
+.available-amount {
+  color: #2e7d32;
+}
+
+.payment-amount {
+  color: #f57c00;
+}
+
+.due-date {
+  display: flex;
+  align-items: center;
+  margin-top: 16px;
+  padding: 12px;
+  background-color: #fff3e0;
+  border-radius: 4px;
+  gap: 8px;
+}
+
+.due-date mat-icon {
+  color: #f57c00;
+}
+
+/* Operation Cards */
+.operation-card {
+  margin-bottom: 24px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 768px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.full-width {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.available-info,
+.debt-info {
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.payment-shortcuts {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.payment-shortcuts button {
+  flex: 1;
+  min-width: 200px;
+}
+
+@media (max-width: 768px) {
+  .payment-shortcuts {
+    flex-direction: column;
+  }
+  
+  .payment-shortcuts button {
+    min-width: unset;
+  }
+}
+
+/* Responsive Balance Grid */
+@media (max-width: 768px) {
+  .balance-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .available-info,
+  .debt-info {
+    text-align: center;
+    margin-bottom: 12px;
+  }
+}
+
+/* Card Type Specific Styling */
+.credit-balance {
+  border-left: 4px solid #f57c00;
+}
+
+.debit-balance {
+  border-left: 4px solid #2e7d32;
+}
+
+/* Loading States */
+.operation-card form {
+  transition: opacity 0.3s ease;
+}
+
+.operation-card form:disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Success/Error States */
+.mat-mdc-snack-bar-container {
+  --mdc-snackbar-container-color: #323232;
+  --mdc-snackbar-supporting-text-color: #fff;
+}
+
+/* Form Field Improvements */
+.mat-mdc-form-field {
+  width: 100%;
+}
+
+.mat-mdc-form-field .mat-mdc-form-field-subscript-wrapper {
+  margin-top: 4px;
+}
+
+/* Button Improvements */
+.form-actions button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.payment-shortcuts button {
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Chip styling */
+mat-chip-set {
+  gap: 8px;
+}
+
+/* Tab content improvements */
+.operations-tabs .mat-mdc-tab-body-content {
+  overflow: visible;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .balance-item {
+    background-color: #424242;
+    color: #fff;
+  }
+  
+  .balance-item.debt {
+    background-color: #4a2c2a;
+  }
+  
+  .balance-item.available {
+    background-color: #2d4a2d;
+  }
+  
+  .balance-item.payment {
+    background-color: #4a3e2d;
+  }
+  
+  .due-date {
+    background-color: #4a3e2d;
+    color: #fff;
+  }
+}
+
+/* Installment Components Styles */
+.view-all-plans {
+  margin-top: 16px;
+  text-align: center;
+}
+
+.view-all-plans button {
+  width: 100%;
+  max-width: 300px;
+}
+
+/* Responsive adjustments for installment components */
+@media (max-width: 768px) {
+  .tab-content app-installment-calculator,
+  .tab-content app-installment-plans-list {
+    margin: 0 -16px;
+  }
+  
+  .view-all-plans button {
+    font-size: 0.9rem;
+  }
+}

@@ -1,21 +1,26 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
+import { map, catchError, switchMap } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import {
   AddFundsRequest,
   WithdrawFundsRequest,
   BalanceResponse,
   AccountValidationResult,
-  AccountValidationError
+  AccountValidationError,
+  DepositWithdrawalRequest
 } from '../models';
 import { IWalletService } from './account.service';
+import { TransactionService } from './transaction.service';
+import { AccountService } from './account.service';
 
 @Injectable({ providedIn: 'root' })
 export class WalletService implements IWalletService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = `${environment.accountServiceUrl}/api/accounts`;
+  private readonly transactionService = inject(TransactionService);
+  private readonly accountService = inject(AccountService);
+  private readonly apiUrl = `${environment.accountServiceUrl}/accounts`;
 
   // Minimum and maximum amounts for wallet operations
   private readonly MIN_OPERATION_AMOUNT = 0.01;
@@ -31,14 +36,27 @@ export class WalletService implements IWalletService {
       throw new Error(validationResult.errors[0]?.message || 'Datos de operación inválidos');
     }
 
-    const payload = {
+    // Convert to transaction service format
+    const depositData: DepositWithdrawalRequest = {
+      accountId: accountId,
       amount: fundsData.amount,
-      description: fundsData.description.trim(),
-      reference: fundsData.reference?.trim()
+      description: fundsData.description?.trim() || 'Depósito en billetera',
+      method: 'BANK_TRANSFER' // Default method for wallet deposits
     };
 
-    return this.http.post<any>(`${this.apiUrl}/${accountId}/add-funds`, payload).pipe(
-      map(response => this.mapBackendResponseToBalanceResponse(response)),
+    // Use transaction service to create the transaction and update balance
+    return this.transactionService.deposit(depositData).pipe(
+      switchMap((transactionResponse) => {
+        // Check if response indicates success
+        if (transactionResponse && 
+            ((transactionResponse.success !== false) || 
+             (transactionResponse.transaction && transactionResponse.transaction.id))) {
+          // Get updated balance after successful transaction
+          return this.accountService.getAccountBalance(accountId);
+        } else {
+          throw new Error(transactionResponse?.message || 'Error al procesar el depósito');
+        }
+      }),
       catchError(error => {
         console.error('Error adding funds:', error);
         throw this.handleWalletOperationError(error);
@@ -53,14 +71,27 @@ export class WalletService implements IWalletService {
       throw new Error(validationResult.errors[0]?.message || 'Datos de operación inválidos');
     }
 
-    const payload = {
+    // Convert to transaction service format
+    const withdrawalData: DepositWithdrawalRequest = {
+      accountId: accountId,
       amount: withdrawData.amount,
-      description: withdrawData.description.trim(),
-      reference: withdrawData.reference?.trim()
+      description: withdrawData.description?.trim() || 'Retiro de billetera',
+      method: 'ATM' // Default method for wallet withdrawals
     };
 
-    return this.http.post<any>(`${this.apiUrl}/${accountId}/withdraw-funds`, payload).pipe(
-      map(response => this.mapBackendResponseToBalanceResponse(response)),
+    // Use transaction service to create the transaction and update balance
+    return this.transactionService.withdraw(withdrawalData).pipe(
+      switchMap((transactionResponse) => {
+        // Check if response indicates success
+        if (transactionResponse && 
+            ((transactionResponse.success !== false) || 
+             (transactionResponse.transaction && transactionResponse.transaction.id))) {
+          // Get updated balance after successful transaction
+          return this.accountService.getAccountBalance(accountId);
+        } else {
+          throw new Error(transactionResponse?.message || 'Error al procesar el retiro');
+        }
+      }),
       catchError(error => {
         console.error('Error withdrawing funds:', error);
         throw this.handleWalletOperationError(error);

@@ -39,7 +39,6 @@ export class CardService {
           expiration_year: cardData.expirationYear,
           nickname: cardData.nickname,
           encrypted_number: encryptedData.encryptedNumber,
-          encrypted_cvv: encryptedData.encryptedCvv,
           key_fingerprint: encryptedData.keyFingerprint,
           // Campos específicos para tarjetas de crédito
           ...(cardData.cardType === CardType.CREDIT && cardData.creditLimit && {
@@ -330,6 +329,7 @@ export class CardService {
       status: cardResponse.status as CardStatus,
       isDefault: cardResponse.is_default || cardResponse.isDefault,
       nickname: cardResponse.nickname,
+      balance: cardResponse.balance || 0, // New: Include balance field
       creditLimit: cardResponse.credit_limit,
       closingDate: cardResponse.closing_date,
       dueDate: cardResponse.due_date,

@@ -49,15 +49,16 @@ export class WalletDialogComponent implements OnInit {
   // Signals
   loading = signal(false);
   selectedOperation = signal<'add' | 'withdraw'>('add');
+  currentAccount = signal<Account>(this.data.account);
 
   // Forms
   addFundsForm!: FormGroup;
   withdrawFundsForm!: FormGroup;
 
   // Computed values
-  currentBalance = computed(() => this.data.account.balance);
+  currentBalance = computed(() => this.currentAccount().balance);
   formattedBalance = computed(() => 
-    this.validationService.formatCurrency(this.currentBalance(), this.data.account.currency)
+    this.validationService.formatCurrency(this.currentBalance(), this.currentAccount().currency)
   );
 
   // Constants for validation
@@ -143,7 +144,10 @@ export class WalletDialogComponent implements OnInit {
     this.loading.set(true);
 
     this.walletService.addFunds(this.data.account.id, request).subscribe({
-      next: (updatedAccount) => {
+      next: (balanceResponse) => {
+        // Update the account object with the new balance
+        const updatedAccount = { ...this.data.account, balance: balanceResponse.balance };
+        this.currentAccount.set(updatedAccount); // Update the signal for immediate UI update
         this.snackBar.open(
           `Fondos agregados exitosamente. Nuevo saldo: ${this.validationService.formatCurrency(updatedAccount.balance, this.data.account.currency)}`,
           'Cerrar',
@@ -194,7 +198,10 @@ export class WalletDialogComponent implements OnInit {
     this.loading.set(true);
 
     this.walletService.withdrawFunds(this.data.account.id, request).subscribe({
-      next: (updatedAccount) => {
+      next: (balanceResponse) => {
+        // Update the account object with the new balance
+        const updatedAccount = { ...this.data.account, balance: balanceResponse.balance };
+        this.currentAccount.set(updatedAccount); // Update the signal for immediate UI update
         this.snackBar.open(
           `Fondos retirados exitosamente. Nuevo saldo: ${this.validationService.formatCurrency(updatedAccount.balance, this.data.account.currency)}`,
           'Cerrar',
@@ -293,7 +300,7 @@ export class WalletDialogComponent implements OnInit {
   }
 
   getAccountDisplayName(): string {
-    return this.data.account.name || `${this.validationService.getAccountTypeDisplayName(this.data.account.accountType)}`;
+    return this.currentAccount().name || `${this.validationService.getAccountTypeDisplayName(this.currentAccount().accountType)}`;
   }
 
   // Calculate estimated fees (if any)

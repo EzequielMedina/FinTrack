@@ -14,6 +14,7 @@ import { AuthService } from '../../services/auth.service';
 import { Card, CardType, CardStatus, AccountsListResponse } from '../../models';
 import { CardListComponent } from './card-list/card-list.component';
 import { CardFormComponent } from './card-form/card-form.component';
+import { CardDetailComponent } from './card-detail/card-detail.component';
 
 @Component({
   selector: 'app-cards',
@@ -28,7 +29,8 @@ import { CardFormComponent } from './card-form/card-form.component';
     MatProgressSpinnerModule,
     MatSnackBarModule,
     MatDialogModule,
-    CardListComponent
+    CardListComponent,
+    CardDetailComponent
   ],
   templateUrl: './cards.component.html',
   styleUrls: ['./cards.component.css'],
@@ -45,6 +47,8 @@ export class CardsComponent implements OnInit {
   cards = signal<Card[]>([]);
   loading = signal(false);
   selectedTabIndex = signal(0);
+  selectedCard = signal<Card | null>(null);
+  viewMode = signal<'list' | 'detail'>('list');
 
   // Computed signals para filtrar tarjetas
   creditCards = signal<Card[]>([]);
@@ -224,5 +228,15 @@ export class CardsComponent implements OnInit {
 
   onTabChanged(index: number): void {
     this.selectedTabIndex.set(index);
+  }
+
+  onViewCardDetail(card: Card): void {
+    this.selectedCard.set(card);
+    this.viewMode.set('detail');
+  }
+
+  onBackToList(): void {
+    this.selectedCard.set(null);
+    this.viewMode.set('list');
   }
 }

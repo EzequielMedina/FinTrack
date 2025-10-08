@@ -1,8 +1,10 @@
 package accounthandler
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 
@@ -18,7 +20,9 @@ type Handler struct {
 
 // New creates a new AccountHandler instance
 func New(accountService service.AccountServiceInterface) *Handler {
-	return &Handler{accountService: accountService}
+	return &Handler{
+		accountService: accountService,
+	}
 }
 
 // CreateAccount creates a new account
@@ -346,10 +350,10 @@ func (h *Handler) UpdateStatus(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
-// AddFunds adds funds to a wallet account
-// @Summary Add funds to wallet
-// @Description Add funds to a virtual wallet account
-// @Tags Wallet
+// AddFunds adds funds to an account
+// @Summary Add funds to account
+// @Description Add funds to any type of account with specific logic per account type
+// @Tags Accounts
 // @Accept json
 // @Produce json
 // @Security BearerAuth
@@ -374,21 +378,65 @@ func (h *Handler) AddFunds(c *gin.Context) {
 		return
 	}
 
-	// First verify it's a wallet account
+	// Get account information
 	account, err := h.accountService.GetAccountByID(accountID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "account not found"})
 		return
 	}
 
-	if account.AccountType != entities.AccountTypeWallet {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "funds can only be added to wallet accounts"})
+	// Validate account is active
+	if !account.IsActive {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "cannot add funds to inactive account"})
 		return
 	}
 
-	newBalance, err := h.accountService.UpdateAccountBalance(accountID, req.Amount)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	// Validate amount is positive
+	if req.Amount <= 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "amount must be positive"})
+		return
+	}
+
+	// Apply account type specific logic
+	var newBalance float64
+	accountTypeStr := strings.ToLower(string(account.AccountType))
+	
+	switch accountTypeStr {
+	case string(entities.AccountTypeWallet):
+		// Wallet: Direct balance increase
+		newBalance, err = h.accountService.UpdateAccountBalance(accountID, req.Amount)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("wallet operation error: %s", err.Error())})
+			return
+		}
+
+	case string(entities.AccountTypeSavings), string(entities.AccountTypeChecking), string(entities.AccountTypeBankAccount):
+		// Bank accounts: Direct balance increase (deposits)
+		newBalance, err = h.accountService.UpdateAccountBalance(accountID, req.Amount)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("bank account operation error: %s", err.Error())})
+			return
+		}
+
+	case string(entities.AccountTypeCredit):
+		// Credit card: Adding funds reduces used credit (payment)
+		// For credit cards, "adding funds" means making a payment
+		newBalance, err = h.accountService.UpdateAccountBalance(accountID, req.Amount)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("credit card payment error: %s", err.Error())})
+			return
+		}
+
+	case string(entities.AccountTypeDebit):
+		// Debit card: Direct balance increase
+		newBalance, err = h.accountService.UpdateAccountBalance(accountID, req.Amount)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("debit card operation error: %s", err.Error())})
+			return
+		}
+
+	default:
+		c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("unsupported account type: %s", account.AccountType)})
 		return
 	}
 
@@ -427,15 +475,29 @@ func (h *Handler) WithdrawFunds(c *gin.Context) {
 		return
 	}
 
-	// First verify it's a wallet account and has sufficient funds
+	// First verify account exists and get account information
 	account, err := h.accountService.GetAccountByID(accountID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "account not found"})
 		return
 	}
 
-	if account.AccountType != entities.AccountTypeWallet {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "funds can only be withdrawn from wallet accounts"})
+	// Convert account type to lowercase for case-insensitive comparison
+	accountType := strings.ToLower(string(account.AccountType))
+	
+	// Allow withdrawals from all supported account types
+	switch accountType {
+	case strings.ToLower(string(entities.AccountTypeWallet)),
+		 strings.ToLower(string(entities.AccountTypeSavings)),
+		 strings.ToLower(string(entities.AccountTypeChecking)),
+		 strings.ToLower(string(entities.AccountTypeBankAccount)),
+		 strings.ToLower(string(entities.AccountTypeDebit)):
+		// These account types support withdrawals
+	case strings.ToLower(string(entities.AccountTypeCredit)):
+		c.JSON(http.StatusBadRequest, gin.H{"error": "withdrawals are not supported for credit accounts"})
+		return
+	default:
+		c.JSON(http.StatusBadRequest, gin.H{"error": "withdrawals are not supported for this account type"})
 		return
 	}
 
@@ -444,6 +506,7 @@ func (h *Handler) WithdrawFunds(c *gin.Context) {
 		return
 	}
 
+	// Update account balance
 	newBalance, err := h.accountService.UpdateAccountBalance(accountID, -req.Amount)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

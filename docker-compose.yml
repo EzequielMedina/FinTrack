@@ -59,6 +59,7 @@ services:
       DB_PASSWORD: fintrack_password
       JWT_SECRET: your-jwt-secret-key
       PORT: 8082
+      TRANSACTION_SERVICE_URL: http://transaction-service:8083
     ports:
       - "8082:8082"
     depends_on:
@@ -68,6 +69,36 @@ services:
       - fintrack-network
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--tries=1", "--output-document=-", "http://localhost:8082/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Transaction Service (Go)
+  transaction-service:
+    build:
+      context: ./backend/services/transaction-service
+      dockerfile: Dockerfile
+    container_name: fintrack-transaction-service
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: fintrack
+      DB_USER: fintrack_user
+      DB_PASSWORD: fintrack_password
+      PORT: 8083
+      ACCOUNT_SERVICE_URL: http://account-service:8082
+    ports:
+      - "8083:8083"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      account-service:
+        condition: service_healthy
+    networks:
+      - fintrack-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--output-document=-", "http://localhost:8083/health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -88,6 +119,8 @@ services:
         condition: service_healthy
       account-service:
         condition: service_healthy
+      transaction-service:
+        condition: service_healthy
     networks:
       - fintrack-network
     healthcheck:
@@ -95,6 +128,18 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+
+  adminer:
+    image: adminer
+    container_name: fintrack-adminer
+    restart: always
+    ports:
+      - 8080:8080
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - fintrack-network
 
 volumes:
   mysql_data:
