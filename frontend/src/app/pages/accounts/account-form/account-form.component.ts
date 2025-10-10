@@ -77,7 +77,7 @@ export interface AccountFormDialogData {
           <!-- Account Type -->
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Tipo de Cuenta</mat-label>
-            <mat-select formControlName="accountType" [disabled]="isEditMode">
+            <mat-select formControlName="accountType">
               <mat-select-trigger>
                 {{ getSelectedAccountTypeLabel() }}
               </mat-select-trigger>
@@ -95,14 +95,14 @@ export interface AccountFormDialogData {
               <mat-error>{{ getFieldErrorMessage('accountType') }}</mat-error>
             }
             @if (isEditMode) {
-              <mat-hint>El tipo de cuenta no se puede modificar</mat-hint>
+              <mat-hint>Puedes cambiar el tipo de cuenta si es necesario</mat-hint>
             }
           </mat-form-field>
 
           <!-- Currency -->
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Moneda</mat-label>
-            <mat-select formControlName="currency" [disabled]="isEditMode">
+            <mat-select formControlName="currency">
               <mat-select-trigger>
                 {{ getSelectedCurrencyLabel() }}
               </mat-select-trigger>
@@ -120,7 +120,7 @@ export interface AccountFormDialogData {
               <mat-error>{{ getFieldErrorMessage('currency') }}</mat-error>
             }
             @if (isEditMode) {
-              <mat-hint>La moneda no se puede modificar</mat-hint>
+              <mat-hint>Puedes cambiar la moneda si es necesario</mat-hint>
             }
           </mat-form-field>
 
@@ -774,6 +774,9 @@ export class AccountFormComponent implements OnInit {
   private updateAccount(formValue: any): void {
     const request: UpdateAccountRequest = {
       name: formValue.name,
+      description: formValue.description,
+      accountType: formValue.accountType,
+      currency: formValue.currency,
       creditLimit: formValue.accountType === AccountType.CREDIT ? formValue.creditLimit : undefined,
       closingDate: formValue.accountType === AccountType.CREDIT && formValue.closingDate 
         ? formValue.closingDate.toISOString().split('T')[0] : undefined,

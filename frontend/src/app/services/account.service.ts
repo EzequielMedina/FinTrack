@@ -153,6 +153,8 @@ export class AccountService implements IAccountService {
     const payload = {
       name: updateData.name,
       description: updateData.description,
+      account_type: updateData.accountType,
+      currency: updateData.currency,
       credit_limit: updateData.creditLimit,
       closing_date: updateData.closingDate,
       due_date: updateData.dueDate,

@@ -167,14 +167,14 @@ func (h *Handler) GetCard(c *gin.Context) {
 
 // UpdateCard updates a card
 // @Summary Update card
-// @Description Update card information
+// @Description Update card information including credit limit for credit cards
 // @Tags Cards
 // @Accept json
 // @Produce json
 // @Security BearerAuth
 // @Param id path string true "Account ID"
 // @Param cardId path string true "Card ID"
-// @Param card body dto.UpdateCardRequest true "Card update data"
+// @Param card body dto.UpdateCardRequest true "Card update data (holder_name, expiration_month, expiration_year, nickname, is_default, credit_limit)"
 // @Success 200 {object} dto.CardResponse "Card updated successfully"
 // @Failure 400 {object} map[string]string "Invalid request data"
 // @Failure 404 {object} map[string]string "Card not found"
@@ -189,7 +189,19 @@ func (h *Handler) UpdateCard(c *gin.Context) {
 
 	var req dto.UpdateCardRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "Invalid request data",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	// Validate that at least one field is being updated
+	if req.HolderName == "" && req.ExpirationMonth == 0 && req.ExpirationYear == 0 &&
+		req.Nickname == "" && req.IsDefault == nil && req.CreditLimit == nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "At least one field must be provided for update",
+		})
 		return
 	}
 

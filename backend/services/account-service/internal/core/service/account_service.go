@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/fintrack/account-service/internal/core/domain/entities"
+	"github.com/fintrack/account-service/internal/infrastructure/entrypoints/handlers/account/dto"
 	"github.com/fintrack/account-service/internal/infrastructure/repositories"
 )
 
@@ -90,7 +91,7 @@ func (s *AccountService) GetAllAccounts(page, pageSize int) ([]*entities.Account
 }
 
 // UpdateAccount updates an existing account
-func (s *AccountService) UpdateAccount(accountID, name, description string) (*entities.Account, error) {
+func (s *AccountService) UpdateAccount(accountID string, req *dto.UpdateAccountRequest) (*entities.Account, error) {
 	if accountID == "" {
 		return nil, fmt.Errorf("account ID is required")
 	}
@@ -101,18 +102,124 @@ func (s *AccountService) UpdateAccount(accountID, name, description string) (*en
 		return nil, fmt.Errorf("failed to get account: %w", err)
 	}
 
-	// Update fields
-	if name != "" {
-		account.Name = name
+	fmt.Printf("🔄 DEBUG - UpdateAccount called for account ID: %s\n", accountID)
+	fmt.Printf("🔄 DEBUG - Current account: Name=%s, Type=%s, Description=%s\n",
+		account.Name, account.AccountType, account.Description)
+
+	// Track if any updates were made
+	updated := false
+
+	// Update fields if provided
+	if req.Name != "" && req.Name != account.Name {
+		fmt.Printf("🔄 DEBUG - Updating Name from '%s' to '%s'\n", account.Name, req.Name)
+		account.Name = req.Name
+		updated = true
 	}
-	account.Description = description
+
+	if req.Description != account.Description {
+		fmt.Printf("🔄 DEBUG - Updating Description from '%s' to '%s'\n", account.Description, req.Description)
+		account.Description = req.Description
+		updated = true
+	}
+
+	// Handle account type change (with validations)
+	if req.AccountType != "" && req.AccountType != string(account.AccountType) {
+		fmt.Printf("🔄 DEBUG - Updating AccountType from '%s' to '%s'\n", account.AccountType, req.AccountType)
+
+		// Validate account type change is allowed
+		if err := s.validateAccountTypeChange(account, entities.AccountType(req.AccountType)); err != nil {
+			return nil, fmt.Errorf("cannot change account type: %w", err)
+		}
+
+		account.AccountType = entities.AccountType(req.AccountType)
+		updated = true
+	}
+
+	// Handle credit limit updates
+	if req.CreditLimit != nil {
+		currentLimit := float64(0)
+		if account.CreditLimit != nil {
+			currentLimit = *account.CreditLimit
+		}
+
+		if *req.CreditLimit != currentLimit {
+			fmt.Printf("🔄 DEBUG - Updating CreditLimit from %.2f to %.2f\n", currentLimit, *req.CreditLimit)
+			account.CreditLimit = req.CreditLimit
+			updated = true
+		}
+	}
+
+	// Handle credit dates
+	if req.ClosingDate != nil {
+		account.ClosingDate = req.ClosingDate
+		updated = true
+	}
+
+	if req.DueDate != nil {
+		account.DueDate = req.DueDate
+		updated = true
+	}
+
+	// Handle DNI
+	if req.DNI != nil {
+		currentDNI := ""
+		if account.DNI != nil {
+			currentDNI = *account.DNI
+		}
+
+		if *req.DNI != currentDNI {
+			fmt.Printf("🔄 DEBUG - Updating DNI\n")
+			account.DNI = req.DNI
+			updated = true
+		}
+	}
+
+	// If no updates were made, return the existing account
+	if !updated {
+		fmt.Printf("🔄 DEBUG - No changes detected, returning existing account\n")
+		return account, nil
+	}
+
+	// Validate updated account
+	if err := account.Validate(); err != nil {
+		return nil, fmt.Errorf("invalid account data: %w", err)
+	}
 
 	// Save changes
+	fmt.Printf("🔄 DEBUG - Saving account updates to database\n")
 	if err := s.accountRepo.Update(account); err != nil {
 		return nil, fmt.Errorf("failed to update account: %w", err)
 	}
 
+	fmt.Printf("🔄 DEBUG - Account updated successfully\n")
 	return account, nil
+}
+
+// validateAccountTypeChange validates if an account type change is allowed
+func (s *AccountService) validateAccountTypeChange(account *entities.Account, newType entities.AccountType) error {
+	// Define allowed transitions
+	allowedTransitions := map[entities.AccountType][]entities.AccountType{
+		entities.AccountTypeChecking:    {entities.AccountTypeSavings, entities.AccountTypeBankAccount},
+		entities.AccountTypeSavings:     {entities.AccountTypeChecking, entities.AccountTypeBankAccount},
+		entities.AccountTypeBankAccount: {entities.AccountTypeChecking, entities.AccountTypeSavings},
+		entities.AccountTypeCredit:      {}, // Credit accounts usually can't change type
+		entities.AccountTypeDebit:       {entities.AccountTypeBankAccount},
+		entities.AccountTypeWallet:      {}, // Wallet accounts usually can't change type
+	}
+
+	allowedTypes, exists := allowedTransitions[account.AccountType]
+	if !exists {
+		return fmt.Errorf("account type '%s' cannot be changed", account.AccountType)
+	}
+
+	// Check if the new type is in the allowed list
+	for _, allowedType := range allowedTypes {
+		if newType == allowedType {
+			return nil // Change is allowed
+		}
+	}
+
+	return fmt.Errorf("cannot change account type from '%s' to '%s'", account.AccountType, newType)
 }
 
 // DeleteAccount deletes an account

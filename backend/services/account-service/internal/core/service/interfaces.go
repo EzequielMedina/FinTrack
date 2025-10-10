@@ -2,6 +2,7 @@ package service
 
 import (
 	"github.com/fintrack/account-service/internal/core/domain/entities"
+	"github.com/fintrack/account-service/internal/infrastructure/entrypoints/handlers/account/dto"
 )
 
 // AccountServiceInterface defines the contract for account service operations
@@ -11,7 +12,7 @@ type AccountServiceInterface interface {
 	GetAccountByID(accountID string) (*entities.Account, error)
 	GetAccountsByUserID(userID string) ([]*entities.Account, error)
 	GetAllAccounts(page, pageSize int) ([]*entities.Account, int64, error)
-	UpdateAccount(accountID, name, description string) (*entities.Account, error)
+	UpdateAccount(accountID string, req *dto.UpdateAccountRequest) (*entities.Account, error)
 	DeleteAccount(accountID string) error
 
 	// Balance operations

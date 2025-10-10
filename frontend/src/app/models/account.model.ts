@@ -67,8 +67,10 @@ export interface CreateAccountRequest {
 }
 
 export interface UpdateAccountRequest {
-  name: string;
+  name?: string;
   description?: string;
+  accountType?: AccountType;
+  currency?: Currency;
 
   // Credit card specific fields
   creditLimit?: number;

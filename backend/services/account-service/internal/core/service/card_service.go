@@ -123,40 +123,120 @@ func (s *CardService) UpdateCard(cardID string, req *dto.UpdateCardRequest) (*en
 		return nil, fmt.Errorf("card not found: %w", err)
 	}
 
-	// Update fields if provided
-	if req.HolderName != "" {
+	fmt.Printf("🔄 DEBUG - UpdateCard called for card ID: %s\n", cardID)
+	fmt.Printf("🔄 DEBUG - Current card data: HolderName=%s, ExpirationMonth=%d, ExpirationYear=%d, Nickname=%s, IsDefault=%t\n",
+		card.HolderName, card.ExpirationMonth, card.ExpirationYear, card.Nickname, card.IsDefault)
+	fmt.Printf("🔄 DEBUG - Update request: HolderName=%s, ExpirationMonth=%d, ExpirationYear=%d, Nickname=%s, IsDefault=%v, CreditLimit=%v\n",
+		req.HolderName, req.ExpirationMonth, req.ExpirationYear, req.Nickname, req.IsDefault, req.CreditLimit)
+
+	// Track if any updates were made
+	updated := false
+
+	// Update fields if provided (check for non-empty strings and non-zero values)
+	if req.HolderName != "" && req.HolderName != card.HolderName {
+		fmt.Printf("🔄 DEBUG - Updating HolderName from '%s' to '%s'\n", card.HolderName, req.HolderName)
 		card.HolderName = req.HolderName
+		updated = true
 	}
-	if req.ExpirationMonth > 0 {
-		card.ExpirationMonth = req.ExpirationMonth
+
+	// For expiration month, only update if it's a valid month and different
+	if req.ExpirationMonth > 0 && req.ExpirationMonth != card.ExpirationMonth {
+		if req.ExpirationMonth >= 1 && req.ExpirationMonth <= 12 {
+			fmt.Printf("🔄 DEBUG - Updating ExpirationMonth from %d to %d\n", card.ExpirationMonth, req.ExpirationMonth)
+			card.ExpirationMonth = req.ExpirationMonth
+			updated = true
+		} else {
+			return nil, fmt.Errorf("invalid expiration month: must be between 1 and 12")
+		}
 	}
-	if req.ExpirationYear > 0 {
-		card.ExpirationYear = req.ExpirationYear
+
+	// For expiration year, only update if it's provided and different
+	if req.ExpirationYear > 0 && req.ExpirationYear != card.ExpirationYear {
+		if req.ExpirationYear >= 2020 { // Allow reasonable range
+			fmt.Printf("🔄 DEBUG - Updating ExpirationYear from %d to %d\n", card.ExpirationYear, req.ExpirationYear)
+			card.ExpirationYear = req.ExpirationYear
+			updated = true
+		} else {
+			return nil, fmt.Errorf("invalid expiration year: must be 2020 or later")
+		}
 	}
-	if req.Nickname != "" {
+
+	// Update nickname (can be empty string to clear it)
+	if req.Nickname != card.Nickname {
+		fmt.Printf("🔄 DEBUG - Updating Nickname from '%s' to '%s'\n", card.Nickname, req.Nickname)
 		card.Nickname = req.Nickname
+		updated = true
 	}
+
+	// Handle IsDefault field - use pointer to distinguish between not provided and false
 	if req.IsDefault != nil {
-		card.IsDefault = *req.IsDefault
-		if *req.IsDefault {
-			if err := s.cardRepo.SetDefaultByAccount(card.AccountID, card.ID); err != nil {
-				return nil, fmt.Errorf("failed to set default card: %w", err)
+		if *req.IsDefault != card.IsDefault {
+			fmt.Printf("🔄 DEBUG - Updating IsDefault from %t to %t\n", card.IsDefault, *req.IsDefault)
+			card.IsDefault = *req.IsDefault
+			updated = true
+
+			// If setting as default, ensure no other cards are default for this account
+			if *req.IsDefault {
+				if err := s.cardRepo.SetDefaultByAccount(card.AccountID, card.ID); err != nil {
+					return nil, fmt.Errorf("failed to set default card: %w", err)
+				}
 			}
 		}
 	}
 
+	// Handle CreditLimit field - only for credit cards
+	if req.CreditLimit != nil {
+		// Verify this is a credit card
+		if card.CardType != entities.CardTypeCredit {
+			return nil, fmt.Errorf("credit limit can only be updated for credit cards")
+		}
+
+		// Validate minimum credit limit
+		if *req.CreditLimit < 0 {
+			return nil, fmt.Errorf("credit limit cannot be negative")
+		}
+
+		// Check if it's actually changing
+		currentLimit := float64(0)
+		if card.CreditLimit != nil {
+			currentLimit = *card.CreditLimit
+		}
+
+		if *req.CreditLimit != currentLimit {
+			fmt.Printf("🔄 DEBUG - Updating CreditLimit from %.2f to %.2f\n", currentLimit, *req.CreditLimit)
+
+			// Validate against current balance
+			if *req.CreditLimit < card.Balance {
+				return nil, fmt.Errorf("credit limit (%.2f) cannot be lower than current balance (%.2f)", *req.CreditLimit, card.Balance)
+			}
+
+			card.CreditLimit = req.CreditLimit
+			updated = true
+		}
+	}
+
+	// If no updates were made, return the existing card
+	if !updated {
+		fmt.Printf("🔄 DEBUG - No changes detected, returning existing card\n")
+		return card, nil
+	}
+
+	// Update timestamp
 	card.UpdatedAt = time.Now()
 
-	// Validate updated data
-	if err := card.Validate(); err != nil {
+	// Validate updated data using the update-specific validation
+	if err := card.ValidateForUpdate(); err != nil {
 		return nil, fmt.Errorf("invalid card data: %w", err)
 	}
 
+	// Save updates to database
+	fmt.Printf("🔄 DEBUG - Saving card updates to database\n")
 	updatedCard, err := s.cardRepo.Update(card)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update card: %w", err)
 	}
 
+	fmt.Printf("🔄 DEBUG - Card updated successfully\n")
 	return updatedCard, nil
 }
 

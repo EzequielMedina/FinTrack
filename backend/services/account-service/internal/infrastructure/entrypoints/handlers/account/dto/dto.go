@@ -27,8 +27,9 @@ type CreateAccountRequest struct {
 
 // UpdateAccountRequest represents the request to update an account
 type UpdateAccountRequest struct {
-	Name        string `json:"name" binding:"required"`
-	Description string `json:"description"`
+	Name        string `json:"name,omitempty"`
+	Description string `json:"description,omitempty"`
+	AccountType string `json:"account_type,omitempty" binding:"omitempty,oneof=checking savings credit debit wallet bank_account"`
 
 	// Credit card specific fields
 	CreditLimit *float64   `json:"credit_limit,omitempty" binding:"omitempty,min=0"`
@@ -36,7 +37,7 @@ type UpdateAccountRequest struct {
 	DueDate     *time.Time `json:"due_date,omitempty"`
 
 	// Personal identification (for virtual wallets)
-	DNI *string `json:"dni,omitempty" binding:"omitempty,min=7,max=20"`
+	DNI *string `json:"dni,omitempty"`
 }
 
 // UpdateBalanceRequest represents the request to update account balance
