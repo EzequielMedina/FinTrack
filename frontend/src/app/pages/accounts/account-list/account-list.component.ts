@@ -482,7 +482,7 @@ export class AccountListComponent implements OnChanges {
   @Output() manageCredit = new EventEmitter<Account>();
   @Output() accountStatusChanged = new EventEmitter<Account>();
 
-  // Exponer enums para usar en el// Constants for template
+  // Constants for template
   readonly AccountType = AccountType;
   readonly Currency = Currency;
 

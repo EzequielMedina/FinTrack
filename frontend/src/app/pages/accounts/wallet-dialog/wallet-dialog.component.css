@@ -285,3 +285,125 @@ mat-spinner {
 ::ng-deep .mat-mdc-tab-label-active {
   font-weight: 600;
 }
+
+/* Exchange Rates Section */
+.exchange-rates-card {
+  margin: 20px 0;
+  border: 1px solid #0ea5e9;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.1);
+}
+
+.exchange-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.exchange-icon {
+  color: #0ea5e9;
+  font-size: 24px !important;
+  width: 24px !important;
+  height: 24px !important;
+}
+
+.exchange-title {
+  color: #1e40af;
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin: 0;
+  flex: 1;
+}
+
+.exchange-spinner {
+  margin-left: auto;
+}
+
+.exchange-rates-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.exchange-rate-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 8px;
+  border: 1px solid #bae6fd;
+  text-align: center;
+}
+
+.exchange-rate-item.buy {
+  border-left: 4px solid #059669;
+}
+
+.exchange-rate-item.sell {
+  border-left: 4px solid #dc2626;
+}
+
+.rate-label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #64748b;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.rate-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.exchange-rate-item.buy .rate-value {
+  color: #059669;
+}
+
+.exchange-rate-item.sell .rate-value {
+  color: #dc2626;
+}
+
+.exchange-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: center;
+  color: #6b7280;
+  font-size: 0.85rem;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 6px;
+  border: 1px solid #e0f2fe;
+}
+
+.exchange-info mat-icon {
+  font-size: 16px !important;
+  width: 16px !important;
+  height: 16px !important;
+  color: #3b82f6;
+}
+
+.exchange-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  color: #ef4444;
+  font-size: 0.9rem;
+  padding: 12px;
+  background: rgba(254, 226, 226, 0.5);
+  border-radius: 6px;
+  border: 1px solid #fecaca;
+}
+
+.exchange-error mat-icon {
+  font-size: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+}

@@ -6,3 +6,4 @@ export * from './account-validation.service';
 export * from './auth.service';
 export * from './transaction.service';
 export * from './installment.service';
+export * from './exchange.service';

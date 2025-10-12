@@ -1,4 +1,4 @@
-import { Component, Inject, inject, OnInit, signal, computed } from '@angular/core';
+import { Component, Inject, inject, OnInit, OnDestroy, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
@@ -11,8 +11,10 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatStepperModule } from '@angular/material/stepper';
 import { MatTabsModule } from '@angular/material/tabs';
-import { WalletService, AccountValidationService } from '../../../services';
-import { Account, AddFundsRequest, WithdrawFundsRequest } from '../../../models';
+import { MatCardModule } from '@angular/material/card';
+import { Subject, takeUntil } from 'rxjs';
+import { WalletService, AccountValidationService, ExchangeService, ExchangeRate } from '../../../services';
+import { Account, AddFundsRequest, WithdrawFundsRequest, Currency } from '../../../models';
 
 export interface WalletDialogData {
   account: Account;
@@ -34,21 +36,26 @@ export interface WalletDialogData {
     MatProgressSpinnerModule,
     MatSnackBarModule,
     MatStepperModule,
-    MatTabsModule
+    MatTabsModule,
+    MatCardModule
   ],
   templateUrl: './wallet-dialog.component.html',
   styleUrls: ['./wallet-dialog.component.css']
 })
-export class WalletDialogComponent implements OnInit {
+export class WalletDialogComponent implements OnInit, OnDestroy {
   private readonly fb = inject(FormBuilder);
   private readonly walletService = inject(WalletService);
   private readonly validationService = inject(AccountValidationService);
+  private readonly exchangeService = inject(ExchangeService);
   private readonly snackBar = inject(MatSnackBar);
   private readonly dialogRef = inject(MatDialogRef<WalletDialogComponent>);
+  private readonly destroy$ = new Subject<void>();
 
   // Signals
   loading = signal(false);
   selectedOperation = signal<'add' | 'withdraw'>('add');
+  exchangeRates = signal<ExchangeRate | null>(null);
+  exchangeRatesLoading = signal(false);
   currentAccount = signal<Account>(this.data.account);
 
   // Forms
@@ -74,6 +81,7 @@ export class WalletDialogComponent implements OnInit {
 
   ngOnInit(): void {
     this.initializeForms();
+    this.loadExchangeRates();
   }
 
   private initializeForms(): void {
@@ -318,5 +326,51 @@ export class WalletDialogComponent implements OnInit {
     } else {
       return amount + fee; // Include withdrawal fee
     }
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  /**
+   * Check if account has USD currency
+   */
+  isUSDAccount(): boolean {
+    return this.currentAccount().currency === Currency.USD;
+  }
+
+  /**
+   * Load exchange rates for USD accounts
+   */
+  private loadExchangeRates(): void {
+    if (!this.isUSDAccount()) return;
+
+    this.exchangeRatesLoading.set(true);
+    this.exchangeService.getDolarOficial()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (rates) => {
+          this.exchangeRates.set(rates);
+          this.exchangeRatesLoading.set(false);
+        },
+        error: (error) => {
+          console.error('Error loading exchange rates:', error);
+          this.exchangeRatesLoading.set(false);
+        }
+      });
+  }
+
+  /**
+   * Get formatted exchange rates for USD accounts
+   */
+  getExchangeRatesDisplay(): { compra: string; venta: string } | null {
+    const rates = this.exchangeRates();
+    if (!rates) return null;
+    
+    return {
+      compra: `$${rates.compra.toFixed(2)}`,
+      venta: `$${rates.venta.toFixed(2)}`
+    };
   }
 }

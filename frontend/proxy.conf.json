@@ -35,6 +35,12 @@
     "changeOrigin": true,
     "logLevel": "info"
   },
+  "/api/exchange/**": {
+    "target": "http://localhost:8087",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "info"
+  },
   "/api/**": {
     "target": "http://localhost:8081",
     "secure": false,
