@@ -73,14 +73,35 @@ func (m *MockAccountService) GetAllAccounts(page, pageSize int) ([]*entities.Acc
 	return accounts, int64(len(accounts)), nil
 }
 
-func (m *MockAccountService) UpdateAccount(accountID, name, description string) (*entities.Account, error) {
+func (m *MockAccountService) UpdateAccount(accountID string, req *dto.UpdateAccountRequest) (*entities.Account, error) {
 	account, exists := m.accounts[accountID]
 	if !exists {
 		return nil, errors.ErrAccountNotFound
 	}
 
-	account.Name = name
-	account.Description = description
+	// Update fields if provided
+	if req.Name != "" {
+		account.Name = req.Name
+	}
+	if req.Description != "" {
+		account.Description = req.Description
+	}
+	if req.AccountType != "" {
+		account.AccountType = entities.AccountType(req.AccountType)
+	}
+	if req.CreditLimit != nil {
+		account.CreditLimit = req.CreditLimit
+	}
+	if req.ClosingDate != nil {
+		account.ClosingDate = req.ClosingDate
+	}
+	if req.DueDate != nil {
+		account.DueDate = req.DueDate
+	}
+	if req.DNI != nil {
+		account.DNI = req.DNI
+	}
+
 	account.UpdatedAt = time.Now()
 	return account, nil
 }

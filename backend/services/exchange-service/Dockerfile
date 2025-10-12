@@ -1,19 +1,17 @@
-# Multi-stage build for Go microservice
-FROM golang:1.24-alpine AS builder
+# Multi-stage build for Exchange Service
+FROM golang:1.21-alpine AS builder
 
-# Install git and ca-certificates
-RUN apk add --no-cache git ca-certificates tzdata
+# Install ca-certificates for HTTPS requests to external APIs
+RUN apk add --no-cache ca-certificates tzdata
 
 # Set working directory
 WORKDIR /app
 
-# Copy go mod files
+# Copy go mod files first for better caching
 COPY go.mod go.sum ./
-COPY ../../shared ../shared
 
 # Download dependencies
 RUN go mod download
-RUN go mod verify
 
 # Copy source code
 COPY . .
@@ -22,27 +20,35 @@ COPY . .
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
     -ldflags='-w -s -extldflags "-static"' \
     -a -installsuffix cgo \
-    -o main ./cmd/main.go
+    -o exchange-service ./cmd/main.go
 
-# Production stage
-FROM scratch
+# Production stage - using alpine for debugging capabilities
+FROM alpine:latest
 
-# Import from builder
-COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
+# Install ca-certificates for HTTPS requests to DolarAPI
+RUN apk --no-cache add ca-certificates tzdata
+
+WORKDIR /root/
 
 # Copy the binary
-COPY --from=builder /app/main /main
+COPY --from=builder /app/exchange-service .
 
-# Create non-root user
-USER 1001:1001
+# Create app user for security
+RUN addgroup -g 1001 -S appgroup && \
+    adduser -u 1001 -S appuser -G appgroup
 
-# Expose port
-EXPOSE 8080
+# Change ownership of the binary
+RUN chown appuser:appgroup exchange-service
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD ["./main", "health"] || exit 1
+# Use non-root user
+USER appuser:appgroup
+
+# Expose port (8087 para exchange-service)
+EXPOSE 8087
+
+# Health check for exchange service
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:8087/health || exit 1
 
 # Run the binary
-ENTRYPOINT ["/main"]
+CMD ["./exchange-service"]
