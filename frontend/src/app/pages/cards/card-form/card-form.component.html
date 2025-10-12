@@ -159,6 +159,24 @@
           }
         </div>
 
+        <!-- Due Date (only for credit cards) -->
+        @if (cardForm.get('cardType')?.value === 'credit') {
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Día de pago mensual</mat-label>
+            <mat-select formControlName="dueDate">
+              <mat-option value="">Sin especificar (se asignará el día 5)</mat-option>
+              @for (day of getDaysOfMonth(); track day) {
+                <mat-option [value]="day">
+                  Día {{ day }} de cada mes
+                </mat-option>
+              }
+            </mat-select>
+            <mat-icon matSuffix>calendar_today</mat-icon>
+            <mat-hint>Día del mes en que vence el pago de la tarjeta de crédito</mat-hint>
+            <mat-error>{{ getFieldError('dueDate') }}</mat-error>
+          </mat-form-field>
+        }
+
         <!-- Nickname -->
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Nombre personalizado (opcional)</mat-label>

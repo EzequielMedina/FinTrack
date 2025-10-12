@@ -39,6 +39,16 @@ func (s *CardService) CreateCard(req *dto.CreateCardRequest) (*entities.Card, er
 		return nil, fmt.Errorf("failed to get account: %w", err)
 	}
 
+	// Set default due date if not provided and it's a credit card
+	dueDate := req.DueDate
+	if dueDate == nil && req.CardType == "credit" {
+		// Set due date to the 5th of next month by default
+		now := time.Now()
+		nextMonth := now.AddDate(0, 1, 0)
+		defaultDueDate := time.Date(nextMonth.Year(), nextMonth.Month(), 5, 0, 0, 0, 0, nextMonth.Location())
+		dueDate = &defaultDueDate
+	}
+
 	// Create card entity
 	card := &entities.Card{
 		ID:              uuid.New().String(),
@@ -56,7 +66,7 @@ func (s *CardService) CreateCard(req *dto.CreateCardRequest) (*entities.Card, er
 		Balance:         0.0,
 		CreditLimit:     req.CreditLimit,
 		ClosingDate:     req.ClosingDate,
-		DueDate:         req.DueDate,
+		DueDate:         dueDate,
 		EncryptedNumber: req.EncryptedNumber,
 		KeyFingerprint:  req.KeyFingerprint,
 		CreatedAt:       time.Now(),

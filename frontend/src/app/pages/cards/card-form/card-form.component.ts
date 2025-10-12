@@ -104,7 +104,8 @@ export class CardFormComponent implements OnInit, OnDestroy {
       expirationYear: ['', [Validators.required]],
       cvv: [''],
       creditLimit: [''],
-      nickname: ['', [Validators.maxLength(30)]]
+      nickname: ['', [Validators.maxLength(30)]],
+      dueDate: [''] // Nuevo campo para fecha de pago
     });
 
     // Configurar validadores condicionales después de crear el formulario
@@ -177,7 +178,8 @@ export class CardFormComponent implements OnInit, OnDestroy {
       holderName: card.holderName,
       expirationMonth: card.expirationMonth,
       expirationYear: card.expirationYear,
-      nickname: card.nickname
+      nickname: card.nickname,
+      dueDate: card.dueDate ? new Date(card.dueDate).getDate() : null // Extraer solo el día del mes
     });
 
     // Para edición, no necesitamos validadores de número de tarjeta y CVV
@@ -320,6 +322,17 @@ export class CardFormComponent implements OnInit, OnDestroy {
       return;
     }
 
+    // Calcular dueDate si se proporciona un día del mes
+    let dueDate: string | undefined;
+    if (formData.dueDate && formData.cardType === CardType.CREDIT) {
+      const dayOfMonth = parseInt(formData.dueDate.toString());
+      if (dayOfMonth >= 1 && dayOfMonth <= 31) {
+        const today = new Date();
+        const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, dayOfMonth);
+        dueDate = nextMonth.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+      }
+    }
+
     const request: CreateCardRequest = {
       userId: currentUser.id, // Usar el ID del usuario autenticado
       accountId: formData.accountId, // ID de la cuenta seleccionada
@@ -337,8 +350,8 @@ export class CardFormComponent implements OnInit, OnDestroy {
       ...(formData.closingDate && {
         closingDate: formData.closingDate
       }),
-      ...(formData.dueDate && {
-        dueDate: formData.dueDate
+      ...(dueDate && {
+        dueDate: dueDate
       })
     };
 
@@ -449,5 +462,10 @@ export class CardFormComponent implements OnInit, OnDestroy {
     };
     
     return names[brand];
+  }
+
+  getDaysOfMonth(): number[] {
+    // Generar array de días del 1 al 31
+    return Array.from({ length: 31 }, (_, i) => i + 1);
   }
 }
