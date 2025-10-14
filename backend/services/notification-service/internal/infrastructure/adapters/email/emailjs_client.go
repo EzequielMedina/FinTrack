@@ -75,7 +75,7 @@ func (c *EmailJSClient) buildEmailHTML(notification *entities.CardDueNotificatio
 
 	// Mensaje diferente dependiendo si hay cuotas pendientes o no
 	var alertMessage string
-	
+
 	if notification.PendingInstallments == 0 {
 		alertMessage = `
 		<div style="background: #d1ecf1; padding: 15px; border-radius: 5px; border-left: 4px solid #17a2b8; margin: 20px 0;">
