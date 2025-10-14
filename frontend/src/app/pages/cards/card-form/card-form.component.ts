@@ -9,6 +9,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
 import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
 import { CardService } from '../../../services/card.service';
 import { UserService } from '../../../services/user.service';
@@ -35,7 +37,9 @@ interface DialogData {
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    MatDatepickerModule,
+    MatNativeDateModule
   ],
   templateUrl: './card-form.component.html',
   styleUrls: ['./card-form.component.css']
@@ -104,7 +108,8 @@ export class CardFormComponent implements OnInit, OnDestroy {
       expirationYear: ['', [Validators.required]],
       cvv: [''],
       creditLimit: [''],
-      nickname: ['', [Validators.maxLength(30)]]
+      nickname: ['', [Validators.maxLength(30)]],
+      dueDate: [''] // Nuevo campo para fecha de pago
     });
 
     // Configurar validadores condicionales después de crear el formulario
@@ -177,7 +182,8 @@ export class CardFormComponent implements OnInit, OnDestroy {
       holderName: card.holderName,
       expirationMonth: card.expirationMonth,
       expirationYear: card.expirationYear,
-      nickname: card.nickname
+      nickname: card.nickname,
+      dueDate: card.dueDate ? new Date(card.dueDate) : null // Convertir a Date object
     });
 
     // Para edición, no necesitamos validadores de número de tarjeta y CVV
@@ -320,6 +326,13 @@ export class CardFormComponent implements OnInit, OnDestroy {
       return;
     }
 
+    // Formatear dueDate si se proporciona
+    let dueDate: string | undefined;
+    if (formData.dueDate && formData.cardType === CardType.CREDIT) {
+      const selectedDate = new Date(formData.dueDate);
+      dueDate = selectedDate.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+    }
+
     const request: CreateCardRequest = {
       userId: currentUser.id, // Usar el ID del usuario autenticado
       accountId: formData.accountId, // ID de la cuenta seleccionada
@@ -337,8 +350,8 @@ export class CardFormComponent implements OnInit, OnDestroy {
       ...(formData.closingDate && {
         closingDate: formData.closingDate
       }),
-      ...(formData.dueDate && {
-        dueDate: formData.dueDate
+      ...(dueDate && {
+        dueDate: dueDate
       })
     };
 

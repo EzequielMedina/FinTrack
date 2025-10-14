@@ -1,303 +1,317 @@
-# Notification Service - FinTrack
+# 📧 FinTrack Notification Service
 
-## 📋 Descripción
+Microservicio para el envío de notificaciones automáticas de vencimiento de tarjetas de crédito.
 
-Microservicio encargado del sistema de notificaciones en la plataforma FinTrack. Maneja envío de emails, notificaciones push, SMS y alertas del sistema.
+## 🎯 Funcionalidades
 
-## 🛠️ Tecnologías
-
-- **Lenguaje**: Go 1.24+
-- **Framework**: Gin/Echo (HTTP Router)
-- **Base de Datos**: MySQL 8.0
-- **Email**: SMTP (Gmail, SendGrid, etc.)
-- **Push Notifications**: Firebase Cloud Messaging
-- **Contenedor**: Docker multi-stage
-- **Arquitectura**: Clean Architecture
+- **Job Automático**: Ejecuta diariamente a las 8:00 AM (configurable)
+- **Detección de Vencimientos**: Identifica tarjetas que vencen mañana
+- **Cálculo de Cuotas**: Suma todas las cuotas pendientes por tarjeta
+- **Envío de Emails**: Utiliza EmailJS para enviar notificaciones personalizadas
+- **Auditoría Completa**: Registra logs de todas las ejecuciones y notificaciones
 
 ## 🏗️ Arquitectura
 
-### Estructura del Proyecto
+El servicio sigue Clean Architecture con las siguientes capas:
 
 ```
 notification-service/
-├── cmd/
-│   └── main.go              # Punto de entrada
+├── cmd/                    # Entry point
 ├── internal/
-│   ├── config/              # Configuración
-│   ├── domain/              # Entidades de dominio
-│   ├── handlers/            # HTTP handlers
-│   ├── repository/          # Capa de datos
-│   ├── service/             # Lógica de negocio
-│   ├── providers/           # Proveedores de notificaciones
-│   └── middleware/          # Middlewares HTTP
-├── templates/               # Plantillas de email
-├── Dockerfile               # Configuración Docker
-├── go.mod                   # Dependencias Go
-├── go.sum                   # Checksums de dependencias
-└── README.md                # Este archivo
+│   ├── app/               # Application setup
+│   ├── config/            # Configuration management
+│   ├── core/
+│   │   ├── domain/        # Business entities
+│   │   ├── ports/         # Interfaces
+│   │   └── service/       # Business logic
+│   └── infrastructure/
+│       ├── adapters/      # External adapters
+│       ├── entrypoints/   # HTTP handlers
+│       └── jobs/          # Job scheduler
+└── templates/             # Email templates
 ```
 
-## 🚀 Desarrollo Local
+## 🚀 Inicio Rápido
+
+### Usando Docker Compose
+
+```bash
+# Construir y ejecutar el servicio
+docker-compose up --build notification-service
+
+# Solo el servicio de notificaciones con MySQL
+docker-compose up --build mysql notification-service
+```
+
+### Desarrollo Local
+
+```bash
+# 1. Clonar y navegar al directorio
+cd backend/services/notification-service
+
+# 2. Instalar dependencias
+go mod download
+
+# 3. Configurar variables de entorno
+cp .env.example .env
+# Editar .env con tus credenciales
+
+# 4. Ejecutar
+go run cmd/main.go
+```
+
+## ⚙️ Configuración
 
 ### Variables de Entorno
 
-```env
-# Base de datos
-DB_HOST=localhost
-DB_PORT=3306
-DB_NAME=fintrack
-DB_USER=fintrack_user
-DB_PASSWORD=fintrack_password
+| Variable | Descripción | Valor por Defecto |
+|----------|-------------|-------------------|
+| `PORT` | Puerto del servidor | `8088` |
+| `DB_HOST` | Host de MySQL | `mysql` |
+| `DB_NAME` | Nombre de la base de datos | `fintrack` |
+| `EMAILJS_SERVICE_ID` | Service ID de EmailJS | Ver keus.txt |
+| `EMAILJS_TEMPLATE_ID` | Template ID de EmailJS | Ver keus.txt |
+| `JOB_ENABLED` | Habilitar job automático | `true` |
+| `JOB_SCHEDULE` | Cron schedule | `0 8 * * *` (8:00 AM) |
 
-# Servicios externos
-USER_SERVICE_URL=http://localhost:8081
+### EmailJS Setup
 
-# Email SMTP
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=your-email@gmail.com
-SMTP_PASSWORD=your-app-password
-SMTP_FROM=noreply@fintrack.com
+El servicio utiliza EmailJS para el envío de emails. Las credenciales están en `keus.txt`:
 
-# Firebase (Push Notifications)
-FIREBASE_PROJECT_ID=your-project-id
-FIREBASE_PRIVATE_KEY=your-private-key
-FIREBASE_CLIENT_EMAIL=your-client-email
+- **Service ID**: `service_ceg7xlp`
+- **Template ID**: `template_e43va39`
+- **Public Key**: `MSBb87-PQcXWr1gWK`
+- **Private Key**: `sXLmpEZ8y2EYtCDtN5gZv`
 
-# SMS (Twilio ejemplo)
-TWILIO_ACCOUNT_SID=your-account-sid
-TWILIO_AUTH_TOKEN=your-auth-token
-TWILIO_PHONE_NUMBER=+1234567890
+## 📋 API Endpoints
 
-# Servidor
-PORT=8080
-GIN_MODE=debug
-
-# Logging
-LOG_LEVEL=info
-```
-
-### Comandos de Desarrollo
+### Job Management
 
 ```bash
-# Navegar al servicio
-cd backend/services/notification-service
+# Trigger manual del job
+POST /api/notifications/trigger-card-due-job
 
-# Instalar dependencias
-go mod download
+# Historial de ejecuciones
+GET /api/notifications/job-history?limit=20
 
-# Ejecutar en modo desarrollo
-go run cmd/main.go
+# Estado del scheduler
+GET /api/notifications/scheduler/status
+```
 
-# Build del binario
-go build -o bin/notification-service cmd/main.go
+### Logs y Auditoría
 
-# Tests
-go test ./...
+```bash
+# Logs de notificaciones para un job
+GET /api/notifications/logs?job_run_id=123&limit=50
+
+# Health check
+GET /api/notifications/health
+GET /health
+```
+
+### Ejemplos de Respuesta
+
+```json
+// GET /api/notifications/job-history
+{
+  "data": [
+    {
+      "run_id": "uuid-123",
+      "started_at": "2024-01-15T08:00:00Z",
+      "completed_at": "2024-01-15T08:02:30Z",
+      "status": "completed",
+      "cards_found": 3,
+      "emails_sent": 2,
+      "errors": 1,
+      "duration": "2m30s"
+    }
+  ],
+  "count": 1,
+  "limit": 20
+}
+```
+
+## 🗄️ Base de Datos
+
+### Tablas Creadas
+
+1. **`job_runs`**: Historial de ejecuciones del job
+2. **`notification_logs`**: Logs detallados de cada notificación
+
+### Consultas Principales
+
+```sql
+-- Tarjetas que vencen mañana
+SELECT c.*, u.email, u.first_name, u.last_name
+FROM cards c
+JOIN accounts a ON c.account_id = a.id  
+JOIN users u ON a.user_id = u.id
+WHERE DATE(c.due_date) = DATE(NOW() + INTERVAL 1 DAY)
+  AND c.status = 'active' AND c.card_type = 'credit';
+
+-- Cuotas pendientes por tarjeta
+SELECT i.*, ip.description, ip.merchant_name
+FROM installments i
+JOIN installment_plans ip ON i.plan_id = ip.id
+WHERE ip.card_id = ? AND i.status IN ('pending', 'overdue')
+  AND i.due_date <= ?;
+```
+
+## 🕐 Job Scheduler
+
+### Configuración del Cron
+
+- **Schedule**: `0 8 * * *` (8:00 AM todos los días)
+- **Timezone**: `America/Argentina/Buenos_Aires`
+- **Execution**: Asíncrono con logging completo
+
+### Flujo del Job
+
+1. **Inicio**: Crear registro en `job_runs`
+2. **Búsqueda**: Obtener tarjetas que vencen mañana
+3. **Procesamiento**: Para cada tarjeta:
+   - Calcular cuotas pendientes
+   - Generar email personalizado
+   - Enviar via EmailJS
+   - Registrar resultado
+4. **Finalización**: Actualizar estadísticas del job
+
+## 📧 Templates de Email
+
+El servicio genera emails HTML personalizados con:
+
+- **Header**: Branding de FinTrack
+- **Información de la tarjeta**: Nombre, banco, últimos 4 dígitos
+- **Fecha de vencimiento**: Formateada y destacada
+- **Total a pagar**: Suma de todas las cuotas
+- **Detalle de cuotas**: Lista con descripción, merchant y montos
+- **Footer**: Información de contacto
+
+### Ejemplo de Email
+
+```
+🏦 FinTrack - Recordatorio de Pago
+
+Hola Juan Pérez, tu tarjeta vence mañana 📅
+
+Visa - Banco Santander (****1234)
+Fecha de vencimiento: 15/01/2024
+
+💰 Total a pagar: $25,750.00
+Tienes 3 cuotas pendientes que vencen mañana o antes:
+
+📋 Detalle de cuotas:
+• Compra en Mercado Libre - Cuota 2/6: $8,500.00
+• Combustible YPF - Pago único: $12,250.00  
+• Supermercado Coto - Cuota 1/3: $5,000.00
 ```
 
 ## 🐳 Docker
 
+### Dockerfile Multi-stage
+
+```dockerfile
+FROM golang:1.24-alpine AS builder
+# ... build stage
+
+FROM alpine:latest  
+# ... production stage
+EXPOSE 8088
+CMD ["./notification-service"]
+```
+
+### Docker Compose Integration
+
+```yaml
+notification-service:
+  build: ./backend/services/notification-service
+  ports:
+    - "8088:8088"
+  environment:
+    - DB_HOST=mysql
+    - JOB_ENABLED=true
+  depends_on:
+    - mysql
+```
+
+## 🧪 Testing
+
+### Trigger Manual
+
 ```bash
-# Build de la imagen
-docker build -t fintrack-notification-service .
+# Ejecutar job manualmente
+curl -X POST http://localhost:8088/api/notifications/trigger-card-due-job
 
-# Docker Compose
-docker-compose up notification-service
-
-# Con dependencias
-docker-compose up mysql user-service notification-service
-```
-
-## 📡 API Endpoints
-
-### Envío de Notificaciones
-
-```http
-POST   /api/notifications/email       # Enviar email
-POST   /api/notifications/push        # Enviar push notification
-POST   /api/notifications/sms         # Enviar SMS
-POST   /api/notifications/bulk        # Envío masivo
-```
-
-### Gestión de Notificaciones
-
-```http
-GET    /api/notifications             # Listar notificaciones
-GET    /api/notifications/{id}        # Obtener notificación
-PUT    /api/notifications/{id}/read   # Marcar como leída
-DELETE /api/notifications/{id}        # Eliminar notificación
-```
-
-### Preferencias
-
-```http
-GET    /api/notifications/preferences # Obtener preferencias
-PUT    /api/notifications/preferences # Actualizar preferencias
-POST   /api/notifications/subscribe   # Suscribirse a notificaciones
-POST   /api/notifications/unsubscribe # Desuscribirse
-```
-
-### Plantillas
-
-```http
-GET    /api/notifications/templates   # Listar plantillas
-GET    /api/notifications/templates/{id} # Obtener plantilla
-POST   /api/notifications/templates   # Crear plantilla
-PUT    /api/notifications/templates/{id} # Actualizar plantilla
+# Verificar estado
+curl http://localhost:8088/api/notifications/scheduler/status
 ```
 
 ### Health Check
 
-```http
-GET /health
-```
-
-### Ejemplos de Uso
-
 ```bash
-# Enviar email
-curl -X POST http://localhost:8085/api/notifications/email \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
-  -d '{
-    "to": "user@example.com",
-    "subject": "Transacción Completada",
-    "template": "transaction_success",
-    "data": {
-      "amount": "$100.00",
-      "transactionId": "txn_123"
-    }
-  }'
-
-# Enviar push notification
-curl -X POST http://localhost:8085/api/notifications/push \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
-  -d '{
-    "userId": "user_123",
-    "title": "Nueva Transacción",
-    "body": "Has recibido $50.00",
-    "data": {
-      "type": "transaction",
-      "transactionId": "txn_456"
-    }
-  }'
-
-# Obtener preferencias
-curl -X GET http://localhost:8085/api/notifications/preferences \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN"
-
-# Health check
-curl http://localhost:8085/health
+curl http://localhost:8088/health
 ```
 
-## 📧 Tipos de Notificaciones
+## � Monitoreo
 
-### Email Templates
+### Métricas Importantes
 
-```html
-<!-- templates/transaction_success.html -->
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Transacción Exitosa</title>
-</head>
-<body>
-    <h1>¡Transacción Completada!</h1>
-    <p>Tu transacción por {{.Amount}} ha sido procesada exitosamente.</p>
-    <p>ID de Transacción: {{.TransactionId}}</p>
-</body>
-</html>
-```
-
-### Push Notification Types
-
-```go
-type NotificationType string
-
-const (
-    TransactionSuccess NotificationType = "transaction_success"
-    TransactionFailed  NotificationType = "transaction_failed"
-    LowBalance        NotificationType = "low_balance"
-    SecurityAlert     NotificationType = "security_alert"
-    AccountUpdate     NotificationType = "account_update"
-)
-```
-
-## 🔐 Seguridad
-
-### Medidas Implementadas
-
-- **JWT Authentication**: Validación de tokens
-- **Rate Limiting**: Limitación de envíos por usuario
-- **Email Validation**: Validación de direcciones de email
-- **Template Sanitization**: Sanitización de plantillas
-- **Spam Protection**: Protección contra spam
-- **Audit Trail**: Registro de todas las notificaciones
-
-## 🧪 Testing
-
-```bash
-# Tests unitarios
-go test ./internal/...
-
-# Tests de integración
-go test ./tests/integration/...
-
-# Tests de plantillas
-go test ./internal/templates/...
-
-# Tests con proveedores mock
-go test ./internal/providers/...
-```
-
-## 📊 Monitoreo
-
-### Métricas Específicas
-
-- **Emails Sent**: Emails enviados
-- **Push Notifications Sent**: Push notifications enviadas
-- **SMS Sent**: SMS enviados
-- **Delivery Rate**: Tasa de entrega
-- **Open Rate**: Tasa de apertura (emails)
-- **Click Rate**: Tasa de clicks
-- **Failed Deliveries**: Entregas fallidas
+- **Cards Found**: Tarjetas encontradas por ejecución
+- **Emails Sent**: Emails enviados exitosamente  
+- **Error Rate**: Porcentaje de fallos en envío
+- **Execution Time**: Duración de cada job
 
 ### Logs Estructurados
 
-```json
-{
-  "level": "info",
-  "timestamp": "2024-01-15T10:30:00Z",
-  "service": "notification-service",
-  "type": "email",
-  "recipient": "user@example.com",
-  "template": "transaction_success",
-  "status": "sent",
-  "provider": "smtp"
-}
+```
+2024-01-15T08:00:00Z [INFO] 🚀 Starting card due notifications job: job_123
+2024-01-15T08:00:15Z [INFO] 📅 Found 3 cards due tomorrow  
+2024-01-15T08:01:30Z [INFO] ✅ Notification sent for card Visa (card_456) to user@email.com
+2024-01-15T08:02:30Z [INFO] 🎉 Job completed: 2 emails sent, 1 errors
 ```
 
-## 🚀 Despliegue
+## � Desarrollo
 
-### Variables de Producción
+### Estructura del Código
 
-```env
-GIN_MODE=release
-LOG_LEVEL=warn
-SMTP_POOL_SIZE=10
-PUSH_BATCH_SIZE=100
-RATE_LIMIT_PER_HOUR=1000
-```
+- **Entities**: Modelos de dominio (Card, Notification, JobRun)
+- **Repositories**: Acceso a datos con interfaces
+- **Services**: Lógica de negocio
+- **Adapters**: Integraciones externas (EmailJS, MySQL)
+- **Jobs**: Scheduler y ejecución de tareas
+
+### Agregar Nuevas Funcionalidades
+
+1. **Nuevos tipos de notificación**: Extender `NotificationService`
+2. **Nuevos providers de email**: Implementar `EmailService` interface
+3. **Nuevas reglas de negocio**: Modificar `buildCardDueNotification`
+
+## � Troubleshooting
+
+### Problemas Comunes
 
 ```bash
-# Build de producción
-CGO_ENABLED=0 GOOS=linux go build \
-  -ldflags="-w -s" \
-  -o notification-service cmd/main.go
+# 1. Error de conexión a MySQL
+Error: "connection refused"
+Solución: Verificar que MySQL esté ejecutándose
+
+# 2. EmailJS API error
+Error: "401 Unauthorized"  
+Solución: Verificar credenciales en .env
+
+# 3. No se encuentran tarjetas
+Info: "Found 0 cards due tomorrow"
+Solución: Verificar datos de prueba en base de datos
+```
+
+### Debug Mode
+
+```bash
+# Activar logs detallados
+export GIN_MODE=debug
+export LOG_LEVEL=debug
 ```
 
 ---
 
-**Notification Service** - Sistema completo de notificaciones 📧📱
+**🎉 FinTrack Notification Service - Notificaciones automáticas de vencimiento** 📧�

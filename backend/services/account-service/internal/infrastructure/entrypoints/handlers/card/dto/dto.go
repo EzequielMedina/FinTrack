@@ -1,10 +1,70 @@
 package dto
 
 import (
+	"encoding/json"
+	"fmt"
+	"strings"
 	"time"
 
 	"github.com/fintrack/account-service/internal/core/domain/entities"
 )
+
+// CustomDate handles date parsing for both "2006-01-02" and full RFC3339 formats
+type CustomDate struct {
+	*time.Time
+}
+
+func (cd *CustomDate) UnmarshalJSON(data []byte) error {
+	if string(data) == "null" {
+		return nil
+	}
+
+	// Remove quotes from JSON string
+	dateStr := strings.Trim(string(data), `"`)
+
+	// Try parsing date-only format first (YYYY-MM-DD)
+	if t, err := time.Parse("2006-01-02", dateStr); err == nil {
+		cd.Time = &t
+		return nil
+	}
+
+	// Try parsing full RFC3339 format
+	if t, err := time.Parse(time.RFC3339, dateStr); err == nil {
+		cd.Time = &t
+		return nil
+	}
+
+	// Try parsing without timezone
+	if t, err := time.Parse("2006-01-02T15:04:05", dateStr); err == nil {
+		cd.Time = &t
+		return nil
+	}
+
+	return fmt.Errorf("cannot parse date: %s", dateStr)
+}
+
+func (cd CustomDate) MarshalJSON() ([]byte, error) {
+	if cd.Time == nil {
+		return []byte("null"), nil
+	}
+	return json.Marshal(cd.Time.Format("2006-01-02"))
+}
+
+// ToCustomDate converts *time.Time to *CustomDate
+func ToCustomDate(t *time.Time) *CustomDate {
+	if t == nil {
+		return nil
+	}
+	return &CustomDate{Time: t}
+}
+
+// ToTimePointer converts *CustomDate to *time.Time
+func (cd *CustomDate) ToTimePointer() *time.Time {
+	if cd == nil || cd.Time == nil {
+		return nil
+	}
+	return cd.Time
+}
 
 // CreateCardRequest represents the request to create a new card
 type CreateCardRequest struct {
@@ -20,9 +80,9 @@ type CreateCardRequest struct {
 	IsDefault       bool   `json:"is_default,omitempty"`
 
 	// Credit card specific fields
-	CreditLimit *float64   `json:"credit_limit,omitempty" binding:"omitempty,min=0"`
-	ClosingDate *time.Time `json:"closing_date,omitempty"`
-	DueDate     *time.Time `json:"due_date,omitempty"`
+	CreditLimit *float64    `json:"credit_limit,omitempty" binding:"omitempty,min=0"`
+	ClosingDate *CustomDate `json:"closing_date,omitempty"`
+	DueDate     *CustomDate `json:"due_date,omitempty"`
 
 	// Security fields (encrypted data)
 	EncryptedNumber string `json:"encrypted_number" binding:"required"`
@@ -31,11 +91,12 @@ type CreateCardRequest struct {
 
 // UpdateCardRequest represents the request to update a card
 type UpdateCardRequest struct {
-	HolderName      string `json:"holder_name,omitempty" binding:"omitempty,min=2,max=100"`
-	ExpirationMonth int    `json:"expiration_month,omitempty" binding:"omitempty,min=1,max=12"`
-	ExpirationYear  int    `json:"expiration_year,omitempty" binding:"omitempty,min=2024"`
-	Nickname        string `json:"nickname,omitempty" binding:"max=50"`
-	IsDefault       *bool  `json:"is_default,omitempty"`
+	HolderName      string   `json:"holder_name,omitempty" binding:"omitempty,min=2,max=100"`
+	ExpirationMonth int      `json:"expiration_month,omitempty" binding:"omitempty,min=1,max=12"`
+	ExpirationYear  int      `json:"expiration_year,omitempty" binding:"omitempty,min=2020"` // Allow reasonable past years for testing
+	Nickname        string   `json:"nickname,omitempty" binding:"max=50"`
+	IsDefault       *bool    `json:"is_default,omitempty"`
+	CreditLimit     *float64 `json:"credit_limit,omitempty" binding:"omitempty,min=0,max=1000000"` // Allow credit limit updates
 }
 
 // CardResponse represents the response for card operations
@@ -57,9 +118,9 @@ type CardResponse struct {
 	UpdatedAt       time.Time `json:"updated_at"`
 
 	// Credit card specific fields
-	CreditLimit *float64   `json:"credit_limit,omitempty"`
-	ClosingDate *time.Time `json:"closing_date,omitempty"`
-	DueDate     *time.Time `json:"due_date,omitempty"`
+	CreditLimit *float64    `json:"credit_limit,omitempty"`
+	ClosingDate *CustomDate `json:"closing_date,omitempty"`
+	DueDate     *CustomDate `json:"due_date,omitempty"`
 
 	// Installment plans summary (optional, when requested)
 	InstallmentPlans *InstallmentPlansSummary `json:"installment_plans,omitempty"`
@@ -107,12 +168,12 @@ type CreditCardChargeWithInstallmentsRequest struct {
 
 // CreditCardBalanceResponse represents the balance information for a credit card
 type CreditCardBalanceResponse struct {
-	CardID          string     `json:"card_id"`
-	Balance         float64    `json:"balance"`            // Current debt
-	CreditLimit     float64    `json:"credit_limit"`       // Total credit limit
-	AvailableCredit float64    `json:"available_credit"`   // Remaining credit
-	MinimumPayment  float64    `json:"minimum_payment"`    // Minimum payment due
-	DueDate         *time.Time `json:"due_date,omitempty"` // Next payment due date
+	CardID          string      `json:"card_id"`
+	Balance         float64     `json:"balance"`            // Current debt
+	CreditLimit     float64     `json:"credit_limit"`       // Total credit limit
+	AvailableCredit float64     `json:"available_credit"`   // Remaining credit
+	MinimumPayment  float64     `json:"minimum_payment"`    // Minimum payment due
+	DueDate         *CustomDate `json:"due_date,omitempty"` // Next payment due date
 }
 
 // Debit Card Operations DTOs
@@ -165,8 +226,8 @@ func ToCardResponse(card *entities.Card) CardResponse {
 		CreatedAt:       card.CreatedAt,
 		UpdatedAt:       card.UpdatedAt,
 		CreditLimit:     card.CreditLimit,
-		ClosingDate:     card.ClosingDate,
-		DueDate:         card.DueDate,
+		ClosingDate:     ToCustomDate(card.ClosingDate),
+		DueDate:         ToCustomDate(card.DueDate),
 	}
 }
 
@@ -217,7 +278,7 @@ func ToCreditCardBalanceResponse(card *entities.Card) CreditCardBalanceResponse 
 		CreditLimit:     creditLimit,
 		AvailableCredit: availableCredit,
 		MinimumPayment:  minimumPayment,
-		DueDate:         card.DueDate,
+		DueDate:         ToCustomDate(card.DueDate),
 	}
 }
 

@@ -104,6 +104,67 @@ services:
       retries: 3
       start_period: 40s
 
+  # Exchange Service (Go) - Cotizaciones de divisas
+  exchange-service:
+    build:
+      context: ./backend/services/exchange-service
+      dockerfile: Dockerfile
+    container_name: fintrack-exchange-service
+    environment:
+      PORT: 8087
+      GIN_MODE: release
+      DOLAR_API_BASE_URL: https://dolarapi.com
+      DOLAR_API_TIMEOUT: 10s
+      LOG_LEVEL: info
+    ports:
+      - "8087:8087"
+    networks:
+      - fintrack-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--output-document=-", "http://localhost:8087/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # Notification Service (Go) - Notificaciones de vencimiento de tarjetas
+  notification-service:
+    build:
+      context: ./backend/services/notification-service
+      dockerfile: Dockerfile
+    container_name: fintrack-notification-service
+    environment:
+      PORT: 8088
+      GIN_MODE: release
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: fintrack
+      DB_USER: fintrack_user
+      DB_PASSWORD: fintrack_password
+      EMAILJS_SERVICE_ID: service_ceg7xlp
+      EMAILJS_TEMPLATE_ID: template_e43va39
+      EMAILJS_PUBLIC_KEY: MSBb87-PQcXWr1gWK
+      EMAILJS_PRIVATE_KEY: sXLmpEZ8y2EYtCDtN5gZv
+      EMAILJS_FROM_NAME: FinTrack
+      EMAILJS_REPLY_TO: support@fintrack.com
+      JOB_ENABLED: true
+      JOB_SCHEDULE: "0 8 * * *"
+      JOB_TIMEZONE: America/Argentina/Buenos_Aires
+      LOG_LEVEL: info
+    ports:
+      - "8088:8088"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - fintrack-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--output-document=-", "http://localhost:8088/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
   # Frontend (Angular + Nginx)
   frontend:
     build:
@@ -120,6 +181,10 @@ services:
       account-service:
         condition: service_healthy
       transaction-service:
+        condition: service_healthy
+      exchange-service:
+        condition: service_healthy
+      notification-service:
         condition: service_healthy
     networks:
       - fintrack-network

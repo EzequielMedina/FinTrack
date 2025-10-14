@@ -137,13 +137,13 @@ func (h *Handler) GetAccounts(c *gin.Context) {
 
 // UpdateAccount updates an existing account
 // @Summary Update account
-// @Description Update account details
+// @Description Update account information including name, description, and account type
 // @Tags Accounts
 // @Accept json
 // @Produce json
 // @Security BearerAuth
 // @Param id path string true "Account ID"
-// @Param request body dto.UpdateAccountRequest true "Account update data"
+// @Param request body dto.UpdateAccountRequest true "Account update data (name, description, account_type, credit_limit, etc.)"
 // @Success 200 {object} dto.AccountResponse "Account updated successfully"
 // @Failure 400 {object} map[string]string "Invalid request data"
 // @Failure 401 {object} map[string]string "Unauthorized"
@@ -159,13 +159,34 @@ func (h *Handler) UpdateAccount(c *gin.Context) {
 
 	var req dto.UpdateAccountRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "Invalid request data",
+			"details": err.Error(),
+		})
 		return
 	}
 
-	updatedAccount, err := h.accountService.UpdateAccount(accountID, req.Name, req.Description)
+	// Validate that at least one field is being updated
+	if req.Name == "" && req.Description == "" && req.AccountType == "" &&
+		req.CreditLimit == nil && req.ClosingDate == nil && req.DueDate == nil && req.DNI == nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "At least one field must be provided for update",
+		})
+		return
+	}
+
+	updatedAccount, err := h.accountService.UpdateAccount(accountID, &req)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		// Determine appropriate status code based on error
+		statusCode := http.StatusInternalServerError
+		if strings.Contains(err.Error(), "not found") {
+			statusCode = http.StatusNotFound
+		} else if strings.Contains(err.Error(), "cannot change account type") ||
+			strings.Contains(err.Error(), "invalid") {
+			statusCode = http.StatusBadRequest
+		}
+
+		c.JSON(statusCode, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -400,7 +421,7 @@ func (h *Handler) AddFunds(c *gin.Context) {
 	// Apply account type specific logic
 	var newBalance float64
 	accountTypeStr := strings.ToLower(string(account.AccountType))
-	
+
 	switch accountTypeStr {
 	case string(entities.AccountTypeWallet):
 		// Wallet: Direct balance increase
@@ -484,14 +505,14 @@ func (h *Handler) WithdrawFunds(c *gin.Context) {
 
 	// Convert account type to lowercase for case-insensitive comparison
 	accountType := strings.ToLower(string(account.AccountType))
-	
+
 	// Allow withdrawals from all supported account types
 	switch accountType {
 	case strings.ToLower(string(entities.AccountTypeWallet)),
-		 strings.ToLower(string(entities.AccountTypeSavings)),
-		 strings.ToLower(string(entities.AccountTypeChecking)),
-		 strings.ToLower(string(entities.AccountTypeBankAccount)),
-		 strings.ToLower(string(entities.AccountTypeDebit)):
+		strings.ToLower(string(entities.AccountTypeSavings)),
+		strings.ToLower(string(entities.AccountTypeChecking)),
+		strings.ToLower(string(entities.AccountTypeBankAccount)),
+		strings.ToLower(string(entities.AccountTypeDebit)):
 		// These account types support withdrawals
 	case strings.ToLower(string(entities.AccountTypeCredit)):
 		c.JSON(http.StatusBadRequest, gin.H{"error": "withdrawals are not supported for credit accounts"})
@@ -563,9 +584,14 @@ func (h *Handler) UpdateCreditLimit(c *gin.Context) {
 	// Update credit limit (this would need to be implemented in the service)
 	account.CreditLimit = &req.CreditLimit
 
-	// For now, we'll call the existing update method
-	// In a real implementation, you'd need a specific service method for this
-	updatedAccount, err := h.accountService.UpdateAccount(accountID, account.Name, account.Description)
+	// Create a proper update request
+	updateReq := &dto.UpdateAccountRequest{
+		Name:        account.Name,
+		Description: account.Description,
+		CreditLimit: &req.CreditLimit,
+	}
+
+	updatedAccount, err := h.accountService.UpdateAccount(accountID, updateReq)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -619,9 +645,15 @@ func (h *Handler) UpdateCreditDates(c *gin.Context) {
 	account.ClosingDate = req.ClosingDate
 	account.DueDate = req.DueDate
 
-	// For now, we'll call the existing update method
-	// In a real implementation, you'd need a specific service method for this
-	updatedAccount, err := h.accountService.UpdateAccount(accountID, account.Name, account.Description)
+	// Create a proper update request
+	updateReq := &dto.UpdateAccountRequest{
+		Name:        account.Name,
+		Description: account.Description,
+		ClosingDate: req.ClosingDate,
+		DueDate:     req.DueDate,
+	}
+
+	updatedAccount, err := h.accountService.UpdateAccount(accountID, updateReq)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

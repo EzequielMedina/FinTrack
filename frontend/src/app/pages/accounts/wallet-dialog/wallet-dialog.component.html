@@ -13,6 +13,45 @@
       </div>
     </div>
 
+    <!-- USD Exchange Rates Section -->
+    @if (isUSDAccount()) {
+      <mat-card class="exchange-rates-card">
+        <mat-card-header>
+          <div class="exchange-header">
+            <mat-icon class="exchange-icon">currency_exchange</mat-icon>
+            <mat-card-title class="exchange-title">Cotización USD/ARS</mat-card-title>
+            @if (exchangeRatesLoading()) {
+              <mat-spinner diameter="20" class="exchange-spinner"></mat-spinner>
+            }
+          </div>
+        </mat-card-header>
+        
+        <mat-card-content>
+          @if (getExchangeRatesDisplay() && !exchangeRatesLoading()) {
+            <div class="exchange-rates-grid">
+              <div class="exchange-rate-item buy">
+                <div class="rate-label">Compra</div>
+                <div class="rate-value">{{ getExchangeRatesDisplay()?.compra }}</div>
+              </div>
+              <div class="exchange-rate-item sell">
+                <div class="rate-label">Venta</div>
+                <div class="rate-value">{{ getExchangeRatesDisplay()?.venta }}</div>
+              </div>
+            </div>
+            <div class="exchange-info">
+              <mat-icon>info_outline</mat-icon>
+              <span>Cotización oficial para referencia</span>
+            </div>
+          } @else if (!exchangeRatesLoading()) {
+            <div class="exchange-error">
+              <mat-icon>error_outline</mat-icon>
+              <span>Cotización no disponible</span>
+            </div>
+          }
+        </mat-card-content>
+      </mat-card>
+    }
+
     <!-- Operation Tabs -->
     <mat-tab-group (selectedTabChange)="onOperationChange($event.index === 0 ? 'add' : 'withdraw')">
       <!-- Add Funds Tab -->

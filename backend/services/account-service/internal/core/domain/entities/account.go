@@ -256,8 +256,8 @@ func (c *Card) Validate() error {
 	if c.ExpirationMonth < 1 || c.ExpirationMonth > 12 {
 		return &ValidationError{Field: "expiration_month", Message: "expiration month must be between 1 and 12"}
 	}
-	if c.ExpirationYear < time.Now().Year() {
-		return &ValidationError{Field: "expiration_year", Message: "expiration year cannot be in the past"}
+	if c.ExpirationYear < time.Now().Year()-1 {
+		return &ValidationError{Field: "expiration_year", Message: "expiration year cannot be more than 1 year in the past"}
 	}
 	if len(c.LastFourDigits) != 4 {
 		return &ValidationError{Field: "last_four_digits", Message: "last four digits must be exactly 4 characters"}
@@ -266,6 +266,40 @@ func (c *Card) Validate() error {
 	// Validate credit card specific fields
 	if c.CardType == CardTypeCredit && c.CreditLimit == nil {
 		return &ValidationError{Field: "credit_limit", Message: "credit limit is required for credit cards"}
+	}
+
+	return nil
+}
+
+// ValidateForUpdate validates card data specifically for update operations
+// This is more lenient than the full validation used during creation
+func (c *Card) ValidateForUpdate() error {
+	if c.AccountID == "" {
+		return &ValidationError{Field: "account_id", Message: "account ID is required"}
+	}
+	if c.HolderName == "" {
+		return &ValidationError{Field: "holder_name", Message: "holder name is required"}
+	}
+	if c.ExpirationMonth < 1 || c.ExpirationMonth > 12 {
+		return &ValidationError{Field: "expiration_month", Message: "expiration month must be between 1 and 12"}
+	}
+	// More lenient year validation for updates
+	if c.ExpirationYear < 2020 || c.ExpirationYear > time.Now().Year()+20 {
+		return &ValidationError{Field: "expiration_year", Message: "expiration year must be between 2020 and 20 years from now"}
+	}
+
+	// Validate credit limit if present for credit cards
+	if c.CardType == CardTypeCredit && c.CreditLimit != nil {
+		if *c.CreditLimit < 0 {
+			return &ValidationError{Field: "credit_limit", Message: "credit limit cannot be negative"}
+		}
+		if *c.CreditLimit > 10000000 { // 10 million max
+			return &ValidationError{Field: "credit_limit", Message: "credit limit cannot exceed 10,000,000"}
+		}
+		// Ensure credit limit is not lower than current balance
+		if *c.CreditLimit < c.Balance {
+			return &ValidationError{Field: "credit_limit", Message: "credit limit cannot be lower than current balance"}
+		}
 	}
 
 	return nil
