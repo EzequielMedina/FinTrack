@@ -32,6 +32,7 @@ func SetupRoutes(notificationHandler *notification.Handler) *gin.Engine {
 	{
 		// Job management
 		api.POST("/trigger-card-due-job", notificationHandler.TriggerCardDueJob)
+		api.POST("/trigger-update-due-dates-job", notificationHandler.TriggerUpdateDueDatesJob)
 		api.GET("/job-history", notificationHandler.GetJobHistory)
 
 		// Notification logs
@@ -56,6 +57,7 @@ func SetupRoutes(notificationHandler *notification.Handler) *gin.Engine {
 			"endpoints": []string{
 				"GET /health",
 				"POST /api/notifications/trigger-card-due-job",
+				"POST /api/notifications/trigger-update-due-dates-job",
 				"GET /api/notifications/job-history",
 				"GET /api/notifications/logs",
 				"GET /api/notifications/scheduler/status",

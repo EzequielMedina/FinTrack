@@ -75,6 +75,31 @@ func (r *CardRepository) GetCardsDueTomorrow() ([]*entities.Card, error) {
 	return cards, nil
 }
 
+// UpdateExpiredDueDates actualiza las fechas de vencimiento de tarjetas que vencieron ayer
+func (r *CardRepository) UpdateExpiredDueDates() (int, error) {
+	// Query para actualizar tarjetas que vencieron ayer al próximo mes
+	query := `
+		UPDATE cards 
+		SET due_date = DATE_ADD(due_date, INTERVAL 1 MONTH)
+		WHERE DATE(due_date) = DATE(NOW() - INTERVAL 1 DAY)
+		  AND status = 'active'
+		  AND card_type = 'credit'
+		  AND due_date IS NOT NULL
+	`
+
+	result, err := r.db.Exec(query)
+	if err != nil {
+		return 0, fmt.Errorf("error updating expired due dates: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return 0, fmt.Errorf("error getting rows affected: %w", err)
+	}
+
+	return int(rowsAffected), nil
+}
+
 // InstallmentRepository implementa las operaciones de repositorio para cuotas
 type InstallmentRepository struct {
 	db *sql.DB

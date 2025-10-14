@@ -9,6 +9,7 @@ import (
 // CardRepository define las operaciones de repositorio para tarjetas
 type CardRepository interface {
 	GetCardsDueTomorrow() ([]*entities.Card, error)
+	UpdateExpiredDueDates() (int, error)
 }
 
 // InstallmentRepository define las operaciones de repositorio para cuotas
@@ -34,6 +35,7 @@ type EmailService interface {
 type NotificationService interface {
 	ProcessCardDueNotifications() error
 	TriggerManualJob() error
+	UpdateExpiredDueDates() error
 	GetJobHistory(limit int) ([]*entities.JobRun, error)
 	GetNotificationLogs(jobRunID string, limit int) ([]*entities.NotificationLog, error)
 }

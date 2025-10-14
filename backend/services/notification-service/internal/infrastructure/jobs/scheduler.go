@@ -81,6 +81,12 @@ func (j *JobScheduler) TriggerCardDueJob() error {
 	return j.notificationService.TriggerManualJob()
 }
 
+// TriggerUpdateDueDatesJob ejecuta manualmente el job de actualización de fechas vencidas
+func (j *JobScheduler) TriggerUpdateDueDatesJob() error {
+	log.Println("🔧 Manual trigger for update due dates job")
+	return j.notificationService.UpdateExpiredDueDates()
+}
+
 // GetNextScheduledRun obtiene la próxima ejecución programada
 func (j *JobScheduler) GetNextScheduledRun() time.Time {
 	entries := j.cron.Entries()

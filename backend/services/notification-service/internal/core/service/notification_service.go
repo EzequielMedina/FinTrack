@@ -191,6 +191,27 @@ func (s *NotificationService) TriggerManualJob() error {
 	return s.ProcessCardDueNotifications()
 }
 
+// UpdateExpiredDueDates actualiza las fechas de vencimiento de tarjetas que vencieron ayer
+func (s *NotificationService) UpdateExpiredDueDates() error {
+	log.Printf("🔧 Starting update expired due dates job")
+	
+	startTime := time.Now()
+	cardsUpdated, err := s.cardRepo.UpdateExpiredDueDates()
+	if err != nil {
+		log.Printf("❌ Error updating expired due dates: %v", err)
+		return fmt.Errorf("failed to update expired due dates: %w", err)
+	}
+
+	duration := time.Since(startTime)
+	if cardsUpdated > 0 {
+		log.Printf("✅ Updated %d cards with expired due dates in %v", cardsUpdated, duration)
+	} else {
+		log.Printf("ℹ️  No cards found with expired due dates (yesterday). Duration: %v", duration)
+	}
+
+	return nil
+}
+
 // GetJobHistory obtiene el historial de ejecuciones del job
 func (s *NotificationService) GetJobHistory(limit int) ([]*entities.JobRun, error) {
 	return s.notificationRepo.GetJobRunHistory(limit)

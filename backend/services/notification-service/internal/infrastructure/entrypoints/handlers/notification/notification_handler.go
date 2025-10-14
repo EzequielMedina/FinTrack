@@ -76,6 +76,24 @@ func (h *Handler) TriggerCardDueJob(c *gin.Context) {
 	})
 }
 
+// TriggerUpdateDueDatesJob ejecuta manualmente el job de actualización de fechas vencidas
+// POST /api/notifications/trigger-update-due-dates-job
+func (h *Handler) TriggerUpdateDueDatesJob(c *gin.Context) {
+	// Ejecutar el job en una goroutine para no bloquear la respuesta
+	go func() {
+		if err := h.jobScheduler.TriggerUpdateDueDatesJob(); err != nil {
+			// Log error pero no retornar al cliente ya que es asíncrono
+			// El error se registrará en los logs del job
+		}
+	}()
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":   "Update due dates job triggered successfully",
+		"timestamp": time.Now(),
+		"async":     true,
+	})
+}
+
 // GetJobHistory obtiene el historial de ejecuciones del job
 // GET /api/notifications/job-history?limit=10
 func (h *Handler) GetJobHistory(c *gin.Context) {
