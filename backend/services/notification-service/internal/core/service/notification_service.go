@@ -194,7 +194,7 @@ func (s *NotificationService) TriggerManualJob() error {
 // UpdateExpiredDueDates actualiza las fechas de vencimiento de tarjetas que vencieron ayer
 func (s *NotificationService) UpdateExpiredDueDates() error {
 	log.Printf("🔧 Starting update expired due dates job")
-	
+
 	startTime := time.Now()
 	cardsUpdated, err := s.cardRepo.UpdateExpiredDueDates()
 	if err != nil {
