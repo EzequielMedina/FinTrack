@@ -1,0 +1,4 @@
+privateKey = sXLmpEZ8y2EYtCDtN5gZv
+publicKey = MSBb87-PQcXWr1gWK
+TemplateID = template_e43va39
+serviceID = service_ceg7xlp

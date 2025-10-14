@@ -122,7 +122,7 @@ export interface CardFormData {
   // Credit card specific fields
   creditLimit?: number;
   closingDate?: string;
-  dueDate?: number;            // Día del mes (1-31)
+  dueDate?: Date;              // Fecha completa seleccionada por el usuario
 }
 
 export interface CardFormErrors {

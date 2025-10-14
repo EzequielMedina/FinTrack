@@ -9,6 +9,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
 import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
 import { CardService } from '../../../services/card.service';
 import { UserService } from '../../../services/user.service';
@@ -35,7 +37,9 @@ interface DialogData {
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    MatDatepickerModule,
+    MatNativeDateModule
   ],
   templateUrl: './card-form.component.html',
   styleUrls: ['./card-form.component.css']
@@ -179,7 +183,7 @@ export class CardFormComponent implements OnInit, OnDestroy {
       expirationMonth: card.expirationMonth,
       expirationYear: card.expirationYear,
       nickname: card.nickname,
-      dueDate: card.dueDate ? new Date(card.dueDate).getDate() : null // Extraer solo el día del mes
+      dueDate: card.dueDate ? new Date(card.dueDate) : null // Convertir a Date object
     });
 
     // Para edición, no necesitamos validadores de número de tarjeta y CVV
@@ -322,15 +326,11 @@ export class CardFormComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Calcular dueDate si se proporciona un día del mes
+    // Formatear dueDate si se proporciona
     let dueDate: string | undefined;
     if (formData.dueDate && formData.cardType === CardType.CREDIT) {
-      const dayOfMonth = parseInt(formData.dueDate.toString());
-      if (dayOfMonth >= 1 && dayOfMonth <= 31) {
-        const today = new Date();
-        const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, dayOfMonth);
-        dueDate = nextMonth.toISOString().split('T')[0]; // Format: YYYY-MM-DD
-      }
+      const selectedDate = new Date(formData.dueDate);
+      dueDate = selectedDate.toISOString().split('T')[0]; // Format: YYYY-MM-DD
     }
 
     const request: CreateCardRequest = {
@@ -462,10 +462,5 @@ export class CardFormComponent implements OnInit, OnDestroy {
     };
     
     return names[brand];
-  }
-
-  getDaysOfMonth(): number[] {
-    // Generar array de días del 1 al 31
-    return Array.from({ length: 31 }, (_, i) => i + 1);
   }
 }

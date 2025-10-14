@@ -39,14 +39,23 @@ func (s *CardService) CreateCard(req *dto.CreateCardRequest) (*entities.Card, er
 	}
 
 	// Set default due date if not provided and it's a credit card
-	dueDate := req.DueDate
-	if dueDate == nil && req.CardType == "credit" {
+	var dueDate *time.Time
+	if req.DueDate != nil {
+		dueDate = req.DueDate.ToTimePointer()
+		fmt.Printf("🗓️ DEBUG - Due date provided: %s\n", dueDate.Format("2006-01-02"))
+	} else if req.CardType == "credit" {
 		// Set due date to the 5th of next month by default
 		now := time.Now()
 		nextMonth := now.AddDate(0, 1, 0)
 		defaultDueDate := time.Date(nextMonth.Year(), nextMonth.Month(), 5, 0, 0, 0, 0, nextMonth.Location())
 		dueDate = &defaultDueDate
 		fmt.Printf("🗓️ DEBUG - No due date provided for credit card, setting default to: %s\n", defaultDueDate.Format("2006-01-02"))
+	}
+
+	// Extract dates from CustomDate types
+	var closingDate *time.Time
+	if req.ClosingDate != nil {
+		closingDate = req.ClosingDate.ToTimePointer()
 	}
 
 	// Create card entity
@@ -64,7 +73,7 @@ func (s *CardService) CreateCard(req *dto.CreateCardRequest) (*entities.Card, er
 		IsDefault:       req.IsDefault,
 		Nickname:        req.Nickname,
 		CreditLimit:     req.CreditLimit,
-		ClosingDate:     req.ClosingDate,
+		ClosingDate:     closingDate,
 		DueDate:         dueDate,
 		EncryptedNumber: req.EncryptedNumber,
 		KeyFingerprint:  req.KeyFingerprint,
