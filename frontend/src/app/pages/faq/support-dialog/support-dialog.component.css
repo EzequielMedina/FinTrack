@@ -1,0 +1,130 @@
+.support-dialog {
+  min-width: 500px;
+  max-width: 600px;
+}
+
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-md);
+}
+
+.dialog-header h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin: 0;
+  color: var(--primary-color);
+  font-size: 24px;
+}
+
+.dialog-header mat-icon {
+  font-size: 28px;
+  width: 28px;
+  height: 28px;
+}
+
+.close-button {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+}
+
+.dialog-description {
+  color: #666;
+  margin-bottom: var(--space-lg);
+  font-size: 14px;
+}
+
+mat-dialog-content {
+  padding: var(--space-lg) var(--space-xl);
+  min-height: 300px;
+}
+
+.full-width {
+  width: 100%;
+  margin-bottom: var(--space-md);
+}
+
+mat-form-field {
+  margin-bottom: 0;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.success-message {
+  text-align: center;
+  padding: var(--space-xl) 0;
+}
+
+.success-icon {
+  font-size: 64px;
+  width: 64px;
+  height: 64px;
+  color: #4caf50;
+  margin-bottom: var(--space-md);
+}
+
+.success-message h3 {
+  color: #333;
+  margin: var(--space-md) 0;
+  font-size: 20px;
+}
+
+.success-message p {
+  color: #666;
+  font-size: 14px;
+}
+
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  background: #ffebee;
+  padding: var(--space-md);
+  border-radius: var(--border-radius);
+  border-left: 4px solid #f44336;
+  margin-top: var(--space-md);
+}
+
+.error-message mat-icon {
+  color: #f44336;
+}
+
+.error-message p {
+  margin: 0;
+  color: #c62828;
+  font-size: 14px;
+}
+
+mat-dialog-actions {
+  padding: var(--space-md) var(--space-xl);
+  gap: var(--space-sm);
+}
+
+mat-dialog-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .support-dialog {
+    min-width: unset;
+    max-width: unset;
+    width: 100%;
+  }
+
+  mat-dialog-content {
+    padding: var(--space-md);
+  }
+
+  mat-dialog-actions {
+    padding: var(--space-sm) var(--space-md);
+  }
+}

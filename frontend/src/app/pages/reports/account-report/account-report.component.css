@@ -1,0 +1,246 @@
+.account-report-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+mat-card {
+  margin-bottom: 20px;
+}
+
+mat-card-header {
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+mat-card-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 24px;
+  font-weight: 500;
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.header-actions button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-actions mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  gap: 20px;
+}
+
+.error-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px;
+  gap: 15px;
+  color: #d32f2f;
+}
+
+.error-message mat-icon {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+}
+
+.report-content {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+/* Summary Section */
+.summary-section h3 {
+  margin-bottom: 15px;
+  color: #424242;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.summary-card {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 20px;
+  background: #f5f5f5;
+  border-radius: 8px;
+  border-left: 4px solid #1976d2;
+}
+
+.summary-card.balance {
+  border-left-color: #4caf50;
+}
+
+.summary-card.credit {
+  border-left-color: #ff9800;
+}
+
+.summary-card mat-icon {
+  font-size: 36px;
+  width: 36px;
+  height: 36px;
+  color: #1976d2;
+}
+
+.summary-card.balance mat-icon {
+  color: #4caf50;
+}
+
+.summary-card.credit mat-icon {
+  color: #ff9800;
+}
+
+.summary-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.summary-label {
+  font-size: 12px;
+  color: #757575;
+  text-transform: uppercase;
+}
+
+.summary-value {
+  font-size: 24px;
+  font-weight: 500;
+  color: #212121;
+}
+
+/* Distribution Section */
+.distribution-section h3,
+.credit-section h3 {
+  margin-bottom: 15px;
+  color: #424242;
+}
+
+.type-list,
+.credit-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.type-item,
+.credit-item {
+  padding: 15px;
+  background: #fafafa;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.type-header,
+.credit-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.type-header {
+  gap: 10px;
+}
+
+.type-header mat-icon {
+  color: #1976d2;
+}
+
+.type-name,
+.card-name {
+  font-weight: 500;
+  font-size: 16px;
+  color: #212121;
+}
+
+.type-stats,
+.credit-details {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: #616161;
+}
+
+.type-balance {
+  font-weight: 500;
+  color: #4caf50;
+}
+
+.credit-percentage {
+  font-weight: 500;
+  font-size: 18px;
+  color: #4caf50;
+}
+
+.credit-percentage.warning {
+  color: #ff9800;
+}
+
+.credit-percentage.danger {
+  color: #f44336;
+}
+
+.type-bar,
+.credit-bar {
+  height: 8px;
+  background: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.type-bar-fill,
+.credit-bar-fill {
+  height: 100%;
+  background: #1976d2;
+  transition: width 0.3s ease;
+}
+
+.credit-bar-fill {
+  background: #4caf50;
+}
+
+.credit-bar-fill.warning {
+  background: #ff9800;
+}
+
+.credit-bar-fill.danger {
+  background: #f44336;
+}
+
+@media (max-width: 768px) {
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .summary-value {
+    font-size: 20px;
+  }
+}

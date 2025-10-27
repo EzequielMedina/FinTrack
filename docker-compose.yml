@@ -88,6 +88,7 @@ services:
       DB_PASSWORD: fintrack_password
       PORT: 8083
       ACCOUNT_SERVICE_URL: http://account-service:8082
+      JWT_SECRET: your-jwt-secret-key
     ports:
       - "8083:8083"
     depends_on:
@@ -165,6 +166,38 @@ services:
       retries: 3
       start_period: 20s
 
+  # Report Service (Go) - Reportes y análisis financiero
+  report-service:
+    build:
+      context: ./backend/services/report-service
+      dockerfile: Dockerfile
+    container_name: fintrack-report-service
+    environment:
+      PORT: 8085
+      GIN_MODE: release
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: fintrack
+      DB_USER: fintrack_user
+      DB_PASSWORD: fintrack_password
+      LOG_LEVEL: info
+      READ_TIMEOUT: 30s
+      WRITE_TIMEOUT: 30s
+      ALLOWED_ORIGINS: http://localhost:4200
+    ports:
+      - "8085:8085"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - fintrack-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--output-document=-", "http://localhost:8085/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
   # Frontend (Angular + Nginx)
   frontend:
     build:
@@ -206,8 +239,78 @@ services:
     networks:
       - fintrack-network
 
+  # Ollama (LLM) optimizado para velocidad
+  ollama:
+    image: ollama/ollama:latest
+    container_name: fintrack-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      OLLAMA_NUM_PARALLEL: 2
+      OLLAMA_MAX_LOADED_MODELS: 1
+      OLLAMA_HOST: 0.0.0.0
+      OLLAMA_KEEP_ALIVE: 24h
+    deploy:
+      resources:
+        limits:
+          memory: 8G
+        reservations:
+          memory: 4G
+    restart: unless-stopped
+    networks:
+      - fintrack-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Chatbot Service (Go) - IA financiera con modelo liviano
+  chatbot-service:
+    build:
+      context: ./backend/services/chatbot-service
+      dockerfile: Dockerfile
+    container_name: fintrack-chatbot-service
+    environment:
+      PORT: 8090
+      GIN_MODE: release
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: fintrack
+      DB_USER: fintrack_user
+      DB_PASSWORD: fintrack_password
+      # LLM Configuration
+      LLM_PROVIDER: groq
+      GROQ_API_KEY: ${GROQ_API_KEY}
+      GROQ_MODEL: llama-3.1-8b-instant
+      # Ollama fallback (si no hay Groq key)
+      OLLAMA_HOST: http://ollama:11434
+      OLLAMA_MODEL: qwen2.5:3b
+      OLLAMA_TIMEOUT: 120s
+      REPORT_PDF_ENGINE: gofpdf
+      TIMEZONE: America/Argentina/Buenos_Aires
+      LOG_LEVEL: info
+    ports:
+      - "8090:8090"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      # ollama: solo si no se usa Groq
+    networks:
+      - fintrack-network
+    healthcheck:
+      test: ["CMD", "/main", "health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
 volumes:
   mysql_data:
+    driver: local
+  ollama_data:
     driver: local
 
 networks:

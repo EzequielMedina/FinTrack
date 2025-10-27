@@ -1,0 +1,149 @@
+.dialog-container {
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+}
+
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 2px solid #e0e0e0;
+  background: linear-gradient(135deg, var(--brand) 0%, #0a5d75 100%);
+  color: white;
+  margin: -24px -24px 0 -24px;
+}
+
+.dialog-header h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.dialog-header mat-icon {
+  font-size: 28px;
+  width: 28px;
+  height: 28px;
+}
+
+.close-button {
+  color: white;
+}
+
+.close-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.dialog-content {
+  padding: 1.5rem !important;
+  overflow-y: auto;
+}
+
+.terms-content {
+  color: #333;
+  line-height: 1.7;
+}
+
+.intro {
+  background: #f5f9fc;
+  border-left: 4px solid var(--brand);
+  padding: 1rem;
+  margin-bottom: 2rem;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.term-section {
+  margin-bottom: 2rem;
+}
+
+.term-section h3 {
+  color: var(--brand);
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  border-bottom: 2px solid #e0e0e0;
+  padding-bottom: 0.5rem;
+}
+
+.term-section p {
+  margin-bottom: 0.75rem;
+  color: #555;
+}
+
+.term-section ul {
+  margin: 0.5rem 0 1rem 1.5rem;
+  padding: 0;
+}
+
+.term-section li {
+  margin-bottom: 0.5rem;
+  color: #555;
+}
+
+.term-section li strong {
+  color: #333;
+}
+
+.last-updated {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 2px solid #e0e0e0;
+  text-align: center;
+  color: #666;
+  font-style: italic;
+}
+
+.dialog-actions {
+  padding: 1rem 1.5rem !important;
+  border-top: 2px solid #e0e0e0;
+  margin: 0 -24px -24px -24px;
+  background: #f9f9f9;
+}
+
+.dialog-actions button {
+  font-weight: 500;
+  padding: 0.5rem 2rem;
+}
+
+/* Scrollbar personalizada */
+.dialog-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.dialog-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.dialog-content::-webkit-scrollbar-thumb {
+  background: var(--brand);
+  border-radius: 4px;
+}
+
+.dialog-content::-webkit-scrollbar-thumb:hover {
+  background: #0a5d75;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .dialog-header h2 {
+    font-size: 1.25rem;
+  }
+  
+  .term-section h3 {
+    font-size: 1.1rem;
+  }
+  
+  .dialog-content {
+    padding: 1rem !important;
+  }
+  
+  .terms-content {
+    font-size: 0.95rem;
+  }
+}

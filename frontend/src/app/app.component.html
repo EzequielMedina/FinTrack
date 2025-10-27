@@ -21,6 +21,11 @@
         <mat-icon>credit_card</mat-icon>
         Tarjetas
       </button>
+
+      <button mat-button [routerLink]="['/reports']" routerLinkActive="active">
+        <mat-icon>assessment</mat-icon>
+        Reportes
+      </button>
       
       <button mat-button 
               [routerLink]="['/admin']" 
@@ -28,6 +33,11 @@
               *appHasPermission="Permission.ADMIN_PANEL_ACCESS">
         <mat-icon>admin_panel_settings</mat-icon>
         Administración
+      </button>
+
+      <button mat-button [routerLink]="['/chatbot']" routerLinkActive="active">
+        <mat-icon>smart_toy</mat-icon>
+        Chatbot
       </button>
     </div>
     
@@ -41,6 +51,16 @@
           {{ user.firstName }} {{ user.lastName }}
         </span>
       }
+      
+      <!-- FAQ Icon Button -->
+      <button mat-icon-button 
+              [routerLink]="['/faq']" 
+              routerLinkActive="active"
+              matTooltip="Preguntas Frecuentes"
+              matTooltipPosition="below"
+              aria-label="Preguntas Frecuentes">
+        <mat-icon>help_outline</mat-icon>
+      </button>
       
       <button mat-icon-button [matMenuTriggerFor]="userMenu" aria-label="Menú de usuario">
         <mat-icon>account_circle</mat-icon>

@@ -38,6 +38,9 @@ func SetupRoutes(notificationHandler *notification.Handler) *gin.Engine {
 		// Notification logs
 		api.GET("/logs", notificationHandler.GetNotificationLogs)
 
+		// Support email
+		api.POST("/support", notificationHandler.SendSupportEmail)
+
 		// Scheduler status
 		api.GET("/scheduler/status", notificationHandler.GetSchedulerStatus)
 
@@ -60,6 +63,7 @@ func SetupRoutes(notificationHandler *notification.Handler) *gin.Engine {
 				"POST /api/notifications/trigger-update-due-dates-job",
 				"GET /api/notifications/job-history",
 				"GET /api/notifications/logs",
+				"POST /api/notifications/support",
 				"GET /api/notifications/scheduler/status",
 				"GET /api/notifications/health",
 			},

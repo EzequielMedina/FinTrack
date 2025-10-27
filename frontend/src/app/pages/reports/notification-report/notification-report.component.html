@@ -1,0 +1,191 @@
+<div class="notification-report-container">
+  <h2>Reporte de Notificaciones (Admin)</h2>
+
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner></mat-spinner>
+  </div>
+
+  <div *ngIf="error" class="error-container">
+    <mat-icon>error</mat-icon>
+    <p>{{ error }}</p>
+  </div>
+
+  <div *ngIf="!loading && !error && reportData" class="report-content">
+    <!-- Period Info -->
+    <div class="period-info" *ngIf="reportData.period">
+      <mat-icon>date_range</mat-icon>
+      <span>Período: {{ formatDate(reportData.period.start_date) }} - {{ formatDate(reportData.period.end_date) }}</span>
+    </div>
+
+    <!-- Summary Section -->
+    <div class="summary-grid">
+      <mat-card class="summary-card">
+        <mat-card-header>
+          <mat-icon>notifications</mat-icon>
+          <mat-card-title>Total Notificaciones</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="metric-value">{{ reportData.summary.total_notifications }}</div>
+          <div class="metric-label">{{ reportData.summary.total_job_runs }} ejecuciones</div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="summary-card success-card">
+        <mat-card-header>
+          <mat-icon class="icon-success">check_circle</mat-icon>
+          <mat-card-title>Enviados Exitosamente</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="metric-value success">{{ reportData.summary.successful_sent }}</div>
+          <div class="metric-label">{{ formatPercentage(reportData.summary.success_rate) }} tasa de éxito</div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="summary-card error-card">
+        <mat-card-header>
+          <mat-icon class="icon-error">error</mat-icon>
+          <mat-card-title>Fallos</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="metric-value error">{{ reportData.summary.failed }}</div>
+          <div class="metric-label">{{ formatPercentage(reportData.summary.failure_rate) }} tasa de fallo</div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="summary-card">
+        <mat-card-header>
+          <mat-icon>email</mat-icon>
+          <mat-card-title>Promedio por Ejecución</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="metric-value">{{ reportData.summary.avg_emails_per_run.toFixed(1) }}</div>
+          <div class="metric-label">emails por ejecución</div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Status Distribution -->
+    <div class="status-section" *ngIf="reportData.by_status && reportData.by_status.length > 0">
+      <h3>
+        <mat-icon>pie_chart</mat-icon>
+        Distribución por Estado
+      </h3>
+      <div class="status-grid">
+        <mat-card *ngFor="let status of reportData.by_status" class="status-card">
+          <mat-card-header>
+            <mat-icon [class]="getStatusClass(status.status)">
+              {{ getStatusIcon(status.status) }}
+            </mat-icon>
+            <mat-card-title>{{ getStatusLabel(status.status) }}</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="status-count" [class]="getStatusClass(status.status)">{{ status.count }}</div>
+            <div class="status-percentage">{{ formatPercentage(status.percentage) }}</div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+
+    <!-- Daily Activity -->
+    <div class="daily-section" *ngIf="reportData.by_day && reportData.by_day.length > 0">
+      <h3>
+        <mat-icon>bar_chart</mat-icon>
+        Actividad Diaria
+      </h3>
+      <div class="daily-list">
+        <div *ngFor="let day of reportData.by_day" class="daily-item">
+          <div class="day-header">
+            <span class="day-name">{{ day.day }}</span>
+            <span class="day-date">{{ formatDate(day.date) }}</span>
+          </div>
+          <div class="day-metrics">
+            <div class="metric sent">
+              <mat-icon>check</mat-icon>
+              <span class="count">{{ day.sent }}</span>
+              <span class="label">enviados</span>
+            </div>
+            <div class="metric failed">
+              <mat-icon>close</mat-icon>
+              <span class="count">{{ day.failed }}</span>
+              <span class="label">fallidos</span>
+            </div>
+            <div class="metric rate">
+              <mat-icon>percent</mat-icon>
+              <span class="count">{{ formatPercentage(day.success_rate) }}</span>
+              <span class="label">éxito</span>
+            </div>
+          </div>
+          <div class="day-progress">
+            <div class="progress-bar">
+              <div class="progress-fill success" [style.width.%]="day.success_rate"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Job Runs -->
+    <div class="jobs-section" *ngIf="reportData.job_runs && reportData.job_runs.length > 0">
+      <h3>
+        <mat-icon>history</mat-icon>
+        Historial de Ejecuciones ({{ reportData.job_runs.length }})
+      </h3>
+      <div class="jobs-list">
+        <mat-card *ngFor="let job of reportData.job_runs" class="job-card" [class]="getStatusClass(job.status)">
+          <mat-card-header>
+            <mat-icon [class]="getStatusClass(job.status)">
+              {{ getStatusIcon(job.status) }}
+            </mat-icon>
+            <mat-card-title>
+              <span class="job-id">Job #{{ job.id }}</span>
+              <span class="status-badge" [class]="getStatusClass(job.status)">
+                {{ getStatusLabel(job.status) }}
+              </span>
+            </mat-card-title>
+            <mat-card-subtitle>
+              {{ formatDateTime(job.started_at) }}
+            </mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="job-details">
+              <div class="detail-row">
+                <mat-icon>credit_card</mat-icon>
+                <span class="label">Tarjetas encontradas:</span>
+                <span class="value">{{ job.cards_found }}</span>
+              </div>
+              <div class="detail-row">
+                <mat-icon>email</mat-icon>
+                <span class="label">Emails enviados:</span>
+                <span class="value success">{{ job.emails_sent }}</span>
+              </div>
+              <div class="detail-row" *ngIf="job.errors > 0">
+                <mat-icon>error</mat-icon>
+                <span class="label">Errores:</span>
+                <span class="value error">{{ job.errors }}</span>
+              </div>
+              <div class="detail-row" *ngIf="job.duration">
+                <mat-icon>schedule</mat-icon>
+                <span class="label">Duración:</span>
+                <span class="value">{{ job.duration }}</span>
+              </div>
+              <div class="detail-row" *ngIf="job.completed_at">
+                <mat-icon>done</mat-icon>
+                <span class="label">Completado:</span>
+                <span class="value">{{ formatDateTime(job.completed_at) }}</span>
+              </div>
+            </div>
+            <div class="error-message" *ngIf="job.error_message">
+              <mat-icon>warning</mat-icon>
+              <span>{{ job.error_message }}</span>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+
+    <div *ngIf="reportData.job_runs && reportData.job_runs.length === 0" class="empty-state">
+      <mat-icon>info</mat-icon>
+      <p>No hay ejecuciones de jobs en este período</p>
+    </div>
+  </div>
+</div>

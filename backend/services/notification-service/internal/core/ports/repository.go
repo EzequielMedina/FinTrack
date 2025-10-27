@@ -29,6 +29,7 @@ type NotificationRepository interface {
 // EmailService define las operaciones de servicio de email
 type EmailService interface {
 	SendCardDueNotification(notification *entities.CardDueNotification) error
+	SendSupportEmail(name, email, subject, message string) error
 }
 
 // NotificationService define las operaciones del servicio de notificaciones
@@ -38,4 +39,5 @@ type NotificationService interface {
 	UpdateExpiredDueDates() error
 	GetJobHistory(limit int) ([]*entities.JobRun, error)
 	GetNotificationLogs(jobRunID string, limit int) ([]*entities.NotificationLog, error)
+	SendSupportEmail(name, email, subject, message string) error
 }

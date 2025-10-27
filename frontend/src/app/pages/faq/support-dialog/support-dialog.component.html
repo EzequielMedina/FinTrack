@@ -1,0 +1,96 @@
+<div class="support-dialog">
+  <div class="dialog-header">
+    <h2 mat-dialog-title>
+      <mat-icon>support_agent</mat-icon>
+      Contactar con Soporte
+    </h2>
+    <button mat-icon-button (click)="close()" class="close-button">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <mat-dialog-content>
+    @if (!sent) {
+      <p class="dialog-description">
+        Completa el formulario y nos pondremos en contacto contigo lo antes posible.
+      </p>
+
+      <form [formGroup]="supportForm" (ngSubmit)="onSubmit()">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Nombre completo</mat-label>
+          <mat-icon matPrefix>person</mat-icon>
+          <input matInput formControlName="name" placeholder="Tu nombre" />
+          @if (getErrorMessage('name')) {
+            <mat-error>{{ getErrorMessage('name') }}</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Email</mat-label>
+          <mat-icon matPrefix>email</mat-icon>
+          <input matInput type="email" formControlName="email" placeholder="tu@email.com" />
+          @if (getErrorMessage('email')) {
+            <mat-error>{{ getErrorMessage('email') }}</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Asunto</mat-label>
+          <mat-icon matPrefix>subject</mat-icon>
+          <input matInput formControlName="subject" placeholder="¿En qué podemos ayudarte?" />
+          @if (getErrorMessage('subject')) {
+            <mat-error>{{ getErrorMessage('subject') }}</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Mensaje</mat-label>
+          <mat-icon matPrefix>message</mat-icon>
+          <textarea 
+            matInput 
+            formControlName="message" 
+            rows="6" 
+            placeholder="Describe tu consulta o problema en detalle...">
+          </textarea>
+          @if (getErrorMessage('message')) {
+            <mat-error>{{ getErrorMessage('message') }}</mat-error>
+          }
+        </mat-form-field>
+      </form>
+    } @else {
+      <div class="success-message">
+        <mat-icon class="success-icon">check_circle</mat-icon>
+        <h3>¡Mensaje enviado con éxito!</h3>
+        <p>Hemos recibido tu solicitud. Nuestro equipo de soporte te responderá pronto.</p>
+      </div>
+    }
+
+    @if (error) {
+      <div class="error-message">
+        <mat-icon>error</mat-icon>
+        <p>{{ errorMessage }}</p>
+      </div>
+    }
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    @if (!sent) {
+      <button mat-button (click)="close()" [disabled]="sending">
+        Cancelar
+      </button>
+      <button 
+        mat-raised-button 
+        color="primary" 
+        (click)="onSubmit()" 
+        [disabled]="sending || supportForm.invalid">
+        @if (sending) {
+          <mat-spinner diameter="20" style="display: inline-block; margin-right: 8px;"></mat-spinner>
+          Enviando...
+        } @else {
+          <mat-icon>send</mat-icon>
+          Enviar mensaje
+        }
+      </button>
+    }
+  </mat-dialog-actions>
+</div>

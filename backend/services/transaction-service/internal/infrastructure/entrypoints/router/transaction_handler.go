@@ -145,7 +145,8 @@ func (h *TransactionHandler) CreateTransactionHTTP(w http.ResponseWriter, r *htt
 	// Get user ID from header (simplified for now)
 	userID := r.Header.Get("X-User-ID")
 	if userID == "" {
-		userID = "default-user" // TODO: Get from JWT
+		h.writeErrorResponse(w, http.StatusUnauthorized, "Unauthorized", "User ID is required")
+		return
 	}
 
 	// Convert to service request
@@ -200,7 +201,8 @@ func (h *TransactionHandler) GetTransactionHTTP(w http.ResponseWriter, r *http.R
 
 	userID := r.Header.Get("X-User-ID")
 	if userID == "" {
-		userID = "default-user" // TODO: Get from JWT
+		h.writeErrorResponse(w, http.StatusUnauthorized, "Unauthorized", "User ID is required")
+		return
 	}
 
 	transaction, err := h.transactionService.GetTransactionByID(id, userID)
@@ -227,7 +229,8 @@ func (h *TransactionHandler) ListTransactionsHTTP(w http.ResponseWriter, r *http
 
 	userID := r.Header.Get("X-User-ID")
 	if userID == "" {
-		userID = "default-user" // TODO: Get from JWT
+		h.writeErrorResponse(w, http.StatusUnauthorized, "Unauthorized", "User ID is required")
+		return
 	}
 
 	// Parse query parameters
@@ -294,7 +297,8 @@ func (h *TransactionHandler) UpdateTransactionStatusHTTP(w http.ResponseWriter, 
 
 	userID := r.Header.Get("X-User-ID")
 	if userID == "" {
-		userID = "default-user" // TODO: Get from JWT
+		h.writeErrorResponse(w, http.StatusUnauthorized, "Unauthorized", "User ID is required")
+		return
 	}
 
 	transaction, err := h.transactionService.UpdateTransactionStatus(
@@ -333,7 +337,8 @@ func (h *TransactionHandler) ProcessTransactionHTTP(w http.ResponseWriter, r *ht
 
 	userID := r.Header.Get("X-User-ID")
 	if userID == "" {
-		userID = "default-user" // TODO: Get from JWT
+		h.writeErrorResponse(w, http.StatusUnauthorized, "Unauthorized", "User ID is required")
+		return
 	}
 
 	err := h.transactionService.ProcessTransaction(id, userID)
@@ -387,7 +392,8 @@ func (h *TransactionHandler) ReverseTransactionHTTP(w http.ResponseWriter, r *ht
 
 	userID := r.Header.Get("X-User-ID")
 	if userID == "" {
-		userID = "default-user" // TODO: Get from JWT
+		h.writeErrorResponse(w, http.StatusUnauthorized, "Unauthorized", "User ID is required")
+		return
 	}
 
 	reversalTransaction, err := h.transactionService.ReverseTransaction(id, req.Reason, userID)
@@ -436,6 +442,13 @@ func (h *TransactionHandler) parseFiltersFromURL(r *http.Request) (service.Trans
 		}
 	}
 
+	// Accept both 'limit' and 'pageSize' for compatibility
+	if limit := query.Get("limit"); limit != "" {
+		if l, err := strconv.Atoi(limit); err == nil && l > 0 && l <= 100 {
+			filters.Limit = l
+		}
+	}
+
 	if pageSize := query.Get("pageSize"); pageSize != "" {
 		if ps, err := strconv.Atoi(pageSize); err == nil && ps > 0 && ps <= 100 {
 			filters.Limit = ps
@@ -443,7 +456,7 @@ func (h *TransactionHandler) parseFiltersFromURL(r *http.Request) (service.Trans
 	}
 
 	if filters.Limit == 0 {
-		filters.Limit = 20 // Default page size
+		filters.Limit = 10 // Default page size changed to 10
 	}
 
 	// Parse types

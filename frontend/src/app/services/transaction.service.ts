@@ -123,7 +123,7 @@ export class TransactionService {
         const transaction: CreateTransactionDTO = {
           type: transactionType,
           amount: depositData.amount,
-          currency: 'ARS',
+          currency: account.currency || 'ARS', // ✅ Usar la moneda de la cuenta
           toAccountId: depositData.accountId,
           userId: userId,
           initiatedBy: userId,
@@ -169,7 +169,7 @@ export class TransactionService {
         const transaction: CreateTransactionDTO = {
           type: transactionType,
           amount: withdrawalData.amount,
-          currency: 'ARS',
+          currency: account.currency || 'ARS', // ✅ Usar la moneda de la cuenta
           fromAccountId: withdrawalData.accountId,
           userId: userId,
           initiatedBy: userId,

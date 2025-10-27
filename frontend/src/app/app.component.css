@@ -51,6 +51,18 @@
   gap: 12px;
 }
 
+.user-info button[mat-icon-button] {
+  color: white;
+}
+
+.user-info button[mat-icon-button]:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.user-info button[mat-icon-button].active {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
 .user-greeting {
   display: flex;
   align-items: center;

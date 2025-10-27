@@ -1,0 +1,64 @@
+<div class="faq-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1>Preguntas Frecuentes</h1>
+      <p class="subtitle">Encuentra respuestas a las preguntas más comunes sobre FinTrack</p>
+    </div>
+  </div>
+
+  <!-- Category Filter -->
+  <div class="category-filter">
+    @for (cat of categories; track cat.value) {
+      <button 
+        class="category-btn"
+        [class.active]="selectedCategory() === cat.value"
+        (click)="selectCategory(cat.value)">
+        <mat-icon [fontIcon]="cat.icon"></mat-icon>
+        <span>{{ cat.label }}</span>
+      </button>
+    }
+  </div>
+
+  <!-- FAQ List -->
+  <div class="faq-content">
+    @if (filteredFaqs.length === 0) {
+      <div class="empty-state">
+        <mat-icon fontIcon="help_outline" class="empty-icon"></mat-icon>
+        <h3>No hay preguntas en esta categoría</h3>
+        <p>Selecciona otra categoría o vuelve a "Todas"</p>
+      </div>
+    } @else {
+      <mat-accordion class="faq-accordion">
+        @for (faq of filteredFaqs; track $index) {
+          <mat-expansion-panel class="faq-panel">
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                <mat-icon fontIcon="help_outline" class="question-icon"></mat-icon>
+                <span class="question-text">{{ faq.question }}</span>
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+            <div class="answer-content">
+              <p>{{ faq.answer }}</p>
+            </div>
+          </mat-expansion-panel>
+        }
+      </mat-accordion>
+    }
+  </div>
+
+  <!-- Contact Support -->
+  <div class="support-card">
+    <div class="support-icon">
+      <mat-icon fontIcon="support_agent"></mat-icon>
+    </div>
+    <div class="support-content">
+      <h3>¿No encontraste lo que buscabas?</h3>
+      <p>Nuestro equipo de soporte está disponible para ayudarte</p>
+    </div>
+    <button class="btn btn-primary" (click)="openSupportDialog()">
+      <mat-icon fontIcon="email"></mat-icon>
+      Contactar Soporte
+    </button>
+  </div>
+</div>

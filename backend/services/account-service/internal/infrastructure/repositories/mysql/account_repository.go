@@ -24,7 +24,7 @@ func (r *AccountRepository) Create(account *entities.Account) error {
 // GetByID retrieves an account by its ID
 func (r *AccountRepository) GetByID(id string) (*entities.Account, error) {
 	var account entities.Account
-	err := r.db.Where("id = ? AND deleted_at IS NULL", id).First(&account).Error
+	err := r.db.Preload("Cards").Where("id = ? AND deleted_at IS NULL", id).First(&account).Error
 	if err != nil {
 		return nil, err
 	}
@@ -34,7 +34,7 @@ func (r *AccountRepository) GetByID(id string) (*entities.Account, error) {
 // GetByUserID retrieves all accounts for a user
 func (r *AccountRepository) GetByUserID(userID string) ([]*entities.Account, error) {
 	var accounts []*entities.Account
-	err := r.db.Where("user_id = ? AND deleted_at IS NULL", userID).Find(&accounts).Error
+	err := r.db.Preload("Cards").Where("user_id = ? AND deleted_at IS NULL", userID).Find(&accounts).Error
 	return accounts, err
 }
 
@@ -48,8 +48,8 @@ func (r *AccountRepository) GetAll(limit, offset int) ([]*entities.Account, int6
 		return nil, 0, err
 	}
 
-	// Get paginated results
-	err := r.db.Where("deleted_at IS NULL").
+	// Get paginated results with cards preloaded
+	err := r.db.Preload("Cards").Where("deleted_at IS NULL").
 		Limit(limit).
 		Offset(offset).
 		Find(&accounts).Error
