@@ -1,183 +1,150 @@
-<div class="chatbot-container">
-  <mat-card>
-    <mat-card-title>Chatbot Financiero Inteligente</mat-card-title>
-    <mat-card-content>
-      
-      <!-- Quick Templates Section -->
-      <div class="templates-section">
-        <h3>Consultas Rápidas</h3>
-        <div class="templates-grid">
-          <button 
-            mat-raised-button 
-            color="primary" 
-            *ngFor="let template of queryTemplates"
-            (click)="useTemplate(template)"
-            [disabled]="loading"
-            class="template-button">
-            <div class="template-content">
-              <div class="template-label">{{ template.label }}</div>
-              <div class="template-description">{{ template.description }}</div>
-            </div>
-          </button>
+<div class="chat-container">
+  <!-- Header del Chat -->
+  <mat-card class="chat-card">
+    <div class="chat-header">
+      <div class="header-left">
+        <mat-icon>smart_toy</mat-icon>
+        <div class="header-info">
+          <h2>Chatbot Financiero</h2>
+          <span class="status">{{conversationId ? 'Conversación activa' : 'Nueva conversación'}}</span>
         </div>
       </div>
+      <button 
+        mat-icon-button 
+        (click)="startNewChat()" 
+        matTooltip="Iniciar nueva conversación"
+        class="new-chat-btn">
+        <mat-icon>add_comment</mat-icon>
+      </button>
+    </div>
 
-      <!-- Advanced Options -->
-      <div class="advanced-section">
-        <h3>Configuración Avanzada</h3>
-        <div class="form-grid">
-          
-          <!-- Context Focus -->
-          <mat-form-field appearance="outline">
-            <mat-label>Enfoque del Análisis</mat-label>
-            <mat-select [(ngModel)]="contextFocus">
-              <mat-option *ngFor="let option of contextOptions" [value]="option.value">
-                {{ option.label }}
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
-
-          <!-- Quick Period -->
-          <mat-form-field appearance="outline">
-            <mat-label>Período</mat-label>
-            <mat-select [(ngModel)]="quickPeriod" (selectionChange)="setPeriodFromQuick()">
-              <mat-option *ngFor="let option of periodOptions" [value]="option.value">
-                {{ option.label }}
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
-
-          <!-- Account/Card Type -->
-          <mat-form-field appearance="outline">
-            <mat-label>Tipo de Cuenta</mat-label>
-            <mat-select [(ngModel)]="selectedType">
-              <mat-option value="accounts">Solo Cuentas</mat-option>
-              <mat-option value="cards">Solo Tarjetas</mat-option>
-              <mat-option value="both">Cuentas y Tarjetas</mat-option>
-            </mat-select>
-          </mat-form-field>
-
-          <!-- Custom Message -->
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Pregunta Personalizada</mat-label>
-            <textarea 
-              matInput 
-              [(ngModel)]="message" 
-              placeholder="Escribí tu consulta específica aquí..."
-              rows="3">
-            </textarea>
-            <mat-hint>Ejemplo: "¿Cuánto gasté esta semana con tarjetas?"</mat-hint>
-          </mat-form-field>
-
-          <!-- Custom Date Range (only when period is custom) -->
-          <mat-form-field appearance="outline" *ngIf="quickPeriod === 'custom'">
-            <mat-label>Desde</mat-label>
-            <input matInput [matDatepicker]="pickerFrom" [(ngModel)]="periodFrom" />
-            <mat-datepicker-toggle matSuffix [for]="pickerFrom"></mat-datepicker-toggle>
-            <mat-datepicker #pickerFrom></mat-datepicker>
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" *ngIf="quickPeriod === 'custom'">
-            <mat-label>Hasta</mat-label>
-            <input matInput [matDatepicker]="pickerTo" [(ngModel)]="periodTo" />
-            <mat-datepicker-toggle matSuffix [for]="pickerTo"></mat-datepicker-toggle>
-            <mat-datepicker #pickerTo></mat-datepicker>
-          </mat-form-field>
-        </div>
-      </div>
-
-      <div class="actions">
-        <button mat-raised-button color="primary" (click)="runQuery()" [disabled]="loading || !message">
-          <mat-icon>smart_toy</mat-icon>
-          {{ loading ? 'Consultando...' : 'Consultar Chatbot' }}
-        </button>
-        <button mat-raised-button color="accent" (click)="loadChart()" [disabled]="loading">
-          <mat-icon>bar_chart</mat-icon>
-          Ver gráfico
-        </button>
-        <button mat-raised-button color="warn" (click)="downloadPdf()" [disabled]="loading">
-          <mat-icon>picture_as_pdf</mat-icon>
-          Descargar PDF
-        </button>
-      </div>
-
-      <!-- Status Messages -->
-      <div class="status-section">
-        <div class="status" *ngIf="loading">
-          <mat-icon>hourglass_empty</mat-icon>
-          Analizando tu consulta con IA...
-        </div>
-        <div class="error" *ngIf="error">
-          <mat-icon>error</mat-icon>
-          {{ error }}
-        </div>
-      </div>
-
-      <!-- Results Section -->
-      <div class="results-section" *ngIf="answer || suggestions?.length || chartData?.items?.length">
+    <!-- Área de Mensajes -->
+    <div class="messages-container" #chatContainer>
+      <div 
+        *ngFor="let msg of messages" 
+        class="message-wrapper"
+        [class.user-message]="msg.role === 'user'"
+        [class.assistant-message]="msg.role === 'assistant'">
         
-        <div class="answer" *ngIf="answer">
-          <mat-card class="result-card">
-            <mat-card-title>
-              <mat-icon>psychology</mat-icon>
-              Respuesta del Chatbot
-            </mat-card-title>
-            <mat-card-content>
-              <p class="answer-text">{{ answer }}</p>
-            </mat-card-content>
-          </mat-card>
+        <div class="message-bubble">
+          <div class="message-content">
+            <p class="message-text">{{ msg.message }}</p>
+          </div>
+          
+          <!-- Metadata (solo para mensajes del asistente) -->
+          <div class="message-meta" *ngIf="msg.role === 'assistant' && (msg.inferredContext || msg.inferredPeriod)">
+            <mat-chip-set class="meta-chips">
+              <mat-chip *ngIf="msg.inferredPeriod" class="period-chip">
+                <mat-icon>calendar_today</mat-icon>
+                {{ msg.inferredPeriod }}
+              </mat-chip>
+              <mat-chip *ngIf="msg.inferredContext" class="context-chip">
+                <mat-icon>category</mat-icon>
+                {{ msg.inferredContext }}
+              </mat-chip>
+            </mat-chip-set>
+          </div>
+
+          <!-- Sugerencias Rápidas -->
+          <div class="quick-suggestions" *ngIf="msg.quickSuggestions && msg.quickSuggestions.length > 0">
+            <p class="suggestions-label">Preguntas relacionadas:</p>
+            <div class="suggestions-buttons">
+              <button 
+                mat-stroked-button 
+                *ngFor="let suggestion of msg.quickSuggestions"
+                (click)="useSuggestion(suggestion)"
+                class="suggestion-btn">
+                {{ suggestion }}
+              </button>
+            </div>
+          </div>
+
+          <span class="message-time">{{ formatTime(msg.timestamp) }}</span>
         </div>
 
-        <div class="suggestions" *ngIf="suggestions?.length">
-          <mat-card class="result-card">
-            <mat-card-title>
-              <mat-icon>lightbulb</mat-icon>
-              Acciones Sugeridas
-            </mat-card-title>
-            <mat-card-content>
-              <div class="suggestions-grid">
-                <button 
-                  mat-raised-button 
-                  color="accent"
-                  *ngFor="let s of suggestions"
-                  (click)="runSuggestion(s)"
-                  class="suggestion-button">
-                  <mat-icon>
-                    {{ s.type === 'generate_pdf' ? 'picture_as_pdf' : 
-                       s.type === 'show_chart' ? 'bar_chart' : 'play_arrow' }}
-                  </mat-icon>
-                  {{ s.type === 'generate_pdf' ? 'Generar PDF' : 
-                     (s.type === 'show_chart' ? 'Ver gráfico' : s.type) }}
-                </button>
-              </div>
-            </mat-card-content>
-          </mat-card>
-        </div>
-
-        <div class="chart" *ngIf="chartData?.items?.length">
-          <mat-card class="result-card">
-            <mat-card-title>
-              <mat-icon>analytics</mat-icon>
-              Datos del Análisis
-            </mat-card-title>
-            <mat-card-content>
-              <table mat-table [dataSource]="chartData.items" class="data-table">
-                <ng-container matColumnDef="label">
-                  <th mat-header-cell *matHeaderCellDef>Categoría</th>
-                  <td mat-cell *matCellDef="let item">{{ item.label }}</td>
-                </ng-container>
-                <ng-container matColumnDef="total">
-                  <th mat-header-cell *matHeaderCellDef>Total</th>
-                  <td mat-cell *matCellDef="let item">{{ item.total | currency:'ARS':'symbol':'1.2-2' }}</td>
-                </ng-container>
-                <tr mat-header-row *matHeaderRowDef="['label', 'total']"></tr>
-                <tr mat-row *matRowDef="let row; columns: ['label', 'total']"></tr>
-              </table>
-            </mat-card-content>
-          </mat-card>
+        <!-- Avatar -->
+        <div class="message-avatar">
+          <mat-icon *ngIf="msg.role === 'user'" class="user-icon">person</mat-icon>
+          <mat-icon *ngIf="msg.role === 'assistant'" class="bot-icon">smart_toy</mat-icon>
         </div>
       </div>
 
+      <!-- Indicador de "escribiendo..." -->
+      <div class="typing-indicator" *ngIf="loading">
+        <mat-icon class="bot-icon">smart_toy</mat-icon>
+        <div class="typing-dots">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Input de Mensaje -->
+    <div class="message-input-container">
+      <mat-form-field appearance="outline" class="message-input">
+        <mat-label>Escribe tu mensaje...</mat-label>
+        <textarea 
+          matInput 
+          [(ngModel)]="currentMessage"
+          (keydown)="onKeyDown($event)"
+          [disabled]="loading"
+          rows="2"
+          placeholder="Ejemplo: ¿Cuánto gasté hoy con tarjetas?">
+        </textarea>
+        <mat-hint>Presiona Enter para enviar, Shift+Enter para nueva línea</mat-hint>
+      </mat-form-field>
+
+      <button 
+        mat-fab 
+        color="primary"
+        (click)="sendMessage()"
+        [disabled]="!currentMessage.trim() || loading"
+        class="send-button">
+        <mat-icon>send</mat-icon>
+      </button>
+    </div>
+
+    <!-- Error Message -->
+    <div class="error-message" *ngIf="error">
+      <mat-icon>error</mat-icon>
+      {{ error }}
+    </div>
+  </mat-card>
+
+  <!-- Tarjeta de Ayuda -->
+  <mat-card class="help-card">
+    <mat-card-header>
+      <mat-icon mat-card-avatar>help_outline</mat-icon>
+      <mat-card-title>¿Qué puedo preguntarle?</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <ul class="help-list">
+        <li>
+          <mat-icon>trending_down</mat-icon>
+          <span><strong>Gastos:</strong> "¿Cuánto gasté hoy/ayer/esta semana?"</span>
+        </li>
+        <li>
+          <mat-icon>credit_card</mat-icon>
+          <span><strong>Tarjetas:</strong> "Muéstrame mis tarjetas", "¿Cuál tarjeta tiene más deuda?"</span>
+        </li>
+        <li>
+          <mat-icon>payment</mat-icon>
+          <span><strong>Cuotas:</strong> "Estado de cuotas", "¿Cuándo vence la próxima cuota?"</span>
+        </li>
+        <li>
+          <mat-icon>trending_up</mat-icon>
+          <span><strong>Ingresos:</strong> "Ingresos del mes", "Balance general"</span>
+        </li>
+        <li>
+          <mat-icon>store</mat-icon>
+          <span><strong>Comercios:</strong> "¿Dónde gasté más?", "Top comercios"</span>
+        </li>
+      </ul>
+      <p class="help-note">
+        <mat-icon>info</mat-icon>
+        El chatbot infiere automáticamente el período y contexto de tu pregunta. ¡Solo pregunta naturalmente!
+      </p>
     </mat-card-content>
   </mat-card>
 </div>

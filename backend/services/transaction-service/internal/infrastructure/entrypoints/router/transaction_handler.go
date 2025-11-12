@@ -3,6 +3,7 @@ package router
 import (
 	"database/sql"
 	"encoding/json"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -120,24 +121,31 @@ type ErrorResponse struct {
 
 // CreateTransactionHTTP creates a new transaction
 func (h *TransactionHandler) CreateTransactionHTTP(w http.ResponseWriter, r *http.Request) {
+	log.Println("📥 CreateTransactionHTTP called")
+
 	if r.Method != http.MethodPost {
+		log.Println("❌ Method not allowed")
 		h.writeErrorResponse(w, http.StatusMethodNotAllowed, "Method not allowed", "Only POST method is allowed")
 		return
 	}
 
 	var req CreateTransactionRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		log.Printf("❌ Failed to decode request: %v\n", err)
 		h.writeErrorResponse(w, http.StatusBadRequest, "Invalid request", err.Error())
 		return
 	}
+	log.Printf("✅ Request decoded: type=%s, amount=%.2f\n", req.Type, req.Amount)
 
 	// Basic validation
 	if req.Type == "" {
+		log.Println("❌ Transaction type is required")
 		h.writeErrorResponse(w, http.StatusBadRequest, "Invalid request", "Transaction type is required")
 		return
 	}
 
 	if req.Amount <= 0 {
+		log.Println("❌ Amount must be greater than 0")
 		h.writeErrorResponse(w, http.StatusBadRequest, "Invalid request", "Amount must be greater than 0")
 		return
 	}
@@ -145,9 +153,11 @@ func (h *TransactionHandler) CreateTransactionHTTP(w http.ResponseWriter, r *htt
 	// Get user ID from header (simplified for now)
 	userID := r.Header.Get("X-User-ID")
 	if userID == "" {
+		log.Println("❌ User ID is required")
 		h.writeErrorResponse(w, http.StatusUnauthorized, "Unauthorized", "User ID is required")
 		return
 	}
+	log.Printf("✅ UserID from header: %s\n", userID)
 
 	// Convert to service request
 	serviceReq := service.CreateTransactionRequest{
@@ -174,12 +184,17 @@ func (h *TransactionHandler) CreateTransactionHTTP(w http.ResponseWriter, r *htt
 		serviceReq.Currency = "USD"
 	}
 
+	log.Printf("🔄 Calling transactionService.CreateTransaction for type=%s, amount=%.2f\n", serviceReq.Type, serviceReq.Amount)
+
 	// Create transaction
 	transaction, err := h.transactionService.CreateTransaction(serviceReq, userID)
 	if err != nil {
+		log.Printf("❌ CreateTransaction failed: %v\n", err)
 		h.writeErrorResponse(w, http.StatusInternalServerError, "Failed to create transaction", err.Error())
 		return
 	}
+
+	log.Printf("✅ Transaction created successfully: %s\n", transaction.ID)
 
 	// Convert to response
 	response := h.toTransactionResponse(transaction)

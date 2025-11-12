@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -6,21 +6,18 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatSelectModule } from '@angular/material/select';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
-import { MatTableModule } from '@angular/material/table';
-import { formatDate } from '@angular/common';
-import { ChatbotService, ChatQueryRequest, ReportRequest } from '../../services/chatbot.service';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { ChatbotService, ChatMessage, ChatQueryResponse } from '../../services/chatbot.service';
 
-interface SuggestedAction { type: string; params?: any }
-
-interface QueryTemplate {
-  label: string;
+interface ChatBubble {
+  role: 'user' | 'assistant';
   message: string;
-  description: string;
-  period?: string;
-  contextType: string;
+  timestamp: Date;
+  inferredContext?: string;
+  inferredPeriod?: string;
+  quickSuggestions?: string[];
 }
 
 @Component({
@@ -34,228 +31,148 @@ interface QueryTemplate {
     MatInputModule,
     MatButtonModule,
     MatIconModule,
-    MatSelectModule,
-    MatDatepickerModule,
-    MatNativeDateModule,
-    MatTableModule
+    MatChipsModule,
+    MatProgressSpinnerModule,
+    MatTooltipModule
   ],
   templateUrl: './chatbot.component.html',
   styleUrls: ['./chatbot.component.css']
 })
-export class ChatbotComponent {
+export class ChatbotComponent implements OnInit, AfterViewChecked {
   private readonly api = inject(ChatbotService);
 
-  // Form fields
-  message = '';
-  periodFrom: Date | null = null;
-  periodTo: Date | null = null;
-  selectedType: 'accounts' | 'cards' | 'both' = 'both';
+  @ViewChild('chatContainer') private chatContainer!: ElementRef;
   
-  // New enhanced fields
-  queryType: string = 'custom';
-  quickPeriod: string = 'today';
-  contextFocus: string = 'general';
-
-  // Results
+  // Estado del chat
+  messages: ChatBubble[] = [];
+  currentMessage = '';
   loading = false;
-  answer?: string;
-  suggestions?: SuggestedAction[];
-  chartData?: any;
   error?: string;
+  
+  // Conversación actual
+  conversationId?: string;
+  
+  // Auto-scroll flag
+  private shouldScrollToBottom = false;
 
-  // Query templates for common questions
-  queryTemplates: QueryTemplate[] = [
-    {
-      label: 'Gastos de hoy',
-      message: 'decime los gastos de hoy',
-      description: 'Ver todos los gastos del día actual',
-      period: 'today',
-      contextType: 'expenses'
-    },
-    {
-      label: 'Gastos del mes',
-      message: 'decime los gastos de este mes',
-      description: 'Resumen de gastos mensuales',
-      period: 'month',
-      contextType: 'expenses'
-    },
-    {
-      label: 'Estado de tarjetas',
-      message: 'como están mis tarjetas de crédito',
-      description: 'Saldos y estado actual de tarjetas',
-      period: 'month',
-      contextType: 'cards'
-    },
-    {
-      label: 'Análisis de cuotas',
-      message: 'decime sobre mis planes de cuotas',
-      description: 'Estado de planes e installments',
-      period: 'all',
-      contextType: 'installments'
-    },
-    {
-      label: 'Top comercios',
-      message: 'en qué comercios gasté más este mes',
-      description: 'Ranking de gastos por comercio',
-      period: 'month',
-      contextType: 'merchants'
+  ngOnInit(): void {
+    // Iniciar con mensaje de bienvenida
+    this.messages.push({
+      role: 'assistant',
+      message: '¡Hola! Soy tu asistente financiero. Pregúntame sobre tus gastos, ingresos, tarjetas o cuotas. Por ejemplo:\n\n- "¿Cuánto gasté hoy?"\n- "Muéstrame mis tarjetas"\n- "Estado de cuotas esta semana"',
+      timestamp: new Date()
+    });
+  }
+
+  ngAfterViewChecked(): void {
+    if (this.shouldScrollToBottom) {
+      this.scrollToBottom();
+      this.shouldScrollToBottom = false;
     }
-  ];
+  }
 
-  // Period options
-  periodOptions = [
-    { value: 'today', label: 'Hoy' },
-    { value: 'week', label: 'Esta semana' },
-    { value: 'month', label: 'Este mes' },
-    { value: 'custom', label: 'Período personalizado' }
-  ];
+  sendMessage(): void {
+    if (!this.currentMessage.trim() || this.loading) return;
 
-  // Context focus options
-  contextOptions = [
-    { value: 'general', label: 'Información general' },
-    { value: 'expenses', label: 'Enfoque en gastos' },
-    { value: 'income', label: 'Enfoque en ingresos' },
-    { value: 'cards', label: 'Enfoque en tarjetas' },
-    { value: 'installments', label: 'Enfoque en cuotas' },
-    { value: 'merchants', label: 'Enfoque en comercios' }
-  ];
+    // Agregar mensaje del usuario
+    const userMessage: ChatBubble = {
+      role: 'user',
+      message: this.currentMessage,
+      timestamp: new Date()
+    };
+    this.messages.push(userMessage);
+    this.shouldScrollToBottom = true;
 
-  runQuery(): void {
-    this.error = undefined;
-    this.answer = undefined;
-    this.suggestions = undefined;
+    const messageToSend = this.currentMessage;
+    this.currentMessage = '';
     this.loading = true;
+    this.error = undefined;
 
-    const req: ChatQueryRequest = {
-      message: this.message,
-      period: this.buildPeriod(),
-      filters: this.buildEnhancedFilters()
-    };
+    // Enviar al backend
+    this.api.query({ 
+      message: messageToSend,
+      conversationId: this.conversationId 
+    }).subscribe({
+      next: (response: ChatQueryResponse) => {
+        // Guardar conversationId para continuidad
+        if (response.conversationId) {
+          this.conversationId = response.conversationId;
+          this.api.setCurrentConversation(response.conversationId);
+        }
 
-    this.api.query(req).subscribe({
-      next: (res: any) => {
-        this.answer = res?.reply ?? 'Sin respuesta';
-        this.suggestions = res?.suggestedActions ?? [];
+        // Agregar respuesta del asistente
+        const assistantMessage: ChatBubble = {
+          role: 'assistant',
+          message: response.reply,
+          timestamp: new Date(),
+          inferredContext: response.inferredContext,
+          inferredPeriod: response.inferredPeriod,
+          quickSuggestions: response.quickSuggestions
+        };
+        this.messages.push(assistantMessage);
+        this.shouldScrollToBottom = true;
         this.loading = false;
       },
       error: (err) => {
-        this.error = (err?.error?.error) || (err?.message) || 'Error al consultar el chatbot';
+        this.error = err?.error?.error || err?.message || 'Error al consultar el chatbot';
         this.loading = false;
+        
+        // Agregar mensaje de error como asistente
+        this.messages.push({
+          role: 'assistant',
+          message: `Lo siento, ocurrió un error: ${this.error}`,
+          timestamp: new Date()
+        });
+        this.shouldScrollToBottom = true;
       }
     });
   }
 
-  // New method: Use a query template
-  useTemplate(template: QueryTemplate): void {
-    this.message = template.message;
-    this.contextFocus = template.contextType;
-    
-    // Set period based on template
-    if (template.period) {
-      this.quickPeriod = template.period;
-      this.setPeriodFromQuick();
-    }
-    
-    // Run query immediately
-    setTimeout(() => this.runQuery(), 100);
+  // Usar una sugerencia rápida
+  useSuggestion(suggestion: string): void {
+    this.currentMessage = suggestion;
+    this.sendMessage();
   }
 
-  // New method: Set period from quick selector
-  setPeriodFromQuick(): void {
-    const today = new Date();
-    
-    switch (this.quickPeriod) {
-      case 'today':
-        this.periodFrom = today;
-        this.periodTo = today;
-        break;
-      case 'week':
-        const startOfWeek = new Date(today);
-        startOfWeek.setDate(today.getDate() - today.getDay());
-        this.periodFrom = startOfWeek;
-        this.periodTo = today;
-        break;
-      case 'month':
-        const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-        this.periodFrom = startOfMonth;
-        this.periodTo = today;
-        break;
-      case 'custom':
-        // Keep current dates
-        break;
+  // Iniciar nueva conversación
+  startNewChat(): void {
+    if (confirm('¿Estás seguro de que deseas iniciar una nueva conversación?')) {
+      this.conversationId = undefined;
+      this.api.startNewConversation();
+      this.messages = [{
+        role: 'assistant',
+        message: '¡Nueva conversación iniciada! ¿En qué puedo ayudarte?',
+        timestamp: new Date()
+      }];
+      this.currentMessage = '';
+      this.error = undefined;
     }
   }
 
-  // Enhanced filters building
-  private buildEnhancedFilters() {
-    return {
-      type: this.selectedType,
-      contextFocus: this.contextFocus,
-      quickPeriod: this.quickPeriod
-    };
-  }
-
-  downloadPdf(): void {
-    this.error = undefined;
-    const req: ReportRequest = {
-      title: 'Reporte Chatbot',
-      period: this.buildPeriod(),
-      groupBy: 'type', // default value
-      includeCharts: true,
-      filters: this.buildEnhancedFilters()
-    };
-    this.api.reportPdf(req).subscribe({
-      next: (blob) => {
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'reporte_chatbot.pdf';
-        a.click();
-        window.URL.revokeObjectURL(url);
-      },
-      error: (err) => {
-        this.error = (err?.error?.message) || 'Error al generar PDF';
+  // Scroll al final del chat
+  private scrollToBottom(): void {
+    try {
+      if (this.chatContainer) {
+        this.chatContainer.nativeElement.scrollTop = this.chatContainer.nativeElement.scrollHeight;
       }
-    });
-  }
-
-  loadChart(): void {
-    this.error = undefined;
-    const req: ReportRequest = {
-      period: this.buildPeriod(),
-      groupBy: 'type', // default value
-      includeCharts: true,
-      filters: this.buildEnhancedFilters()
-    };
-    this.api.reportChart(req).subscribe({
-      next: (res) => {
-        this.chartData = res;
-      },
-      error: (err) => {
-        this.error = (err?.error?.message) || 'Error al cargar datos del gráfico';
-      }
-    });
-  }
-
-  runSuggestion(s: SuggestedAction): void {
-    if (!s) return;
-    const t = s.type?.toLowerCase();
-    switch (t) {
-      case 'generate_pdf':
-        this.downloadPdf();
-        break;
-      case 'show_chart':
-        this.loadChart();
-        break;
-      default:
-        // No-op for unknown suggestions
-        break;
+    } catch (err) {
+      console.error('Error al hacer scroll:', err);
     }
   }
 
-  private buildPeriod() {
-    const from = this.periodFrom ? formatDate(this.periodFrom, 'yyyy-MM-dd', 'en-US') : undefined;
-    const to = this.periodTo ? formatDate(this.periodTo, 'yyyy-MM-dd', 'en-US') : undefined;
-    return (from || to) ? { from, to } : undefined;
+  // Formatear timestamp
+  formatTime(date: Date): string {
+    return new Intl.DateTimeFormat('es-AR', {
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(date);
+  }
+
+  // Manejar Enter para enviar
+  onKeyDown(event: KeyboardEvent): void {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      this.sendMessage();
+    }
   }
 }

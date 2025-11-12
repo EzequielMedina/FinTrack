@@ -10,6 +10,9 @@ type ChatbotService interface {
 	HandleQuery(ctx context.Context, req ChatQueryRequest) (ChatQueryResponse, error)
 	GeneratePDF(ctx context.Context, req ReportRequest) ([]byte, error)
 	GenerateChartData(ctx context.Context, req ChartRequest) (ChartResponse, error)
+	// New conversational methods
+	GetConversationHistory(ctx context.Context, userID, conversationID string, limit int) ([]ConversationMessage, error)
+	SaveConversationMessage(ctx context.Context, msg ConversationMessage) error
 }
 
 // DataProvider acceso directo a MySQL compartida
@@ -28,6 +31,10 @@ type DataProvider interface {
 	GetAccountsInfo(ctx context.Context, userID string) ([]AccountInfo, error)
 	GetCardsInfo(ctx context.Context, userID string) ([]CardInfo, error)
 	GetExchangeRates(ctx context.Context, userID string, from, to time.Time) ([]ExchangeRateInfo, error)
+	// Conversation history
+	SaveConversationMessage(ctx context.Context, msg ConversationMessage) error
+	GetConversationHistory(ctx context.Context, userID, conversationID string, limit int) ([]ConversationMessage, error)
+	GetLastConversationContext(ctx context.Context, userID, conversationID string) (*InferredContext, error)
 }
 
 // LLMProvider interfaz al motor LLM (compatible con Ollama, Groq, etc.)
@@ -47,10 +54,11 @@ type Period struct {
 }
 
 type ChatQueryRequest struct {
-	UserID  string         `json:"userId"`
-	Message string         `json:"message"`
-	Period  Period         `json:"period"`
-	Filters map[string]any `json:"filters"`
+	UserID         string         `json:"userId"`
+	Message        string         `json:"message"`
+	ConversationID string         `json:"conversationId"` // New: to track conversation context
+	Period         Period         `json:"period"`         // Optional: will be inferred if not provided
+	Filters        map[string]any `json:"filters"`        // Optional: will be inferred if not provided
 }
 
 type SuggestedAction struct {
@@ -63,6 +71,11 @@ type ChatQueryResponse struct {
 	SuggestedActions []SuggestedAction `json:"suggestedActions"`
 	Insights         []string          `json:"insights"`
 	DataRefs         map[string]any    `json:"dataRefs"`
+	// New conversational fields
+	ConversationID   string   `json:"conversationId"`
+	InferredPeriod   string   `json:"inferredPeriod,omitempty"`   // e.g., "today", "this month"
+	InferredContext  string   `json:"inferredContext,omitempty"`  // e.g., "cards", "expenses"
+	QuickSuggestions []string `json:"quickSuggestions,omitempty"` // Follow-up question suggestions
 }
 
 type ReportRequest struct {
@@ -199,4 +212,23 @@ type ReportData struct {
 	// Installments
 	Installments InstallmentsSummary
 	Plans        []InstallmentPlanInfo
+}
+
+// Conversation history structures
+type ConversationMessage struct {
+	ID             string         `json:"id"`
+	UserID         string         `json:"userId"`
+	ConversationID string         `json:"conversationId"`
+	Role           string         `json:"role"` // "user" or "assistant"
+	Message        string         `json:"message"`
+	ContextData    map[string]any `json:"contextData,omitempty"`
+	CreatedAt      time.Time      `json:"createdAt"`
+}
+
+// Context inference result
+type InferredContext struct {
+	Period           Period
+	ContextFocus     string // "general", "expenses", "income", "cards", "installments", "merchants"
+	PeriodLabel      string // "today", "yesterday", "this month", "last 30 days"
+	DetectedKeywords []string
 }

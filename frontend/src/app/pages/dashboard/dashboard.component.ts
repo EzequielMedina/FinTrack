@@ -123,36 +123,36 @@ export class DashboardComponent implements OnInit, OnDestroy {
     // Tasa de cambio aproximada ARS/USD (puedes obtenerla de un API en el futuro)
     const arsToUsd = 0.0011; // Ejemplo: 1 ARS = 0.0011 USD (aprox 900 ARS = 1 USD)
     
-    // Calcular saldo total de billeteras en ARS
+    // Calcular saldo total en ARS (todas las cuentas excepto CREDIT)
     const walletBalanceARS = accounts
       .filter(account => {
-        const isWallet = account.accountType === AccountType.WALLET;
+        const isNotCredit = account.accountType !== AccountType.CREDIT;
         const isARS = account.currency === Currency.ARS;
         const isActive = account.isActive;
         console.log(`Account ${account.name}: type=${account.accountType}, currency=${account.currency}, active=${isActive}, balance=${account.balance}`);
-        return isWallet && isARS && isActive;
+        return isNotCredit && isARS && isActive;
       })
       .reduce((total, account) => {
-        console.log(`Adding ARS wallet balance: ${account.balance}`);
+        console.log(`Adding ARS balance: ${account.balance}`);
         return total + (account.balance || 0);
       }, 0);
     
-    // Calcular saldo total de billeteras en USD (sin conversiones)
+    // Calcular saldo total en USD (todas las cuentas excepto CREDIT)
     const walletBalanceUSD = accounts
       .filter(account => {
-        const isWallet = account.accountType === AccountType.WALLET;
+        const isNotCredit = account.accountType !== AccountType.CREDIT;
         const isUSD = account.currency === Currency.USD;
         const isActive = account.isActive;
         console.log(`Account ${account.name}: type=${account.accountType}, currency=${account.currency}, active=${isActive}, balance=${account.balance}`);
-        return isWallet && isUSD && isActive;
+        return isNotCredit && isUSD && isActive;
       })
       .reduce((total, account) => {
-        console.log(`Adding USD wallet balance: ${account.balance}`);
+        console.log(`Adding USD balance: ${account.balance}`);
         return total + (account.balance || 0);
       }, 0);
     
-    console.log('ARS wallet balance:', walletBalanceARS);
-    console.log('USD wallet balance (direct only):', walletBalanceUSD);
+    console.log('Total ARS balance:', walletBalanceARS);
+    console.log('Total USD balance:', walletBalanceUSD);
     
     this.totalWalletBalance.set(walletBalanceARS);
     this.totalWalletBalanceUSD.set(walletBalanceUSD);

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/fintrack/chatbot-service/internal/core/ports"
+	"github.com/google/uuid"
 )
 
 type ChatbotServiceImpl struct {
@@ -21,21 +22,50 @@ func NewChatbotService(data ports.DataProvider, llm ports.LLMProvider, report po
 }
 
 func (s *ChatbotServiceImpl) HandleQuery(ctx context.Context, req ports.ChatQueryRequest) (ports.ChatQueryResponse, error) {
-	// Guardrails de periodo
-	if req.Period.From.IsZero() || req.Period.To.IsZero() {
-		now := time.Now()
-		req.Period.From = time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location())
-		req.Period.To = now
+	// Generate conversation ID if not provided
+	if req.ConversationID == "" {
+		req.ConversationID = uuid.New().String()
 	}
 
-	// Extraer contexto específico del frontend
-	contextFocus := getStringFromFilters(req.Filters, "contextFocus", "general")
+	// Get previous conversation context for continuity
+	var prevContext *ports.InferredContext
+	history, _ := s.GetConversationHistory(ctx, req.UserID, req.ConversationID, 10)
 
-	// Detectar intención específica basada en contexto y mensaje
-	useCards := contextFocus == "cards" || strings.Contains(strings.ToLower(req.Message), "tarjeta")
+	// Infer context from message (or use provided period/filters)
+	var inferredCtx ports.InferredContext
+	if req.Period.From.IsZero() || req.Period.To.IsZero() {
+		// Auto-infer from message
+		inferredCtx = InferContextFromMessage(req.Message, prevContext)
+		req.Period = inferredCtx.Period
+	} else {
+		// Use provided period but still infer context
+		inferredCtx = InferContextFromMessage(req.Message, prevContext)
+		inferredCtx.Period = req.Period
+	}
 
-	// Sistema prompt optimizado según el contexto
-	system := buildContextualPrompt(contextFocus)
+	contextFocus := inferredCtx.ContextFocus
+	if customContext := getStringFromFilters(req.Filters, "contextFocus", ""); customContext != "" {
+		contextFocus = customContext
+		inferredCtx.ContextFocus = customContext
+	}
+
+	// Save user message to history
+	userMsg := ports.ConversationMessage{
+		ID:             uuid.New().String(),
+		UserID:         req.UserID,
+		ConversationID: req.ConversationID,
+		Role:           "user",
+		Message:        req.Message,
+		ContextData: map[string]any{
+			"inferredPeriod":  inferredCtx.PeriodLabel,
+			"inferredContext": inferredCtx.ContextFocus,
+		},
+		CreatedAt: time.Now(),
+	}
+	_ = s.SaveConversationMessage(ctx, userMsg)
+
+	// Build conversational prompt with history
+	system := buildConversationalPrompt(history, contextFocus)
 	var user string
 	var reply string
 
@@ -52,27 +82,25 @@ func (s *ChatbotServiceImpl) HandleQuery(ctx context.Context, req ports.ChatQuer
 	var ctxText string
 	switch contextFocus {
 	case "cards":
-		if useCards {
-			byCard, _ := s.data.GetByCard(ctx, req.UserID, req.Period.From, req.Period.To)
-			cardsInfo, _ := s.data.GetCardsInfo(ctx, req.UserID)
-			byType, _ := s.data.GetByType(ctx, req.UserID, req.Period.From, req.Period.To)
+		byCard, _ := s.data.GetByCard(ctx, req.UserID, req.Period.From, req.Period.To)
+		cardsInfo, _ := s.data.GetCardsInfo(ctx, req.UserID)
+		byType, _ := s.data.GetByType(ctx, req.UserID, req.Period.From, req.Period.To)
 
-			// Incluir pagos de cuotas como gastos con tarjetas
-			installmentPayments := getVal(byType, "installment_payment")
-			creditCharges := getVal(byType, "credit_charge")
-			debitPurchases := getVal(byType, "debit_purchase")
-			totalCardExpenses := getTotalFromByCard(byCard) + installmentPayments + creditCharges + debitPurchases
+		// Incluir pagos de cuotas como gastos con tarjetas
+		installmentPayments := getVal(byType, "installment_payment")
+		creditCharges := getVal(byType, "credit_charge")
+		debitPurchases := getVal(byType, "debit_purchase")
+		totalCardExpenses := getTotalFromByCard(byCard) + installmentPayments + creditCharges + debitPurchases
 
-			ctxText = fmt.Sprintf(`TARJETAS: %s
+		ctxText = fmt.Sprintf(`TARJETAS: %s
 GASTOS CON TARJETAS PERÍODO: $%.2f
 - Consumos directos: $%.2f
 - Pagos de cuotas: $%.2f  
 - Cargos de crédito: $%.2f
 - Compras débito: $%.2f
 GASTOS TOTALES: $%.2f | INGRESOS: $%.2f`,
-				formatCards(cardsInfo), totalCardExpenses, getTotalFromByCard(byCard),
-				installmentPayments, creditCharges, debitPurchases, totals.Expenses, totals.Incomes)
-		}
+			formatCards(cardsInfo), totalCardExpenses, getTotalFromByCard(byCard),
+			installmentPayments, creditCharges, debitPurchases, totals.Expenses, totals.Incomes)
 	case "installments":
 		byType, _ := s.data.GetByType(ctx, req.UserID, req.Period.From, req.Period.To)
 		installmentPayments := getVal(byType, "installment_payment")
@@ -136,14 +164,38 @@ DETALLE PLANES: %s`,
 		reply = r
 	}
 
+	// Generate contextual quick suggestions
+	hasData := totals.Expenses > 0 || totals.Incomes > 0
+	quickSuggestions := GenerateQuickSuggestions(contextFocus, hasData)
+
+	// Save assistant response to history
+	assistantMsg := ports.ConversationMessage{
+		ID:             uuid.New().String(),
+		UserID:         req.UserID,
+		ConversationID: req.ConversationID,
+		Role:           "assistant",
+		Message:        reply,
+		ContextData: map[string]any{
+			"inferredPeriod":  inferredCtx.PeriodLabel,
+			"inferredContext": inferredCtx.ContextFocus,
+			"totals":          totals,
+		},
+		CreatedAt: time.Now(),
+	}
+	_ = s.SaveConversationMessage(ctx, assistantMsg)
+
 	return ports.ChatQueryResponse{
 		Reply: reply,
 		SuggestedActions: []ports.SuggestedAction{
 			{Type: "generate_pdf", Params: map[string]any{"period": map[string]string{"from": req.Period.From.Format("2006-01-02"), "to": req.Period.To.Format("2006-01-02")}}},
 			{Type: "show_chart", Params: map[string]any{"chartType": "bar", "groupBy": "account"}},
 		},
-		Insights: []string{"Revisa categorías con mayor gasto", "Considera presupuesto semanal"},
-		DataRefs: map[string]any{"totals": totals, "installments": instSummary, "plans": plans},
+		Insights:         []string{"Revisa categorías con mayor gasto", "Considera presupuesto semanal"},
+		DataRefs:         map[string]any{"totals": totals, "installments": instSummary, "plans": plans},
+		ConversationID:   req.ConversationID,
+		InferredPeriod:   inferredCtx.PeriodLabel,
+		InferredContext:  inferredCtx.ContextFocus,
+		QuickSuggestions: quickSuggestions,
 	}, nil
 }
 
@@ -423,4 +475,68 @@ func getTotalFromByCard(byCard []ports.CardTotal) float64 {
 		total += ct.Total
 	}
 	return total
+}
+
+// === CONVERSATIONAL METHODS ===
+
+// GetConversationHistory retrieves conversation messages
+func (s *ChatbotServiceImpl) GetConversationHistory(ctx context.Context, userID, conversationID string, limit int) ([]ports.ConversationMessage, error) {
+	return s.data.GetConversationHistory(ctx, userID, conversationID, limit)
+}
+
+// SaveConversationMessage saves a conversation message
+func (s *ChatbotServiceImpl) SaveConversationMessage(ctx context.Context, msg ports.ConversationMessage) error {
+	return s.data.SaveConversationMessage(ctx, msg)
+}
+
+// buildConversationalPrompt creates a prompt with conversation history context
+func buildConversationalPrompt(history []ports.ConversationMessage, contextFocus string) string {
+	base := `Eres FinTrack Assistant, un asistente financiero personal amigable y eficiente.
+
+INSTRUCCIONES:
+1. Responde en ESPAÑOL de forma natural y conversacional
+2. Usa el historial de la conversación para dar respuestas coherentes
+3. Cuando el usuario dice "y eso?" o "¿cuál?", refiérete al mensaje anterior
+4. Sé conciso pero informativo (máximo 3-4 líneas por defecto)
+5. Si el usuario pide más detalles, entonces expándete
+6. Usa emojis moderadamente (💰 💳 📊 ✅ ❌)
+7. Formatea números con separadores: $322,000.95
+8. IMPORTANTE: Los pagos de cuotas SON GASTOS
+
+`
+
+	// Add context focus specific instructions
+	switch contextFocus {
+	case "expenses":
+		base += "ENFOQUE ACTUAL: Analiza GASTOS (incluye cuotas, compras, pagos)\n"
+	case "income":
+		base += "ENFOQUE ACTUAL: Analiza INGRESOS (sueldos, depósitos, cobros)\n"
+	case "cards":
+		base += "ENFOQUE ACTUAL: Analiza TARJETAS (límites, deudas, vencimientos)\n"
+	case "installments":
+		base += "ENFOQUE ACTUAL: Analiza CUOTAS Y PLANES (vencimientos, montos, estados)\n"
+	case "merchants":
+		base += "ENFOQUE ACTUAL: Analiza COMERCIOS (donde se gasta más)\n"
+	default:
+		base += "ENFOQUE ACTUAL: Información general financiera\n"
+	}
+
+	// Add last 3 messages from history for context
+	if len(history) > 0 {
+		base += "\nCONTEXTO DE CONVERSACIÓN:\n"
+		start := 0
+		if len(history) > 3 {
+			start = len(history) - 3
+		}
+		for i := start; i < len(history); i++ {
+			msg := history[i]
+			role := "Usuario"
+			if msg.Role == "assistant" {
+				role = "Tú"
+			}
+			base += fmt.Sprintf("%s: %s\n", role, msg.Message)
+		}
+	}
+
+	return base
 }
