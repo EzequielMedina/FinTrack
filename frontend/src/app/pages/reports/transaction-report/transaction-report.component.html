@@ -1,0 +1,155 @@
+<div class="transaction-report-container">
+  <!-- Header -->
+  <div class="report-header">
+    <div class="header-content">
+      <h1>📊 Reporte de Transacciones</h1>
+      <div class="header-actions">
+        <button 
+          class="btn-download-pdf" 
+          (click)="downloadPDF()" 
+          [disabled]="downloadingPDF || isLoading || !report">
+          📄 {{ downloadingPDF ? 'Generando PDF...' : 'Descargar PDF' }}
+        </button>
+        <button class="btn-back" routerLink="/reports">← Volver a Reportes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-card">
+    <h3>Filtros</h3>
+    <div class="filters-grid">
+      <div class="filter-group">
+        <label for="startDate">Fecha Inicio:</label>
+        <input type="date" id="startDate" [(ngModel)]="startDate" class="form-control">
+      </div>
+
+      <div class="filter-group">
+        <label for="endDate">Fecha Fin:</label>
+        <input type="date" id="endDate" [(ngModel)]="endDate" class="form-control">
+      </div>
+
+      <div class="filter-group">
+        <label for="type">Tipo de Transacción:</label>
+        <select id="type" [(ngModel)]="selectedType" class="form-control">
+          <option *ngFor="let type of transactionTypes" [value]="type.value">
+            {{ type.label }}
+          </option>
+        </select>
+      </div>
+
+      <div class="filter-actions">
+        <button class="btn-primary" (click)="applyFilters()">Aplicar Filtros</button>
+        <button class="btn-secondary" (click)="resetFilters()">Resetear</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Cargando reporte...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error" class="error-container">
+    <p>{{ error }}</p>
+    <button class="btn-retry" (click)="loadReport()">Reintentar</button>
+  </div>
+
+  <!-- Report Content -->
+  <div *ngIf="report && !isLoading && !error" class="report-content">
+    
+    <!-- Summary Cards -->
+    <div class="summary-grid">
+      <div class="summary-card income">
+        <div class="card-icon">💰</div>
+        <div class="card-content">
+          <h4>Total Ingresos</h4>
+          <p class="amount">{{ formatCurrency(report.summary.total_income) }}</p>
+          <span class="count">{{ report.summary.total_transactions }} transacciones</span>
+        </div>
+      </div>
+
+      <div class="summary-card expense">
+        <div class="card-icon">💸</div>
+        <div class="card-content">
+          <h4>Total Gastos</h4>
+          <p class="amount">{{ formatCurrency(report.summary.total_expenses) }}</p>
+          <span class="count">Promedio: {{ formatCurrency(report.summary.avg_transaction) }}</span>
+        </div>
+      </div>
+
+      <div class="summary-card balance" [class.positive]="report.summary.net_balance > 0" [class.negative]="report.summary.net_balance < 0">
+        <div class="card-icon">📈</div>
+        <div class="card-content">
+          <h4>Balance Neto</h4>
+          <p class="amount">{{ formatCurrency(report.summary.net_balance) }}</p>
+          <span class="count">{{ report.period.days }} días</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Transactions by Type -->
+    <div class="chart-card">
+      <div class="card-header">
+        <h3>💹 Transacciones por Tipo</h3>
+        <button class="btn-export" (click)="exportReport()">📥 Exportar CSV</button>
+      </div>
+      <div class="type-list">
+        <div *ngFor="let item of report.by_type" class="type-item">
+          <div class="type-info">
+            <span class="type-name">{{ getTypeLabel(item.type) }}</span>
+            <span class="type-count">{{ item.count }} transacciones</span>
+          </div>
+          <div class="type-bar-container">
+            <div class="type-bar" [style.width.%]="item.percentage"></div>
+            <span class="type-amount">{{ formatCurrency(item.amount) }}</span>
+          </div>
+          <span class="type-percentage">{{ item.percentage.toFixed(1) }}%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Timeline Chart (Simple representation) -->
+    <div class="chart-card">
+      <h3>📅 Flujo de Transacciones</h3>
+      <div class="timeline-chart">
+        <div *ngFor="let period of report.by_period" class="timeline-item">
+          <div class="timeline-date">{{ formatDate(period.date) }}</div>
+          <div class="timeline-bars">
+            <div class="bar-income" [style.height.px]="(period.income / 10000) * 100" [title]="'Ingresos: ' + formatCurrency(period.income)">
+              <span class="bar-label">{{ formatCurrency(period.income) }}</span>
+            </div>
+            <div class="bar-expense" [style.height.px]="(period.expenses / 10000) * 100" [title]="'Gastos: ' + formatCurrency(period.expenses)">
+              <span class="bar-label">{{ formatCurrency(period.expenses) }}</span>
+            </div>
+          </div>
+          <div class="timeline-count">{{ period.count }} trans.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top Expenses -->
+    <div class="chart-card">
+      <h3>🏆 Top Gastos</h3>
+      <div class="expenses-list">
+        <div *ngFor="let expense of report.top_expenses; let i = index" class="expense-item">
+          <div class="expense-rank">{{ i + 1 }}</div>
+          <div class="expense-info">
+            <h4>{{ expense.description }}</h4>
+            <p class="expense-meta">
+              <span>{{ formatDate(expense.date) }}</span>
+              <span *ngIf="expense.merchant_name" class="merchant">{{ expense.merchant_name }}</span>
+              <span class="type-badge">{{ getTypeLabel(expense.type) }}</span>
+            </p>
+          </div>
+          <div class="expense-amount">
+            {{ formatCurrency(expense.amount) }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

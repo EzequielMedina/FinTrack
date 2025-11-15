@@ -23,6 +23,21 @@ func (m *mockRepo) GetByEmail(email string) (*domuser.User, error) { return m.by
 func (m *mockRepo) GetByID(id string) (*domuser.User, error)       { return m.byID, m.getErr }
 func (m *mockRepo) Create(u *domuser.User) error                   { m.created = u; return m.createErr }
 
+// Implement the new interface methods for compatibility
+func (m *mockRepo) Update(u *domuser.User) error                           { return nil }
+func (m *mockRepo) Delete(id string) error                                 { return nil }
+func (m *mockRepo) GetAll(limit, offset int) ([]*domuser.User, int, error) { return nil, 0, nil }
+func (m *mockRepo) GetByRole(role domuser.Role, limit, offset int) ([]*domuser.User, int, error) {
+	return nil, 0, nil
+}
+func (m *mockRepo) GetActiveUsers(limit, offset int) ([]*domuser.User, int, error) {
+	return nil, 0, nil
+}
+func (m *mockRepo) ExistsByEmail(email string) (bool, error)          { return m.byEmail != nil, nil }
+func (m *mockRepo) ExistsByID(id string) (bool, error)                { return m.byID != nil, nil }
+func (m *mockRepo) UpdateLastLogin(id string) error                   { return nil }
+func (m *mockRepo) ToggleActiveStatus(id string, isActive bool) error { return nil }
+
 func TestRegister_Success(t *testing.T) {
 	repo := &mockRepo{byEmail: nil}
 	svc := NewAuthService(repo, "secret", time.Minute, time.Hour)

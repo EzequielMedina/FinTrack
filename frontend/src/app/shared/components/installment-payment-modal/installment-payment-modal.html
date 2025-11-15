@@ -1,0 +1,229 @@
+<div class="installment-payment-modal">
+  <!-- Modal Header -->
+  <div class="modal-header">
+    <div class="header-content">
+      <mat-icon class="header-icon">payment</mat-icon>
+      <div class="header-text">
+        <h2>Pagar Cuotas</h2>
+        <p class="subtitle">{{ data.installmentPlan.description || 'Plan de cuotas' }}</p>
+      </div>
+    </div>
+    <button mat-icon-button class="close-button" (click)="onCancel()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <!-- Modal Content -->
+  <div class="modal-content">
+    <!-- Loading State -->
+    <div class="loading-container" *ngIf="isLoading">
+      <mat-spinner diameter="40"></mat-spinner>
+      <p>Cargando cuotas...</p>
+    </div>
+
+    <!-- Content -->
+    <div class="content-container" *ngIf="!isLoading">
+      <!-- Plan Summary -->
+      <mat-card class="plan-summary-card">
+        <mat-card-title>
+          <mat-icon>info</mat-icon>
+          Resumen del Plan
+        </mat-card-title>
+        <mat-card-content>
+          <div class="summary-grid">
+            <div class="summary-item">
+              <span class="label">Progreso</span>
+              <div class="progress-container">
+                <mat-progress-bar 
+                  mode="determinate" 
+                  [value]="getProgressPercentage()">
+                </mat-progress-bar>
+                <span class="progress-text">{{ getProgressPercentage() | number:'1.0-1' }}%</span>
+              </div>
+            </div>
+            <div class="summary-item">
+              <span class="label">Total Pagado</span>
+              <span class="value success">{{ getPaidAmount() | currency:'ARS':'symbol':'1.2-2' }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="label">Pendiente</span>
+              <span class="value warn">{{ getRemainingAmount() | currency:'ARS':'symbol':'1.2-2' }}</span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Quick Actions -->
+      <mat-card class="quick-actions-card">
+        <mat-card-title>
+          <mat-icon>flash_on</mat-icon>
+          Acciones Rápidas
+        </mat-card-title>
+        <mat-card-content>
+          <div class="action-buttons">
+            <button 
+              mat-stroked-button 
+              color="primary" 
+              class="action-button"
+              *ngIf="nextDueInstallment"
+              (click)="selectNextInstallment()">
+              <mat-icon>schedule</mat-icon>
+              Próxima Cuota
+            </button>
+            <button 
+              mat-stroked-button 
+              color="warn" 
+              class="action-button"
+              *ngIf="overdueInstallments.length > 0"
+              (click)="selectOverdueInstallments()">
+              <mat-icon>warning</mat-icon>
+              Vencidas ({{ overdueInstallments.length }})
+            </button>
+            <button 
+              mat-stroked-button 
+              color="accent" 
+              class="action-button"
+              (click)="selectAllPending()">
+              <mat-icon>select_all</mat-icon>
+              Todas Pendientes
+            </button>
+            <button 
+              mat-stroked-button 
+              class="action-button"
+              (click)="clearSelection()">
+              <mat-icon>clear_all</mat-icon>
+              Limpiar
+            </button>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Installments List -->
+      <mat-card class="installments-card">
+        <mat-card-title>
+          <mat-icon>list</mat-icon>
+          Cuotas ({{ installments.length }})
+        </mat-card-title>
+        <mat-card-content>
+          <div class="installments-list">
+            <div 
+              *ngFor="let installment of installments; trackBy: trackByInstallmentId"
+              class="installment-item"
+              [class.selected]="isInstallmentSelected(installment.id)"
+              [class.overdue]="isInstallmentOverdue(installment)"
+              [class.paid]="installment.status === InstallmentStatus.PAID"
+              [class.disabled]="!canSelectInstallment(installment)"
+              (click)="canSelectInstallment(installment) && toggleInstallmentSelection(installment)">
+              
+              <mat-checkbox 
+                class="installment-checkbox"
+                [checked]="isInstallmentSelected(installment.id)"
+                [disabled]="!canSelectInstallment(installment)"
+                (click)="$event.stopPropagation()"
+                (change)="toggleInstallmentSelection(installment)">
+              </mat-checkbox>
+
+              <div class="installment-content">
+                <div class="installment-header">
+                  <div class="installment-number">
+                    <mat-icon [color]="getInstallmentStatusColor(installment.status)">
+                      {{ getInstallmentStatusIcon(installment) }}
+                    </mat-icon>
+                    <span class="number">Cuota #{{ installment.installmentNumber }}</span>
+                  </div>
+                  <div class="installment-amount">
+                    <span class="amount">{{ installment.remainingAmount | currency:'ARS':'symbol':'1.2-2' }}</span>
+                    <mat-chip 
+                      class="status-chip" 
+                      [color]="getInstallmentStatusColor(installment.status)">
+                      {{ installment.status | titlecase }}
+                    </mat-chip>
+                  </div>
+                </div>
+
+                <div class="installment-details">
+                  <div class="detail-item">
+                    <mat-icon>calendar_today</mat-icon>
+                    <span>Vencimiento: {{ installment.dueDate | date:'dd/MM/yyyy' }}</span>
+                  </div>
+                  <div class="detail-item" *ngIf="installment.status === InstallmentStatus.PAID && installment.paidDate">
+                    <mat-icon>check_circle</mat-icon>
+                    <span>Pagado: {{ installment.paidDate | date:'dd/MM/yyyy' }}</span>
+                  </div>
+                  <div class="detail-item" *ngIf="isInstallmentOverdue(installment)">
+                    <mat-icon>warning</mat-icon>
+                    <span>Cuota vencida</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Payment Form -->
+      <mat-card class="payment-form-card" *ngIf="selectedInstallments.size > 0">
+        <mat-card-title>
+          <mat-icon>payment</mat-icon>
+          Información de Pago
+        </mat-card-title>
+        <mat-card-content>
+          <form [formGroup]="paymentForm" class="payment-form">
+            <div class="form-row">
+              <mat-form-field class="form-field">
+                <mat-label>Método de Pago</mat-label>
+                <mat-select formControlName="paymentMethod">
+                  <mat-option *ngFor="let method of paymentMethods" [value]="method.value">
+                    {{ method.label }}
+                  </mat-option>
+                </mat-select>
+                <mat-error *ngIf="paymentForm.get('paymentMethod')?.hasError('required')">
+                  Método de pago requerido
+                </mat-error>
+              </mat-form-field>
+
+              <mat-form-field class="form-field">
+                <mat-label>Referencia de Pago</mat-label>
+                <input matInput formControlName="paymentReference" placeholder="Ej: Transferencia #123456">
+                <mat-error *ngIf="paymentForm.get('paymentReference')?.hasError('required')">
+                  Referencia requerida
+                </mat-error>
+              </mat-form-field>
+            </div>
+
+            <mat-form-field class="form-field full-width">
+              <mat-label>Notas (Opcional)</mat-label>
+              <textarea matInput formControlName="notes" rows="3" placeholder="Notas adicionales sobre el pago"></textarea>
+            </mat-form-field>
+          </form>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+
+  <!-- Modal Actions -->
+  <div class="modal-actions">
+    <div class="payment-summary">
+      <div class="summary-text" *ngIf="selectedInstallments.size > 0">
+        <div class="count">{{ selectedInstallments.size }} cuota(s) seleccionada(s)</div>
+        <div class="total">Total: {{ totalToPay | currency:'ARS':'symbol':'1.2-2' }}</div>
+      </div>
+    </div>
+
+    <div class="action-buttons">
+      <button mat-button (click)="onCancel()">
+        Cancelar
+      </button>
+      <button 
+        mat-raised-button 
+        color="primary" 
+        class="pay-button"
+        [disabled]="selectedInstallments.size === 0 || paymentForm.invalid || isProcessingPayment"
+        (click)="processPayment()">
+        <mat-spinner diameter="20" *ngIf="isProcessingPayment"></mat-spinner>
+        <mat-icon *ngIf="!isProcessingPayment">payment</mat-icon>
+        {{ isProcessingPayment ? 'Procesando...' : 'Pagar ' + selectedInstallments.size + ' Cuota(s)' }}
+      </button>
+    </div>
+  </div>
+</div>

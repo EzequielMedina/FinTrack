@@ -1,0 +1,126 @@
+<div class="account-report-container">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>account_balance</mat-icon>
+        Reporte de Cuentas y Tarjetas
+      </mat-card-title>
+      <div class="header-actions" *ngIf="!error && reportData">
+        <button 
+          mat-raised-button 
+          color="primary"
+          (click)="downloadPDF()" 
+          [disabled]="downloadingPDF || loading">
+          <mat-icon>picture_as_pdf</mat-icon>
+          <span>{{ downloadingPDF ? 'Generando PDF...' : 'Descargar PDF' }}</span>
+        </button>
+      </div>
+    </mat-card-header>
+
+    <mat-card-content>
+      <div *ngIf="loading" class="loading-container">
+        <mat-spinner></mat-spinner>
+        <p>Cargando reporte de cuentas...</p>
+      </div>
+
+      <div *ngIf="error && !loading" class="error-message">
+        <mat-icon>error</mat-icon>
+        <p>{{ error }}</p>
+        <button mat-raised-button color="primary" (click)="loadReport()">
+          Reintentar
+        </button>
+      </div>
+
+      <div *ngIf="reportData && !loading" class="report-content">
+        <!-- Resumen General -->
+        <div class="summary-section">
+          <h3>Resumen General</h3>
+          <div class="summary-grid">
+            <div class="summary-card">
+              <mat-icon>account_balance_wallet</mat-icon>
+              <div class="summary-info">
+                <span class="summary-label">Total Cuentas</span>
+                <span class="summary-value">{{ reportData.summary.total_accounts }}</span>
+              </div>
+            </div>
+
+            <div class="summary-card">
+              <mat-icon>credit_card</mat-icon>
+              <div class="summary-info">
+                <span class="summary-label">Total Tarjetas</span>
+                <span class="summary-value">{{ reportData.summary.total_cards }}</span>
+              </div>
+            </div>
+
+            <div class="summary-card balance">
+              <mat-icon>attach_money</mat-icon>
+              <div class="summary-info">
+                <span class="summary-label">Balance Total</span>
+                <span class="summary-value">{{ formatCurrency(reportData.summary.total_balance) }}</span>
+              </div>
+            </div>
+
+            <div class="summary-card credit">
+              <mat-icon>card_membership</mat-icon>
+              <div class="summary-info">
+                <span class="summary-label">Crédito Disponible</span>
+                <span class="summary-value">{{ formatCurrency(reportData.summary.available_credit) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Distribución por Tipo -->
+        <div class="distribution-section" *ngIf="reportData.distribution && reportData.distribution.length > 0">
+          <h3>Distribución por Tipo de Cuenta</h3>
+          <div class="type-list">
+            <div class="type-item" *ngFor="let item of reportData.distribution">
+              <div class="type-header">
+                <mat-icon>{{ getTypeIcon(item.account_type) }}</mat-icon>
+                <span class="type-name">{{ getAccountTypeLabel(item.account_type) }}</span>
+              </div>
+              <div class="type-stats">
+                <span class="type-count">{{ item.count }} cuenta(s)</span>
+                <span class="type-balance">{{ formatCurrency(item.total_balance) }}</span>
+              </div>
+              <div class="type-bar">
+                <div class="type-bar-fill" 
+                     [style.width.%]="item.percentage">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Utilización de Crédito -->
+        <div class="credit-section" *ngIf="reportData.cards && reportData.cards.length > 0">
+          <h3>Tarjetas de Crédito</h3>
+          <div class="credit-list">
+            <div class="credit-item" *ngFor="let card of reportData.cards">
+              <div class="credit-header">
+                <span class="card-name">{{ card.nickname || (card.card_brand + ' *' + card.last_four_digits) }}</span>
+                <span class="credit-percentage" 
+                      *ngIf="card.credit_limit && card.current_balance"
+                      [class.warning]="(card.current_balance / card.credit_limit * 100) > 70"
+                      [class.danger]="(card.current_balance / card.credit_limit * 100) > 90">
+                  {{ formatPercentage(card.current_balance / card.credit_limit * 100) }}
+                </span>
+              </div>
+              <div class="credit-details">
+                <span>Usado: {{ formatCurrency(card.current_balance || 0) }}</span>
+                <span>Límite: {{ formatCurrency(card.credit_limit || 0) }}</span>
+              </div>
+              <div class="credit-bar" *ngIf="card.credit_limit">
+                <div class="credit-bar-fill" 
+                     [style.width.%]="(card.current_balance || 0) / card.credit_limit * 100"
+                     [class.warning]="((card.current_balance || 0) / card.credit_limit * 100) > 70"
+                     [class.danger]="((card.current_balance || 0) / card.credit_limit * 100) > 90">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

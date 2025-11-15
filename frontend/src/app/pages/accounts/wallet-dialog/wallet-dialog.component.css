@@ -1,0 +1,409 @@
+/* Wallet Dialog Component Styles */
+.wallet-dialog {
+  width: 100%;
+  max-width: 600px;
+}
+
+/* Dialog Header */
+.dialog-header {
+  text-align: center;
+  padding: 20px 0;
+  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 20px;
+}
+
+.dialog-header h2 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 0 0 10px 0;
+  color: #1f2937;
+  font-weight: 600;
+}
+
+.dialog-header h2 mat-icon {
+  color: #3b82f6;
+  font-size: 28px;
+  width: 28px;
+  height: 28px;
+}
+
+.account-info {
+  color: #6b7280;
+  font-size: 1rem;
+  margin: 0 0 15px 0;
+}
+
+.current-balance {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 15px;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border-radius: 8px;
+  border: 1px solid #bae6fd;
+}
+
+.balance-label {
+  color: #0369a1;
+  font-weight: 500;
+}
+
+.balance-amount {
+  color: #0c4a6e;
+  font-weight: 700;
+  font-size: 1.25rem;
+}
+
+/* Tab Content */
+.tab-content {
+  padding: 20px 0;
+}
+
+/* Form Fields */
+.full-width {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+/* Quick Amounts */
+.quick-amounts {
+  margin: 20px 0;
+}
+
+.quick-amounts h4 {
+  color: #374151;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin: 0 0 10px 0;
+}
+
+.quick-amount-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.quick-amount-buttons button {
+  font-size: 0.85rem;
+  padding: 8px 16px;
+  border-radius: 20px;
+}
+
+/* Transaction Summary */
+.transaction-summary {
+  padding: 20px;
+  border-radius: 8px;
+  margin: 20px 0;
+  border: 1px solid #e5e7eb;
+}
+
+.transaction-summary.add-funds {
+  background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);
+  border-color: #bbf7d0;
+}
+
+.transaction-summary.withdraw-funds {
+  background: linear-gradient(135deg, #fef2f2 0%, #fef7f7 100%);
+  border-color: #fecaca;
+}
+
+.transaction-summary h4 {
+  color: #374151;
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 15px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.summary-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(0,0,0,0.1);
+}
+
+.summary-line:last-child {
+  border-bottom: none;
+}
+
+.summary-line.total {
+  font-weight: 600;
+  padding-top: 15px;
+  border-top: 2px solid rgba(0,0,0,0.1);
+  margin-top: 10px;
+}
+
+.summary-line.new-balance {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #059669;
+  background: rgba(5, 150, 105, 0.1);
+  padding: 10px;
+  border-radius: 4px;
+  margin-top: 10px;
+}
+
+.summary-line.new-balance span:last-child {
+  color: #047857;
+}
+
+/* Insufficient Funds */
+.insufficient-funds {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+  color: #dc2626;
+}
+
+.insufficient-funds mat-icon {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+  color: #fbbf24;
+  margin-bottom: 15px;
+}
+
+.insufficient-funds h3 {
+  color: #dc2626;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 10px 0;
+}
+
+.insufficient-funds p {
+  color: #6b7280;
+  margin: 0;
+}
+
+/* Dialog Actions */
+mat-dialog-actions {
+  padding: 20px 24px !important;
+  background: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+}
+
+mat-dialog-actions button {
+  margin-left: 10px;
+}
+
+mat-dialog-actions button mat-spinner {
+  margin-right: 8px;
+}
+
+/* Loading State */
+mat-spinner {
+  display: inline-block;
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+  .wallet-dialog {
+    max-width: 100%;
+  }
+
+  .dialog-header {
+    padding: 15px 0;
+  }
+
+  .tab-content {
+    padding: 15px 0;
+  }
+
+  .quick-amount-buttons {
+    flex-direction: column;
+  }
+
+  .quick-amount-buttons button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .current-balance {
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .summary-line {
+    font-size: 0.9rem;
+  }
+
+  .transaction-summary {
+    padding: 15px;
+    margin: 15px 0;
+  }
+
+  mat-dialog-actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  mat-dialog-actions button {
+    width: 100%;
+    margin: 0;
+  }
+}
+
+/* Form Validation Styles */
+.mat-mdc-form-field.mat-form-field-invalid .mat-mdc-text-field-wrapper {
+  border-color: #dc2626 !important;
+}
+
+/* Animations */
+.transaction-summary {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Tab Styling */
+::ng-deep .mat-mdc-tab-group {
+  margin-bottom: 20px;
+}
+
+::ng-deep .mat-mdc-tab-label {
+  font-weight: 500;
+}
+
+::ng-deep .mat-mdc-tab-label-active {
+  font-weight: 600;
+}
+
+/* Exchange Rates Section */
+.exchange-rates-card {
+  margin: 20px 0;
+  border: 1px solid #0ea5e9;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.1);
+}
+
+.exchange-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.exchange-icon {
+  color: #0ea5e9;
+  font-size: 24px !important;
+  width: 24px !important;
+  height: 24px !important;
+}
+
+.exchange-title {
+  color: #1e40af;
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin: 0;
+  flex: 1;
+}
+
+.exchange-spinner {
+  margin-left: auto;
+}
+
+.exchange-rates-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.exchange-rate-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 8px;
+  border: 1px solid #bae6fd;
+  text-align: center;
+}
+
+.exchange-rate-item.buy {
+  border-left: 4px solid #059669;
+}
+
+.exchange-rate-item.sell {
+  border-left: 4px solid #dc2626;
+}
+
+.rate-label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #64748b;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.rate-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.exchange-rate-item.buy .rate-value {
+  color: #059669;
+}
+
+.exchange-rate-item.sell .rate-value {
+  color: #dc2626;
+}
+
+.exchange-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: center;
+  color: #6b7280;
+  font-size: 0.85rem;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 6px;
+  border: 1px solid #e0f2fe;
+}
+
+.exchange-info mat-icon {
+  font-size: 16px !important;
+  width: 16px !important;
+  height: 16px !important;
+  color: #3b82f6;
+}
+
+.exchange-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  color: #ef4444;
+  font-size: 0.9rem;
+  padding: 12px;
+  background: rgba(254, 226, 226, 0.5);
+  border-radius: 6px;
+  border: 1px solid #fecaca;
+}
+
+.exchange-error mat-icon {
+  font-size: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+}

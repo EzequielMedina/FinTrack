@@ -1,0 +1,41 @@
+<div class="reports-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1>Reportes</h1>
+      <p class="subtitle">Análisis y visualización de datos financieros</p>
+    </div>
+  </div>
+
+  <!-- Reports Grid -->
+  <div class="reports-grid">
+    <div 
+      *ngFor="let report of getVisibleReports()" 
+      class="report-card"
+      (click)="navigateToReport(report.route)"
+    >
+      <div class="report-icon">
+        <img [src]="getReportIcon(report.icon)" class="icon icon-lg" [alt]="report.title">
+      </div>
+      <div class="report-content">
+        <h3>{{ report.title }}</h3>
+        <p>{{ report.description }}</p>
+      </div>
+      <button class="btn btn-outline btn-sm">
+        Ver Reporte
+        <img src="assets/icons/arrow-up.svg" class="icon icon-xs" alt="→" style="transform: rotate(90deg);">
+      </button>
+    </div>
+  </div>
+
+  <!-- Quick Info -->
+  <div class="quick-info" *ngIf="userId">
+    <div class="info-card-horizontal">
+      <img src="assets/icons/chart-up.svg" class="icon icon-md" alt="Info">
+      <div class="info-text">
+        <p><strong>Reportes interactivos:</strong> Todos incluyen gráficos y filtros personalizados</p>
+        <p><strong>Períodos flexibles:</strong> Filtra por fecha, mes o año según necesites</p>
+      </div>
+    </div>
+  </div>
+</div>

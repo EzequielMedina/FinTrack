@@ -1,0 +1,1451 @@
+basePath: /
+definitions:
+  github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.AccountResponse:
+    properties:
+      account_type:
+        type: string
+      balance:
+        type: number
+      closing_date:
+        type: string
+      created_at:
+        type: string
+      credit_limit:
+        description: Credit card specific fields
+        type: number
+      currency:
+        type: string
+      description:
+        type: string
+      dni:
+        description: Personal identification (for virtual wallets)
+        type: string
+      due_date:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: boolean
+      name:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: string
+    type: object
+  github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.AddFundsRequest:
+    properties:
+      amount:
+        type: number
+      description:
+        maxLength: 255
+        minLength: 3
+        type: string
+      reference:
+        maxLength: 50
+        type: string
+    required:
+    - amount
+    - description
+    type: object
+  github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.AvailableCreditResponse:
+    properties:
+      account_id:
+        type: string
+      available_credit:
+        type: number
+      credit_limit:
+        type: number
+      used_credit:
+        type: number
+    type: object
+  github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.BalanceResponse:
+    properties:
+      account_id:
+        type: string
+      balance:
+        type: number
+    type: object
+  github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.CreateAccountRequest:
+    properties:
+      account_type:
+        type: string
+      closing_date:
+        type: string
+      credit_limit:
+        description: Credit card specific fields
+        minimum: 0
+        type: number
+      currency:
+        type: string
+      description:
+        type: string
+      dni:
+        description: Personal identification (for virtual wallets)
+        maxLength: 20
+        minLength: 7
+        type: string
+      due_date:
+        type: string
+      initial_balance:
+        minimum: 0
+        type: number
+      is_active:
+        type: boolean
+      name:
+        type: string
+      user_id:
+        type: string
+    required:
+    - account_type
+    - currency
+    - name
+    - user_id
+    type: object
+  github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.PaginatedAccountResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.AccountResponse'
+        type: array
+      pagination:
+        $ref: '#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.PaginationMeta'
+    type: object
+  github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.PaginationMeta:
+    properties:
+      current_page:
+        type: integer
+      page_size:
+        type: integer
+      total_items:
+        type: integer
+      total_pages:
+        type: integer
+    type: object
+  github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.UpdateAccountRequest:
+    properties:
+      closing_date:
+        type: string
+      credit_limit:
+        description: Credit card specific fields
+        minimum: 0
+        type: number
+      description:
+        type: string
+      dni:
+        description: Personal identification (for virtual wallets)
+        maxLength: 20
+        minLength: 7
+        type: string
+      due_date:
+        type: string
+      name:
+        type: string
+    required:
+    - name
+    type: object
+  github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.UpdateBalanceRequest:
+    properties:
+      amount:
+        type: number
+    required:
+    - amount
+    type: object
+  github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.UpdateCreditDatesRequest:
+    properties:
+      closing_date:
+        type: string
+      due_date:
+        type: string
+    type: object
+  github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.UpdateCreditLimitRequest:
+    properties:
+      credit_limit:
+        minimum: 0
+        type: number
+    type: object
+  github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.UpdateStatusRequest:
+    properties:
+      is_active:
+        type: boolean
+    type: object
+  github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.WithdrawFundsRequest:
+    properties:
+      amount:
+        type: number
+      description:
+        maxLength: 255
+        minLength: 3
+        type: string
+      reference:
+        maxLength: 50
+        type: string
+    required:
+    - amount
+    - description
+    type: object
+  github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_card_dto.CardResponse:
+    properties:
+      account_id:
+        type: string
+      card_brand:
+        type: string
+      card_type:
+        type: string
+      closing_date:
+        type: string
+      created_at:
+        type: string
+      credit_limit:
+        description: Credit card specific fields
+        type: number
+      due_date:
+        type: string
+      expiration_month:
+        type: integer
+      expiration_year:
+        type: integer
+      holder_name:
+        type: string
+      id:
+        type: string
+      is_default:
+        type: boolean
+      last_four_digits:
+        type: string
+      masked_number:
+        type: string
+      nickname:
+        type: string
+      status:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_card_dto.CreateCardRequest:
+    properties:
+      account_id:
+        type: string
+      card_brand:
+        type: string
+      card_type:
+        description: '"credit" or "debit"'
+        type: string
+      closing_date:
+        type: string
+      credit_limit:
+        description: Credit card specific fields
+        minimum: 0
+        type: number
+      due_date:
+        type: string
+      encrypted_number:
+        description: Security fields (encrypted data)
+        type: string
+      expiration_month:
+        maximum: 12
+        minimum: 1
+        type: integer
+      expiration_year:
+        type: integer
+      holder_name:
+        maxLength: 100
+        minLength: 2
+        type: string
+      is_default:
+        type: boolean
+      key_fingerprint:
+        type: string
+      last_four_digits:
+        type: string
+      masked_number:
+        type: string
+      nickname:
+        maxLength: 50
+        type: string
+    required:
+    - account_id
+    - card_brand
+    - card_type
+    - encrypted_number
+    - expiration_month
+    - expiration_year
+    - holder_name
+    - key_fingerprint
+    - last_four_digits
+    - masked_number
+    type: object
+  github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_card_dto.PaginatedCardResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_card_dto.CardResponse'
+        type: array
+      pagination:
+        $ref: '#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_card_dto.PaginationMeta'
+    type: object
+  github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_card_dto.PaginationMeta:
+    properties:
+      current_page:
+        type: integer
+      page_size:
+        type: integer
+      total_items:
+        type: integer
+      total_pages:
+        type: integer
+    type: object
+  github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_card_dto.UpdateCardRequest:
+    properties:
+      expiration_month:
+        maximum: 12
+        minimum: 1
+        type: integer
+      expiration_year:
+        minimum: 2024
+        type: integer
+      holder_name:
+        maxLength: 100
+        minLength: 2
+        type: string
+      is_default:
+        type: boolean
+      nickname:
+        maxLength: 50
+        type: string
+    type: object
+host: localhost:8082
+info:
+  contact:
+    email: support@fintrack.com
+    name: API Support
+    url: http://www.fintrack.com/support
+  description: Account management service for FinTrack application
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
+  title: FinTrack Account Service API
+  version: "1.0"
+paths:
+  /api/accounts:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all accounts with pagination
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Accounts retrieved successfully
+          schema:
+            $ref: '#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.PaginatedAccountResponse'
+        "400":
+          description: Invalid pagination parameters
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get all accounts
+      tags:
+      - Accounts
+    post:
+      consumes:
+      - application/json
+      description: Create a new financial account
+      parameters:
+      - description: Account creation data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.CreateAccountRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Account created successfully
+          schema:
+            $ref: '#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.AccountResponse'
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new account
+      tags:
+      - Accounts
+  /api/accounts/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete an account by ID
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Account deleted successfully
+        "400":
+          description: Invalid account ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Account not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete account
+      tags:
+      - Accounts
+    get:
+      consumes:
+      - application/json
+      description: Retrieve account details by account ID
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Account retrieved successfully
+          schema:
+            $ref: '#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.AccountResponse'
+        "400":
+          description: Invalid account ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Account not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get account by ID
+      tags:
+      - Accounts
+    put:
+      consumes:
+      - application/json
+      description: Update account details
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Account update data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.UpdateAccountRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Account updated successfully
+          schema:
+            $ref: '#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.AccountResponse'
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Account not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update account
+      tags:
+      - Accounts
+  /api/accounts/{id}/add-funds:
+    post:
+      consumes:
+      - application/json
+      description: Add funds to a virtual wallet account
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Add funds data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.AddFundsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Funds added successfully
+          schema:
+            $ref: '#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.BalanceResponse'
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Account not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Add funds to wallet
+      tags:
+      - Wallet
+  /api/accounts/{id}/available-credit:
+    get:
+      consumes:
+      - application/json
+      description: Get the available credit limit for a credit card account
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Available credit retrieved successfully
+          schema:
+            $ref: '#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.AvailableCreditResponse'
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Account not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get available credit
+      tags:
+      - Credit
+  /api/accounts/{id}/balance:
+    get:
+      consumes:
+      - application/json
+      description: Get the current balance of an account
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Balance retrieved successfully
+          schema:
+            $ref: '#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.BalanceResponse'
+        "400":
+          description: Invalid account ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Account not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get account balance
+      tags:
+      - Accounts
+    put:
+      consumes:
+      - application/json
+      description: Update the balance of an account
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Balance update data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.UpdateBalanceRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Balance updated successfully
+          schema:
+            $ref: '#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.BalanceResponse'
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Account not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update account balance
+      tags:
+      - Accounts
+  /api/accounts/{id}/cards:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all cards associated with an account
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Cards retrieved successfully
+          schema:
+            $ref: '#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_card_dto.PaginatedCardResponse'
+        "400":
+          description: Invalid request parameters
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Account not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get cards by account
+      tags:
+      - Cards
+    post:
+      consumes:
+      - application/json
+      description: Create a new card associated with an account
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Card creation data
+        in: body
+        name: card
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_card_dto.CreateCardRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Card created successfully
+          schema:
+            $ref: '#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_card_dto.CardResponse'
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Account not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new card
+      tags:
+      - Cards
+  /api/accounts/{id}/cards/{cardId}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a card
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Card ID
+        in: path
+        name: cardId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Card deleted successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid card ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Card not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete card
+      tags:
+      - Cards
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a specific card by its ID
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Card ID
+        in: path
+        name: cardId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Card retrieved successfully
+          schema:
+            $ref: '#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_card_dto.CardResponse'
+        "400":
+          description: Invalid card ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Card not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get card by ID
+      tags:
+      - Cards
+    put:
+      consumes:
+      - application/json
+      description: Update card information
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Card ID
+        in: path
+        name: cardId
+        required: true
+        type: string
+      - description: Card update data
+        in: body
+        name: card
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_card_dto.UpdateCardRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Card updated successfully
+          schema:
+            $ref: '#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_card_dto.CardResponse'
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Card not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update card
+      tags:
+      - Cards
+  /api/accounts/{id}/cards/{cardId}/block:
+    put:
+      consumes:
+      - application/json
+      description: Block a card to prevent its usage
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Card ID
+        in: path
+        name: cardId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Card blocked successfully
+          schema:
+            $ref: '#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_card_dto.CardResponse'
+        "400":
+          description: Invalid card ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Card not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Block card
+      tags:
+      - Cards
+  /api/accounts/{id}/cards/{cardId}/set-default:
+    put:
+      consumes:
+      - application/json
+      description: Set a specific card as the default for its account
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Card ID
+        in: path
+        name: cardId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Card set as default successfully
+          schema:
+            $ref: '#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_card_dto.CardResponse'
+        "400":
+          description: Invalid card ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Card not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Set default card
+      tags:
+      - Cards
+  /api/accounts/{id}/cards/{cardId}/unblock:
+    put:
+      consumes:
+      - application/json
+      description: Unblock a card to allow its usage
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Card ID
+        in: path
+        name: cardId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Card unblocked successfully
+          schema:
+            $ref: '#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_card_dto.CardResponse'
+        "400":
+          description: Invalid card ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Card not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Unblock card
+      tags:
+      - Cards
+  /api/accounts/{id}/credit-dates:
+    put:
+      consumes:
+      - application/json
+      description: Update the closing and due dates for a credit card account
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Credit dates update data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.UpdateCreditDatesRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Credit dates updated successfully
+          schema:
+            $ref: '#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.AccountResponse'
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Account not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update credit card dates
+      tags:
+      - Credit
+  /api/accounts/{id}/credit-limit:
+    put:
+      consumes:
+      - application/json
+      description: Update the credit limit for a credit card account
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Credit limit update data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.UpdateCreditLimitRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Credit limit updated successfully
+          schema:
+            $ref: '#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.AccountResponse'
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Account not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update credit limit
+      tags:
+      - Credit
+  /api/accounts/{id}/status:
+    put:
+      consumes:
+      - application/json
+      description: Activate or deactivate an account
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Status update data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.UpdateStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Status updated successfully
+          schema:
+            $ref: '#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.AccountResponse'
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Account not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update account status
+      tags:
+      - Accounts
+  /api/accounts/{id}/withdraw-funds:
+    post:
+      consumes:
+      - application/json
+      description: Withdraw funds from a virtual wallet account
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Withdraw funds data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.WithdrawFundsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Funds withdrawn successfully
+          schema:
+            $ref: '#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.BalanceResponse'
+        "400":
+          description: Invalid request data or insufficient funds
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Account not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Withdraw funds from wallet
+      tags:
+      - Wallet
+  /api/accounts/user/{userId}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all accounts belonging to a specific user
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Accounts retrieved successfully
+          schema:
+            items:
+              $ref: '#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_account_dto.AccountResponse'
+            type: array
+        "400":
+          description: Invalid user ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get accounts by user ID
+      tags:
+      - Accounts
+  /api/accounts/user/{userId}/cards:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all cards owned by a user across all their accounts
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Cards retrieved successfully
+          schema:
+            $ref: '#/definitions/github_com_fintrack_account-service_internal_infrastructure_entrypoints_handlers_card_dto.PaginatedCardResponse'
+        "400":
+          description: Invalid request parameters
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: User not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get cards by user
+      tags:
+      - Cards
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" followed by a space and JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

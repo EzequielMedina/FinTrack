@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinTrack - Sistema de Diseño - Ejemplos</title>
+    <link rel="stylesheet" href="design-system.css">
+    <link rel="stylesheet" href="components.css">
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container" style="padding: var(--space-8);">
+        
+        <!-- Header -->
+        <div style="text-align: center; margin-bottom: var(--space-16);">
+            <h1 style="font-size: var(--text-5xl); font-weight: var(--font-bold); color: var(--text-primary); margin: 0;">
+                FinTrack Design System
+            </h1>
+            <p style="font-size: var(--text-lg); color: var(--text-secondary); margin-top: var(--space-2);">
+                Sistema de diseño empresarial moderno
+            </p>
+        </div>
+
+        <!-- Paleta de Colores -->
+        <section style="margin-bottom: var(--space-16);">
+            <h2 style="font-size: var(--text-3xl); font-weight: var(--font-semibold); margin-bottom: var(--space-6);">
+                Paleta de Colores
+            </h2>
+            
+            <!-- Colores Primarios -->
+            <h3 style="font-size: var(--text-xl); font-weight: var(--font-medium); margin-bottom: var(--space-4);">
+                Primarios (Grises)
+            </h3>
+            <div class="flex gap-2" style="margin-bottom: var(--space-8); flex-wrap: wrap;">
+                <div style="width: 80px; height: 80px; background: var(--primary-900); border-radius: var(--radius-base); display: flex; align-items: center; justify-content: center; color: white; font-size: var(--text-xs); font-weight: var(--font-medium);">900</div>
+                <div style="width: 80px; height: 80px; background: var(--primary-800); border-radius: var(--radius-base); display: flex; align-items: center; justify-content: center; color: white; font-size: var(--text-xs); font-weight: var(--font-medium);">800</div>
+                <div style="width: 80px; height: 80px; background: var(--primary-700); border-radius: var(--radius-base); display: flex; align-items: center; justify-content: center; color: white; font-size: var(--text-xs); font-weight: var(--font-medium);">700</div>
+                <div style="width: 80px; height: 80px; background: var(--primary-600); border-radius: var(--radius-base); display: flex; align-items: center; justify-content: center; color: white; font-size: var(--text-xs); font-weight: var(--font-medium);">600</div>
+                <div style="width: 80px; height: 80px; background: var(--primary-500); border-radius: var(--radius-base); display: flex; align-items: center; justify-content: center; color: white; font-size: var(--text-xs); font-weight: var(--font-medium);">500</div>
+                <div style="width: 80px; height: 80px; background: var(--primary-400); border-radius: var(--radius-base); display: flex; align-items: center; justify-content: center; font-size: var(--text-xs); font-weight: var(--font-medium);">400</div>
+                <div style="width: 80px; height: 80px; background: var(--primary-300); border-radius: var(--radius-base); display: flex; align-items: center; justify-content: center; font-size: var(--text-xs); font-weight: var(--font-medium);">300</div>
+                <div style="width: 80px; height: 80px; background: var(--primary-200); border-radius: var(--radius-base); display: flex; align-items: center; justify-content: center; font-size: var(--text-xs); font-weight: var(--font-medium);">200</div>
+                <div style="width: 80px; height: 80px; background: var(--primary-100); border-radius: var(--radius-base); display: flex; align-items: center; justify-content: center; font-size: var(--text-xs); font-weight: var(--font-medium);">100</div>
+                <div style="width: 80px; height: 80px; background: var(--primary-50); border-radius: var(--radius-base); display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-light); font-size: var(--text-xs); font-weight: var(--font-medium);">50</div>
+            </div>
+
+            <!-- Colores de Acento -->
+            <h3 style="font-size: var(--text-xl); font-weight: var(--font-medium); margin-bottom: var(--space-4);">
+                Acento (Azul Profesional)
+            </h3>
+            <div class="flex gap-2" style="margin-bottom: var(--space-8); flex-wrap: wrap;">
+                <div style="width: 80px; height: 80px; background: var(--accent-900); border-radius: var(--radius-base); display: flex; align-items: center; justify-content: center; color: white; font-size: var(--text-xs); font-weight: var(--font-medium);">900</div>
+                <div style="width: 80px; height: 80px; background: var(--accent-700); border-radius: var(--radius-base); display: flex; align-items: center; justify-content: center; color: white; font-size: var(--text-xs); font-weight: var(--font-medium);">700</div>
+                <div style="width: 80px; height: 80px; background: var(--accent-600); border-radius: var(--radius-base); display: flex; align-items: center; justify-content: center; color: white; font-size: var(--text-xs); font-weight: var(--font-medium); box-shadow: 0 0 0 3px var(--accent-200);">⭐ 600</div>
+                <div style="width: 80px; height: 80px; background: var(--accent-500); border-radius: var(--radius-base); display: flex; align-items: center; justify-content: center; color: white; font-size: var(--text-xs); font-weight: var(--font-medium);">500</div>
+                <div style="width: 80px; height: 80px; background: var(--accent-300); border-radius: var(--radius-base); display: flex; align-items: center; justify-content: center; font-size: var(--text-xs); font-weight: var(--font-medium);">300</div>
+                <div style="width: 80px; height: 80px; background: var(--accent-100); border-radius: var(--radius-base); display: flex; align-items: center; justify-content: center; font-size: var(--text-xs); font-weight: var(--font-medium);">100</div>
+            </div>
+
+            <!-- Colores Semánticos -->
+            <h3 style="font-size: var(--text-xl); font-weight: var(--font-medium); margin-bottom: var(--space-4);">
+                Semánticos
+            </h3>
+            <div class="grid grid-cols-4 gap-4" style="margin-bottom: var(--space-8);">
+                <div>
+                    <div style="padding: var(--space-6); background: var(--success-500); border-radius: var(--radius-lg); color: white; text-align: center; font-weight: var(--font-semibold); margin-bottom: var(--space-2);">Success</div>
+                    <div class="flex gap-2">
+                        <div style="flex: 1; height: 40px; background: var(--success-700); border-radius: var(--radius-base);"></div>
+                        <div style="flex: 1; height: 40px; background: var(--success-500); border-radius: var(--radius-base);"></div>
+                        <div style="flex: 1; height: 40px; background: var(--success-100); border-radius: var(--radius-base);"></div>
+                    </div>
+                </div>
+                <div>
+                    <div style="padding: var(--space-6); background: var(--warning-500); border-radius: var(--radius-lg); color: white; text-align: center; font-weight: var(--font-semibold); margin-bottom: var(--space-2);">Warning</div>
+                    <div class="flex gap-2">
+                        <div style="flex: 1; height: 40px; background: var(--warning-700); border-radius: var(--radius-base);"></div>
+                        <div style="flex: 1; height: 40px; background: var(--warning-500); border-radius: var(--radius-base);"></div>
+                        <div style="flex: 1; height: 40px; background: var(--warning-100); border-radius: var(--radius-base);"></div>
+                    </div>
+                </div>
+                <div>
+                    <div style="padding: var(--space-6); background: var(--error-500); border-radius: var(--radius-lg); color: white; text-align: center; font-weight: var(--font-semibold); margin-bottom: var(--space-2);">Error</div>
+                    <div class="flex gap-2">
+                        <div style="flex: 1; height: 40px; background: var(--error-700); border-radius: var(--radius-base);"></div>
+                        <div style="flex: 1; height: 40px; background: var(--error-500); border-radius: var(--radius-base);"></div>
+                        <div style="flex: 1; height: 40px; background: var(--error-100); border-radius: var(--radius-base);"></div>
+                    </div>
+                </div>
+                <div>
+                    <div style="padding: var(--space-6); background: var(--info-500); border-radius: var(--radius-lg); color: white; text-align: center; font-weight: var(--font-semibold); margin-bottom: var(--space-2);">Info</div>
+                    <div class="flex gap-2">
+                        <div style="flex: 1; height: 40px; background: var(--info-700); border-radius: var(--radius-base);"></div>
+                        <div style="flex: 1; height: 40px; background: var(--info-500); border-radius: var(--radius-base);"></div>
+                        <div style="flex: 1; height: 40px; background: var(--info-100); border-radius: var(--radius-base);"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Botones -->
+        <section style="margin-bottom: var(--space-16);">
+            <h2 style="font-size: var(--text-3xl); font-weight: var(--font-semibold); margin-bottom: var(--space-6);">
+                Botones
+            </h2>
+            <div class="flex gap-4" style="flex-wrap: wrap;">
+                <button class="btn btn-primary">Botón Principal</button>
+                <button class="btn btn-secondary">Botón Secundario</button>
+                <button class="btn btn-outline">Botón Outline</button>
+                <button class="btn btn-primary" disabled>Deshabilitado</button>
+            </div>
+            <div class="flex gap-4" style="margin-top: var(--space-4); flex-wrap: wrap;">
+                <button class="btn btn-primary btn-sm">Pequeño</button>
+                <button class="btn btn-primary">Normal</button>
+                <button class="btn btn-primary btn-lg">Grande</button>
+            </div>
+        </section>
+
+        <!-- Badges -->
+        <section style="margin-bottom: var(--space-16);">
+            <h2 style="font-size: var(--text-3xl); font-weight: var(--font-semibold); margin-bottom: var(--space-6);">
+                Badges
+            </h2>
+            <div class="flex gap-3" style="flex-wrap: wrap; align-items: center;">
+                <span class="badge badge-success">Success</span>
+                <span class="badge badge-warning">Warning</span>
+                <span class="badge badge-error">Error</span>
+                <span class="badge badge-info">Info</span>
+                <span class="badge badge-neutral">Neutral</span>
+            </div>
+        </section>
+
+        <!-- KPI Cards -->
+        <section style="margin-bottom: var(--space-16);">
+            <h2 style="font-size: var(--text-3xl); font-weight: var(--font-semibold); margin-bottom: var(--space-6);">
+                KPI Cards
+            </h2>
+            <div class="grid grid-cols-3 gap-6">
+                <div class="kpi-card">
+                    <div class="kpi-header">
+                        <span class="kpi-label">Balance Total</span>
+                        <div class="kpi-icon" style="background: var(--accent-100); color: var(--accent-700);">
+                            <span class="material-icons">account_balance_wallet</span>
+                        </div>
+                    </div>
+                    <div class="kpi-value">$125,430</div>
+                    <div class="kpi-footer">
+                        <span class="kpi-trend up">
+                            <span class="material-icons" style="font-size: 16px;">trending_up</span>
+                            +12.5%
+                        </span>
+                        <span style="color: var(--text-tertiary);">vs mes anterior</span>
+                    </div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-header">
+                        <span class="kpi-label">Transacciones</span>
+                        <div class="kpi-icon" style="background: var(--success-100); color: var(--success-700);">
+                            <span class="material-icons">receipt</span>
+                        </div>
+                    </div>
+                    <div class="kpi-value">1,234</div>
+                    <div class="kpi-footer">
+                        <span class="kpi-trend neutral">
+                            <span class="material-icons" style="font-size: 16px;">remove</span>
+                            0%
+                        </span>
+                        <span style="color: var(--text-tertiary);">este mes</span>
+                    </div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-header">
+                        <span class="kpi-label">Gastos</span>
+                        <div class="kpi-icon" style="background: var(--error-100); color: var(--error-700);">
+                            <span class="material-icons">trending_down</span>
+                        </div>
+                    </div>
+                    <div class="kpi-value">$45,230</div>
+                    <div class="kpi-footer">
+                        <span class="kpi-trend down">
+                            <span class="material-icons" style="font-size: 16px;">trending_down</span>
+                            -8.3%
+                        </span>
+                        <span style="color: var(--text-tertiary);">vs mes anterior</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Alertas -->
+        <section style="margin-bottom: var(--space-16);">
+            <h2 style="font-size: var(--text-3xl); font-weight: var(--font-semibold); margin-bottom: var(--space-6);">
+                Alertas
+            </h2>
+            <div style="display: flex; flex-direction: column; gap: var(--space-4);">
+                <div class="alert success">
+                    <div class="alert-icon">
+                        <span class="material-icons">check_circle</span>
+                    </div>
+                    <div class="alert-content">
+                        <h4 class="alert-title">¡Operación Exitosa!</h4>
+                        <p class="alert-message">La transacción se completó correctamente.</p>
+                    </div>
+                </div>
+
+                <div class="alert warning">
+                    <div class="alert-icon">
+                        <span class="material-icons">warning</span>
+                    </div>
+                    <div class="alert-content">
+                        <h4 class="alert-title">Advertencia</h4>
+                        <p class="alert-message">Tu saldo está por debajo del límite recomendado.</p>
+                    </div>
+                </div>
+
+                <div class="alert error">
+                    <div class="alert-icon">
+                        <span class="material-icons">error</span>
+                    </div>
+                    <div class="alert-content">
+                        <h4 class="alert-title">Error</h4>
+                        <p class="alert-message">No se pudo procesar la transacción. Intenta nuevamente.</p>
+                    </div>
+                </div>
+
+                <div class="alert info">
+                    <div class="alert-icon">
+                        <span class="material-icons">info</span>
+                    </div>
+                    <div class="alert-content">
+                        <h4 class="alert-title">Información</h4>
+                        <p class="alert-message">Tienes 3 notificaciones pendientes de revisar.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Cards -->
+        <section style="margin-bottom: var(--space-16);">
+            <h2 style="font-size: var(--text-3xl); font-weight: var(--font-semibold); margin-bottom: var(--space-6);">
+                Cards
+            </h2>
+            <div class="grid grid-cols-3 gap-6">
+                <div class="card">
+                    <h3 style="font-size: var(--text-xl); font-weight: var(--font-semibold); margin: 0 0 var(--space-4) 0;">Card Básica</h3>
+                    <p style="margin: 0; color: var(--text-secondary);">Contenido de ejemplo para una card básica con padding estándar.</p>
+                </div>
+
+                <div class="card card-elevated">
+                    <h3 style="font-size: var(--text-xl); font-weight: var(--font-semibold); margin: 0 0 var(--space-4) 0;">Card Elevada</h3>
+                    <p style="margin: 0; color: var(--text-secondary);">Card con elevación y efecto hover más pronunciado.</p>
+                </div>
+
+                <div class="info-card-wrapper success">
+                    <div class="info-card-header">
+                        <div class="info-card-icon success">
+                            <span class="material-icons">account_balance</span>
+                        </div>
+                        <h3 class="info-card-title">Info Card</h3>
+                    </div>
+                    <div class="info-card-content">
+                        <p>Card informativa con icono y borde de color superior.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+</body>
+</html>

@@ -1,0 +1,178 @@
+<div class="cards-container">
+  <!-- Vista de Lista -->
+  @if (viewMode() === 'list') {
+    <!-- Header -->
+    <div class="page-header">
+      <div class="header-content">
+        <h1>Tarjetas</h1>
+        <p class="subtitle">{{ cards().length }} tarjetas registradas</p>
+      </div>
+      <button class="btn btn-primary" (click)="onAddCard()">
+        <img src="assets/icons/card.svg" class="icon icon-sm" alt="Agregar">
+        Agregar Tarjeta
+      </button>
+    </div>
+
+    @if (loading()) {
+      <div class="loading-container">
+        <mat-spinner></mat-spinner>
+        <p>Cargando tarjetas...</p>
+      </div>
+    } @else {
+      <div class="cards-content">
+        <!-- Balance Cards - Mismo estilo que dashboard -->
+        <div class="balance-cards">
+          <div class="balance-card">
+            <div class="balance-icon">
+              <img src="assets/icons/card.svg" alt="Crédito">
+            </div>
+            <div class="balance-info">
+              <span class="balance-label">Crédito</span>
+              <span class="balance-amount">{{ creditCards().length }}</span>
+            </div>
+          </div>
+
+          <div class="balance-card">
+            <div class="balance-icon">
+              <img src="assets/icons/wallet.svg" alt="Débito">
+            </div>
+            <div class="balance-info">
+              <span class="balance-label">Débito</span>
+              <span class="balance-amount">{{ debitCards().length }}</span>
+            </div>
+          </div>
+
+          <div class="balance-card">
+            <div class="balance-icon">
+              <img src="assets/icons/check-circle.svg" alt="Activas">
+            </div>
+            <div class="balance-info">
+              <span class="balance-label">Activas</span>
+              <span class="balance-amount">{{ activeCards().length }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filtro Simple -->
+        <div class="filter-tabs">
+          <button 
+            class="tab-btn"
+            [class.active]="selectedTabIndex() === 0"
+            (click)="onTabChanged(0)">
+            Todas
+          </button>
+          <button 
+            class="tab-btn"
+            [class.active]="selectedTabIndex() === 1"
+            (click)="onTabChanged(1)">
+            Crédito
+          </button>
+          <button 
+            class="tab-btn"
+            [class.active]="selectedTabIndex() === 2"
+            (click)="onTabChanged(2)">
+            Débito
+          </button>
+          <button 
+            class="tab-btn"
+            [class.active]="selectedTabIndex() === 3"
+            (click)="onTabChanged(3)">
+            Activas
+          </button>
+        </div>
+
+        <!-- Lista de Tarjetas -->
+        <div class="cards-list-container">
+          @if (selectedTabIndex() === 0) {
+            @if (cards().length === 0) {
+              <div class="empty-state">
+                <img src="assets/icons/card.svg" class="empty-icon" alt="Sin tarjetas">
+                <h3>No tienes tarjetas</h3>
+                <p>Agrega tu primera tarjeta para comenzar</p>
+                <button class="btn btn-primary" (click)="onAddCard()">
+                  Agregar Primera Tarjeta
+                </button>
+              </div>
+            } @else {
+              <app-card-list 
+                [cards]="cards()"
+                (editCard)="onEditCard($event)"
+                (deleteCard)="onDeleteCard($event)"
+                (setDefaultCard)="onSetDefaultCard($event)"
+                (blockCard)="onBlockCard($event)"
+                (cardStatusChanged)="onCardStatusChanged($event)"
+                (viewCardDetail)="onViewCardDetail($event)">
+              </app-card-list>
+            }
+          }
+
+          @if (selectedTabIndex() === 1) {
+            @if (creditCards().length === 0) {
+              <div class="empty-state">
+                <img src="assets/icons/card.svg" class="empty-icon" alt="Sin crédito">
+                <h3>No tienes tarjetas de crédito</h3>
+              </div>
+            } @else {
+              <app-card-list 
+                [cards]="creditCards()"
+                (editCard)="onEditCard($event)"
+                (deleteCard)="onDeleteCard($event)"
+                (setDefaultCard)="onSetDefaultCard($event)"
+                (blockCard)="onBlockCard($event)"
+                (cardStatusChanged)="onCardStatusChanged($event)"
+                (viewCardDetail)="onViewCardDetail($event)">
+              </app-card-list>
+            }
+          }
+
+          @if (selectedTabIndex() === 2) {
+            @if (debitCards().length === 0) {
+              <div class="empty-state">
+                <img src="assets/icons/wallet.svg" class="empty-icon" alt="Sin débito">
+                <h3>No tienes tarjetas de débito</h3>
+              </div>
+            } @else {
+              <app-card-list 
+                [cards]="debitCards()"
+                (editCard)="onEditCard($event)"
+                (deleteCard)="onDeleteCard($event)"
+                (setDefaultCard)="onSetDefaultCard($event)"
+                (blockCard)="onBlockCard($event)"
+                (cardStatusChanged)="onCardStatusChanged($event)"
+                (viewCardDetail)="onViewCardDetail($event)">
+              </app-card-list>
+            }
+          }
+
+          @if (selectedTabIndex() === 3) {
+            <app-card-list 
+              [cards]="activeCards()"
+              (editCard)="onEditCard($event)"
+              (deleteCard)="onDeleteCard($event)"
+              (setDefaultCard)="onSetDefaultCard($event)"
+              (blockCard)="onBlockCard($event)"
+              (cardStatusChanged)="onCardStatusChanged($event)"
+              (viewCardDetail)="onViewCardDetail($event)">
+            </app-card-list>
+          }
+        </div>
+      </div>
+    }
+  }
+
+  <!-- Vista de Detalle de Tarjeta -->
+  @if (viewMode() === 'detail' && selectedCard()) {
+    <div class="detail-header">
+      <button class="btn btn-secondary" (click)="onBackToList()">
+        <img src="assets/icons/arrow-up.svg" class="icon icon-sm" alt="Volver" style="transform: rotate(-90deg);">
+        Volver
+      </button>
+      <h1>Detalle de Tarjeta</h1>
+      <button class="btn btn-outline" (click)="onEditCard(selectedCard()!)">
+        Editar
+      </button>
+    </div>
+
+    <app-card-detail [card]="selectedCard()!"></app-card-detail>
+  }
+</div>

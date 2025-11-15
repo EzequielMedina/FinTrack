@@ -1,0 +1,185 @@
+<div class="accounts-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1>Cuentas</h1>
+      <p class="subtitle">{{ accountsCount }} cuentas registradas</p>
+    </div>
+    <button class="btn btn-primary" (click)="onAddAccount()">
+      <img src="assets/icons/account.svg" class="icon icon-sm" alt="Crear">
+      Crear Cuenta
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-container">
+      <mat-spinner></mat-spinner>
+      <p>Cargando cuentas...</p>
+    </div>
+  } @else {
+    <div class="accounts-content">
+      <!-- Summary Cards - Compactas -->
+      <div class="summary-grid">
+        <div class="info-card">
+          <img src="assets/icons/wallet.svg" class="icon icon-md" alt="Balance">
+          <div class="info-content">
+            <span class="info-label">Balance ARS</span>
+            <span class="info-value">{{ totalBalanceFormatted }}</span>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <img src="assets/icons/dollar.svg" class="icon icon-md" alt="USD">
+          <div class="info-content">
+            <span class="info-label">Balance USD</span>
+            <span class="info-value">{{ totalUsdBalanceFormatted }}</span>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <img src="assets/icons/card.svg" class="icon icon-md" alt="Crédito">
+          <div class="info-content">
+            <span class="info-label">Límite Crédito</span>
+            <span class="info-value">{{ totalCreditLimitFormatted }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filtro Simple -->
+      <div class="filter-tabs">
+        <button 
+          class="tab-btn"
+          [class.active]="selectedTabIndex() === 0"
+          (click)="onTabChanged(0)">
+          Todas
+        </button>
+        <button 
+          class="tab-btn"
+          [class.active]="selectedTabIndex() === 1"
+          (click)="onTabChanged(1)">
+          Ahorro
+        </button>
+        <button 
+          class="tab-btn"
+          [class.active]="selectedTabIndex() === 2"
+          (click)="onTabChanged(2)">
+          Corriente
+        </button>
+        <button 
+          class="tab-btn"
+          [class.active]="selectedTabIndex() === 3"
+          (click)="onTabChanged(3)">
+          Crédito
+        </button>
+        <button 
+          class="tab-btn"
+          [class.active]="selectedTabIndex() === 4"
+          (click)="onTabChanged(4)">
+          USD
+        </button>
+      </div>
+
+      <!-- Lista de Cuentas -->
+      <div class="accounts-list-container">
+        @if (selectedTabIndex() === 0) {
+          @if (accounts().length === 0) {
+            <div class="empty-state">
+              <img src="assets/icons/account.svg" class="empty-icon" alt="Sin cuentas">
+              <h3>No tienes cuentas</h3>
+              <p>Crea tu primera cuenta para comenzar</p>
+              <button class="btn btn-primary" (click)="onAddAccount()">
+                Crear Primera Cuenta
+              </button>
+            </div>
+          } @else {
+            <app-account-list 
+              [accounts]="accounts()"
+              (editAccount)="onEditAccount($event)"
+              (deleteAccount)="onDeleteAccount($event)"
+              (activateAccount)="onActivateAccount($event)"
+              (manageWallet)="onManageWallet($event)"
+              (manageCredit)="onManageCredit($event)"
+              (accountStatusChanged)="onAccountStatusChanged($event)">
+            </app-account-list>
+          }
+        }
+
+        @if (selectedTabIndex() === 1) {
+          @if (savingsAccounts.length === 0) {
+            <div class="empty-state">
+              <img src="assets/icons/wallet.svg" class="empty-icon" alt="Sin ahorros">
+              <h3>No tienes cuentas de ahorro</h3>
+            </div>
+          } @else {
+            <app-account-list 
+              [accounts]="savingsAccounts"
+              (editAccount)="onEditAccount($event)"
+              (deleteAccount)="onDeleteAccount($event)"
+              (activateAccount)="onActivateAccount($event)"
+              (manageWallet)="onManageWallet($event)"
+              (manageCredit)="onManageCredit($event)"
+              (accountStatusChanged)="onAccountStatusChanged($event)">
+            </app-account-list>
+          }
+        }
+
+        @if (selectedTabIndex() === 2) {
+          @if (checkingAccounts.length === 0) {
+            <div class="empty-state">
+              <img src="assets/icons/account.svg" class="empty-icon" alt="Sin corrientes">
+              <h3>No tienes cuentas corrientes</h3>
+            </div>
+          } @else {
+            <app-account-list 
+              [accounts]="checkingAccounts"
+              (editAccount)="onEditAccount($event)"
+              (deleteAccount)="onDeleteAccount($event)"
+              (activateAccount)="onActivateAccount($event)"
+              (manageWallet)="onManageWallet($event)"
+              (manageCredit)="onManageCredit($event)"
+              (accountStatusChanged)="onAccountStatusChanged($event)">
+            </app-account-list>
+          }
+        }
+
+        @if (selectedTabIndex() === 3) {
+          @if (creditCards.length === 0) {
+            <div class="empty-state">
+              <img src="assets/icons/card.svg" class="empty-icon" alt="Sin crédito">
+              <h3>No tienes tarjetas de crédito</h3>
+            </div>
+          } @else {
+            <app-account-list 
+              [accounts]="creditCards"
+              (editAccount)="onEditAccount($event)"
+              (deleteAccount)="onDeleteAccount($event)"
+              (activateAccount)="onActivateAccount($event)"
+              (manageWallet)="onManageWallet($event)"
+              (manageCredit)="onManageCredit($event)"
+              (accountStatusChanged)="onAccountStatusChanged($event)">
+            </app-account-list>
+          }
+        }
+
+        @if (selectedTabIndex() === 4) {
+          @if (usdAccounts.length === 0) {
+            <div class="empty-state">
+              <img src="assets/icons/dollar.svg" class="empty-icon" alt="Sin USD">
+              <h3>No tienes cuentas en dólares</h3>
+            </div>
+          } @else {
+            <app-account-list 
+              [accounts]="usdAccounts"
+              (editAccount)="onEditAccount($event)"
+              (deleteAccount)="onDeleteAccount($event)"
+              (activateAccount)="onActivateAccount($event)"
+              (manageWallet)="onManageWallet($event)"
+              (manageCredit)="onManageCredit($event)"
+              (accountStatusChanged)="onAccountStatusChanged($event)">
+            </app-account-list>
+          }
+        }
+      </div>
+    </div>
+  }
+</div>

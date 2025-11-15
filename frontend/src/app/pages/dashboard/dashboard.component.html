@@ -1,113 +1,141 @@
 <div class="dashboard-container">
+  <!-- Header -->
   <div class="dashboard-header">
     @if (currentUser(); as user) {
-      <h1>¡Bienvenido, {{ user.firstName }}!</h1>
-      <p class="user-email">{{ user.email }}</p>
+      <div>
+        <h1>¡Bienvenido, {{ user.firstName }}!</h1>
+        <p class="user-email">{{ user.email }}</p>
+      </div>
     } @else {
       <h1>¡Bienvenido a FinTrack!</h1>
     }
   </div>
 
   <div class="dashboard-content">
-    <mat-grid-list cols="2" rowHeight="200px" gutterSize="16px" class="dashboard-grid">
-      <!-- Resumen de Cuentas -->
-      <mat-grid-tile>
-        <mat-card class="dashboard-card">
-          <mat-card-header>
-            <mat-icon mat-card-avatar class="card-icon accounts">account_balance</mat-icon>
-            <mat-card-title>Mis Cuentas</mat-card-title>
-            <mat-card-subtitle>Gestiona tus cuentas bancarias</mat-card-subtitle>
-          </mat-card-header>
-          <mat-card-content>
-            <div class="card-stats">
-              <span class="stat-number">0</span>
-              <span class="stat-label">Cuentas activas</span>
-            </div>
-          </mat-card-content>
-          <mat-card-actions>
-            <button mat-button color="primary">Ver Cuentas</button>
-          </mat-card-actions>
-        </mat-card>
-      </mat-grid-tile>
+    @if (loading()) {
+      <div class="loading-container">
+        <mat-spinner></mat-spinner>
+        <p>Cargando información del dashboard...</p>
+      </div>
+    } @else {
+      
+      <!-- Resumen Financiero - KPIs -->
+      <div class="financial-summary">
+        <div class="summary-cards">
+          <!-- Balance ARS -->
+          <mat-card class="balance-card ars-card" appearance="outlined">
+            <mat-card-content>
+              <div class="balance-header">
+                <mat-icon class="balance-icon">account_balance_wallet</mat-icon>
+                <div>
+                  <h3>Balance ARS</h3>
+                  <p>Pesos argentinos</p>
+                </div>
+              </div>
+              <div class="balance-amount">
+                <span class="amount">{{ totalWalletBalance() | currency:'ARS':'symbol':'1.2-2' }}</span>
+              </div>
+            </mat-card-content>
+          </mat-card>
+
+          <!-- Balance USD -->
+          <mat-card class="balance-card usd-card" appearance="outlined">
+            <mat-card-content>
+              <div class="balance-header">
+                <mat-icon class="balance-icon">attach_money</mat-icon>
+                <div>
+                  <h3>Balance USD</h3>
+                  <p>Dólares americanos</p>
+                </div>
+              </div>
+              <div class="balance-amount">
+                <span class="amount">{{ totalWalletBalanceUSD() | currency:'USD':'symbol':'1.2-2' }}</span>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </div>
 
       <!-- Transacciones Recientes -->
-      <mat-grid-tile>
-        <mat-card class="dashboard-card">
-          <mat-card-header>
-            <mat-icon mat-card-avatar class="card-icon transactions">swap_horiz</mat-icon>
-            <mat-card-title>Transacciones</mat-card-title>
-            <mat-card-subtitle>Historial de movimientos</mat-card-subtitle>
-          </mat-card-header>
-          <mat-card-content>
-            <div class="card-stats">
-              <span class="stat-number">0</span>
-              <span class="stat-label">Este mes</span>
+      <section class="recent-transactions-section">
+        <mat-expansion-panel 
+          [(expanded)]="transactionsPanelExpanded"
+          class="transactions-panel">
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              <div class="panel-title-content">
+                <mat-icon fontIcon="receipt_long"></mat-icon>
+                <h2>Transacciones Recientes</h2>
+                <span class="transaction-count" *ngIf="recentTransactions().length > 0">
+                  ({{ recentTransactions().length }})
+                </span>
+              </div>
+            </mat-panel-title>
+            <mat-panel-description>
+              <button mat-button color="primary" [routerLink]="['/transactions']" (click)="$event.stopPropagation()">
+                Ver todas
+                <mat-icon fontIcon="arrow_forward"></mat-icon>
+              </button>
+            </mat-panel-description>
+          </mat-expansion-panel-header>
+        
+          @if (loadingTransactions()) {
+            <div class="loading-container">
+              <mat-spinner diameter="30"></mat-spinner>
+              <p>Cargando transacciones...</p>
             </div>
-          </mat-card-content>
-          <mat-card-actions>
-            <button mat-button color="primary">Ver Transacciones</button>
-          </mat-card-actions>
-        </mat-card>
-      </mat-grid-tile>
-
-      <!-- Billetera Digital -->
-      <mat-grid-tile>
-        <mat-card class="dashboard-card">
-          <mat-card-header>
-            <mat-icon mat-card-avatar class="card-icon wallet">account_balance_wallet</mat-icon>
-            <mat-card-title>Billetera Digital</mat-card-title>
-            <mat-card-subtitle>Saldo disponible</mat-card-subtitle>
-          </mat-card-header>
-          <mat-card-content>
-            <div class="card-stats">
-              <span class="stat-number">$0.00</span>
-              <span class="stat-label">ARS</span>
+          } @else if (recentTransactions().length === 0) {
+            <mat-card class="empty-transactions" appearance="outlined">
+              <mat-card-content>
+                <div class="empty-state">
+                  <mat-icon class="empty-icon">receipt_long</mat-icon>
+                  <h3>No hay transacciones recientes</h3>
+                  <p>Cuando realices tu primera transacción, aparecerá aquí.</p>
+                  <button mat-raised-button color="primary" [routerLink]="['/transactions']">
+                    <mat-icon>add</mat-icon>
+                    Nueva Transacción
+                  </button>
+                </div>
+              </mat-card-content>
+            </mat-card>
+          } @else {
+            <div class="transactions-list">
+              @for (transaction of recentTransactions(); track transaction.id) {
+                <mat-card class="transaction-item" appearance="outlined">
+                  <mat-card-content>
+                    <div class="transaction-content">
+                      <div class="transaction-info">
+                        <div class="transaction-icon">
+                          <mat-icon [class]="'transaction-' + transaction.type.toLowerCase()">
+                            {{ getTransactionIcon(transaction.type) }}
+                          </mat-icon>
+                        </div>
+                        <div class="transaction-details">
+                          <h4>{{ getAccountNameForTransaction(transaction) }}</h4>
+                          <p class="transaction-description" *ngIf="transaction.description">
+                            {{ transaction.description }}
+                          </p>
+                          <span class="transaction-date">
+                            {{ transaction.createdAt | date:'short' }}
+                          </span>
+                        </div>
+                      </div>
+                      <div class="transaction-amount">
+                        <span [class]="getTransactionAmount(transaction) > 0 ? 'amount-positive' : 'amount-negative'">
+                          {{ transaction.amount | currency:transaction.currency }}
+                        </span>
+                        <span class="transaction-status" [class]="'status-' + transaction.status.toLowerCase()">
+                          {{ transaction.status | titlecase }}
+                        </span>
+                      </div>
+                    </div>
+                  </mat-card-content>
+                </mat-card>
+              }
             </div>
-          </mat-card-content>
-          <mat-card-actions>
-            <button mat-button color="primary">Gestionar</button>
-          </mat-card-actions>
-        </mat-card>
-      </mat-grid-tile>
-
-      <!-- Reportes -->
-      <mat-grid-tile>
-        <mat-card class="dashboard-card">
-          <mat-card-header>
-            <mat-icon mat-card-avatar class="card-icon reports">assessment</mat-icon>
-            <mat-card-title>Reportes</mat-card-title>
-            <mat-card-subtitle>Análisis financiero</mat-card-subtitle>
-          </mat-card-header>
-          <mat-card-content>
-            <div class="card-stats">
-              <span class="stat-number">0</span>
-              <span class="stat-label">Reportes generados</span>
-            </div>
-          </mat-card-content>
-          <mat-card-actions>
-            <button mat-button color="primary">Ver Reportes</button>
-          </mat-card-actions>
-        </mat-card>
-      </mat-grid-tile>
-    </mat-grid-list>
-
-    <!-- Quick Actions -->
-    <section class="quick-actions">
-      <h3>Acciones Rápidas</h3>
-      <div class="actions-grid">
-        <button mat-fab extended color="primary" class="action-button">
-          <mat-icon>add</mat-icon>
-          Nueva Transacción
-        </button>
-        <button mat-fab extended color="accent" class="action-button">
-          <mat-icon>credit_card</mat-icon>
-          Agregar Tarjeta
-        </button>
-        <button mat-fab extended class="action-button">
-          <mat-icon>file_download</mat-icon>
-          Exportar Datos
-        </button>
-      </div>
-    </section>
+          }
+        </mat-expansion-panel>
+      </section>
+    }
   </div>
 </div>

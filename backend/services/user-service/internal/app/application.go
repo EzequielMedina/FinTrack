@@ -15,6 +15,7 @@ type Application struct {
 	Config      *config.Config
 	DB          *sql.DB
 	AuthService *service.AuthService
+	UserService *service.UserService
 }
 
 func New(cfg *config.Config) (*Application, error) {
@@ -34,10 +35,12 @@ func New(cfg *config.Config) (*Application, error) {
 
 	// services
 	authSvc := service.NewAuthService(userRepo, cfg.JWTSecret, cfg.JWTExpiry, cfg.RefreshExpiry)
+	userSvc := service.NewUserService(userRepo)
 
 	return &Application{
 		Config:      cfg,
 		DB:          db,
 		AuthService: authSvc,
+		UserService: userSvc,
 	}, nil
 }

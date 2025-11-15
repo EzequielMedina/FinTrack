@@ -1,27 +1,109 @@
 <mat-toolbar color="primary" class="app-toolbar">
-  <span class="app-title">FinTrack</span>
+  <span class="app-title" [routerLink]="['/dashboard']" style="cursor: pointer;">
+    <mat-icon>account_balance_wallet</mat-icon>
+    FinTrack
+  </span>
   
   @if (isAuthenticated()) {
+    <!-- Navigation menu -->
+    <div class="nav-menu">
+      <button mat-button [routerLink]="['/dashboard']" routerLinkActive="active">
+        <mat-icon>dashboard</mat-icon>
+        Dashboard
+      </button>
+      
+      <button mat-button [routerLink]="['/accounts']" routerLinkActive="active">
+        <mat-icon>account_balance</mat-icon>
+        Cuentas
+      </button>
+      
+      <button mat-button [routerLink]="['/cards']" routerLinkActive="active">
+        <mat-icon>credit_card</mat-icon>
+        Tarjetas
+      </button>
+
+      <button mat-button [routerLink]="['/reports']" routerLinkActive="active">
+        <mat-icon>assessment</mat-icon>
+        Reportes
+      </button>
+      
+      <button mat-button 
+              [routerLink]="['/admin']" 
+              routerLinkActive="active"
+              *appHasPermission="Permission.ADMIN_PANEL_ACCESS">
+        <mat-icon>admin_panel_settings</mat-icon>
+        Administración
+      </button>
+
+      <button mat-button [routerLink]="['/chatbot']" routerLinkActive="active">
+        <mat-icon>smart_toy</mat-icon>
+        Chatbot
+      </button>
+    </div>
+    
     <div class="toolbar-spacer"></div>
-    <div class="user-menu">
+    
+    <!-- User info and menu -->
+    <div class="user-info">
       @if (currentUser(); as user) {
-        <span class="user-greeting">Hola {{ user.firstName }}</span>
-      } @else {
-        <span class="user-greeting">Hola</span>
+        <span class="user-greeting">
+          <span class="user-role" *appHasRole="UserRole.ADMIN">👑</span>
+          {{ user.firstName }} {{ user.lastName }}
+        </span>
       }
+      
+      <!-- FAQ Icon Button -->
+      <button mat-icon-button 
+              [routerLink]="['/faq']" 
+              routerLinkActive="active"
+              matTooltip="Preguntas Frecuentes"
+              matTooltipPosition="below"
+              aria-label="Preguntas Frecuentes">
+        <mat-icon>help_outline</mat-icon>
+      </button>
+      
       <button mat-icon-button [matMenuTriggerFor]="userMenu" aria-label="Menú de usuario">
         <mat-icon>account_circle</mat-icon>
       </button>
+      
       <mat-menu #userMenu="matMenu">
+        @if (currentUser(); as user) {
+          <div mat-menu-item disabled class="user-info-menu">
+            <div class="user-details">
+              <strong>{{ user.firstName }} {{ user.lastName }}</strong>
+              <small>{{ user.email }}</small>
+              <span class="user-role-badge">{{ user.role }}</span>
+            </div>
+          </div>
+          <mat-divider></mat-divider>
+        }
+        
+        <button mat-menu-item (click)="navigateTo('/dashboard')">
+          <mat-icon>dashboard</mat-icon>
+          <span>Dashboard</span>
+        </button>
+        
+        <button mat-menu-item 
+                (click)="navigateTo('/admin')"
+                *appHasPermission="Permission.ADMIN_PANEL_ACCESS">
+          <mat-icon>admin_panel_settings</mat-icon>
+          <span>Panel de Admin</span>
+        </button>
+        
+        <mat-divider></mat-divider>
+        
         <button mat-menu-item disabled>
           <mat-icon>person</mat-icon>
           <span>Mi Perfil</span>
         </button>
+        
         <button mat-menu-item disabled>
           <mat-icon>settings</mat-icon>
           <span>Configuración</span>
         </button>
+        
         <mat-divider></mat-divider>
+        
         <button mat-menu-item (click)="logout()">
           <mat-icon>logout</mat-icon>
           <span>Cerrar sesión</span>

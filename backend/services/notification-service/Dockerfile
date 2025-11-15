@@ -1,48 +1,53 @@
-# Multi-stage build for Go microservice
 FROM golang:1.24-alpine AS builder
 
-# Install git and ca-certificates
+# Instalar dependencias necesarias
 RUN apk add --no-cache git ca-certificates tzdata
 
-# Set working directory
+# Configurar directorio de trabajo
 WORKDIR /app
 
-# Copy go mod files
+# Copiar go mod y sum
 COPY go.mod go.sum ./
-COPY ../../shared ../shared
 
-# Download dependencies
+# Descargar dependencias
 RUN go mod download
-RUN go mod verify
 
-# Copy source code
+# Copiar código fuente
 COPY . .
 
-# Build the application
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
-    -ldflags='-w -s -extldflags "-static"' \
-    -a -installsuffix cgo \
-    -o main ./cmd/main.go
+# Compilar la aplicación
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o notification-service cmd/main.go
 
-# Production stage
-FROM scratch
+# Etapa final
+FROM alpine:latest
 
-# Import from builder
-COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
+# Instalar certificados CA y timezone data
+RUN apk --no-cache add ca-certificates tzdata
 
-# Copy the binary
-COPY --from=builder /app/main /main
+# Crear usuario no root
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 
-# Create non-root user
-USER 1001:1001
+# Configurar directorio de trabajo
+WORKDIR /root/
 
-# Expose port
-EXPOSE 8080
+# Copiar binario desde builder
+COPY --from=builder /app/notification-service .
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD ["./main", "health"] || exit 1
+# Copiar templates si existen
+COPY --from=builder /app/templates ./templates
 
-# Run the binary
-ENTRYPOINT ["/main"]
+# Cambiar propietario de archivos
+RUN chown -R appuser:appgroup /root/
+
+# Cambiar a usuario no root
+USER appuser
+
+# Exponer puerto
+EXPOSE 8088
+
+# Configurar health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:8088/health || exit 1
+
+# Comando por defecto
+CMD ["./notification-service"]

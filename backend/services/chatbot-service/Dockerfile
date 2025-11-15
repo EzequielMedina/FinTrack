@@ -9,7 +9,6 @@ WORKDIR /app
 
 # Copy go mod files
 COPY go.mod go.sum ./
-COPY ../../shared ../shared
 
 # Download dependencies
 RUN go mod download
@@ -38,11 +37,11 @@ COPY --from=builder /app/main /main
 USER 1001:1001
 
 # Expose port
-EXPOSE 8080
+EXPOSE 8090
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD ["./main", "health"] || exit 1
+  CMD ["/main", "health"]
 
 # Run the binary
 ENTRYPOINT ["/main"]

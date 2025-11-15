@@ -22,7 +22,7 @@ func TestMapRoutes_HealthAndProtected(t *testing.T) {
 	// application with nil internals is fine for mapping, we only need AuthService when hitting auth endpoints
 	a := &app.Application{AuthService: nil, Config: cfg}
 	h := NewHandlers(a)
-	MapRoutes(r, h, cfg)
+	MapRoutes(r, h, cfg, a)
 
 	// health
 	w := httptest.NewRecorder()
