@@ -36,6 +36,7 @@ export class LoginComponent {
   loading = signal(false);
   error = signal('');
   hidePassword = signal(true);
+  showAbout = signal(false);
 
   constructor() {
     this.loginForm = this.fb.group({
@@ -74,6 +75,10 @@ export class LoginComponent {
 
   togglePasswordVisibility(): void {
     this.hidePassword.set(!this.hidePassword());
+  }
+
+  toggleAbout(): void {
+    this.showAbout.set(!this.showAbout());
   }
 
   async onSubmit(): Promise<void> {

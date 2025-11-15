@@ -89,7 +89,13 @@ func (s *TransactionService) CreateTransaction(request CreateTransactionRequest,
 	recordOnly := false
 	if savedTransaction.Metadata != nil {
 		if recordOnlyValue, exists := savedTransaction.Metadata["recordOnly"]; exists {
-			recordOnly = recordOnlyValue == "true"
+			// Handle both boolean and string values
+			switch v := recordOnlyValue.(type) {
+			case bool:
+				recordOnly = v
+			case string:
+				recordOnly = v == "true"
+			}
 		}
 	}
 

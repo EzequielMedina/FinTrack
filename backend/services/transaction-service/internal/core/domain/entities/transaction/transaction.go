@@ -275,7 +275,8 @@ func (t *Transaction) RequiresSourceAccount() bool {
 	switch t.Type {
 	case TransactionTypeWalletWithdrawal, TransactionTypeWalletTransfer,
 		TransactionTypeCreditCharge, TransactionTypeDebitPurchase,
-		TransactionTypeAccountTransfer, TransactionTypeAccountWithdraw:
+		TransactionTypeAccountTransfer, TransactionTypeAccountWithdraw,
+		TransactionTypeInstallmentPayment:
 		return true
 	default:
 		return false

@@ -223,8 +223,62 @@
   border-radius: 50%;
   background: #f8f9fa;
   color: #495057;
-  font-size: 1.5rem;
   flex-shrink: 0;
+}
+
+.transaction-icon mat-icon {
+  font-size: 24px;
+}
+
+/* Transaction type colors */
+.transaction-wallet_deposit .transaction-icon,
+.transaction-account_deposit .transaction-icon {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.transaction-wallet_withdrawal .transaction-icon,
+.transaction-account_withdraw .transaction-icon,
+.transaction-debit_withdrawal .transaction-icon {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.transaction-wallet_transfer .transaction-icon,
+.transaction-account_transfer .transaction-icon {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
+.transaction-credit_payment .transaction-icon {
+  background: #fff3e0;
+  color: #ef6c00;
+}
+
+.transaction-credit_charge .transaction-icon {
+  background: #f3e5f5;
+  color: #7b1fa2;
+}
+
+.transaction-debit_purchase .transaction-icon {
+  background: #e8eaf6;
+  color: #283593;
+}
+
+.transaction-credit_refund .transaction-icon,
+.transaction-debit_refund .transaction-icon {
+  background: #e0f2f1;
+  color: #00695c;
+}
+
+.transaction-installment_payment .transaction-icon {
+  background: #fff9c4;
+  color: #f57f17;
+}
+
+.transaction-salary .transaction-icon {
+  background: #f1f8e9;
+  color: #558b2f;
 }
 
 .transaction-content {
@@ -272,14 +326,27 @@
 
 .transaction-accounts {
   display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
+  align-items: center;
+  gap: 0.5rem;
   margin-bottom: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .from-account,
 .to-account {
-  font-size: 0.8rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #495057;
+  padding: 0.25rem 0.75rem;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #dee2e6;
+}
+
+.to-account {
+  color: #28a745;
+  background: #e7f5e9;
+  border-color: #c3e6cb;
 }
 
 .transaction-meta {

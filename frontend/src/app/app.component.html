@@ -27,6 +27,8 @@
         Reportes
       </button>
       
+      <!-- OCULTO: Panel de Administración -->
+      <!--
       <button mat-button 
               [routerLink]="['/admin']" 
               routerLinkActive="active"
@@ -34,6 +36,7 @@
         <mat-icon>admin_panel_settings</mat-icon>
         Administración
       </button>
+      -->
 
       <button mat-button [routerLink]="['/chatbot']" routerLinkActive="active">
         <mat-icon>smart_toy</mat-icon>
@@ -47,7 +50,8 @@
     <div class="user-info">
       @if (currentUser(); as user) {
         <span class="user-greeting">
-          <span class="user-role" *appHasRole="UserRole.ADMIN">👑</span>
+          <!-- OCULTO: Icono de admin -->
+          <!-- <span class="user-role" *appHasRole="UserRole.ADMIN">👑</span> -->
           {{ user.firstName }} {{ user.lastName }}
         </span>
       }
@@ -83,12 +87,15 @@
           <span>Dashboard</span>
         </button>
         
+        <!-- OCULTO: Panel de Admin -->
+        <!--
         <button mat-menu-item 
                 (click)="navigateTo('/admin')"
                 *appHasPermission="Permission.ADMIN_PANEL_ACCESS">
           <mat-icon>admin_panel_settings</mat-icon>
           <span>Panel de Admin</span>
         </button>
+        -->
         
         <mat-divider></mat-divider>
         

@@ -305,9 +305,8 @@ ALTER TABLE installments COMMENT = 'Individual installment payments within an in
 ALTER TABLE installment_plan_audit COMMENT = 'Audit trail for all changes to installment plans and payments';
 
 -- Create indexes for common query patterns
-CREATE INDEX idx_installment_plans_active_user ON installment_plans(user_id, status) WHERE status = 'active';
-CREATE INDEX idx_installments_pending_due ON installments(due_date, status) WHERE status IN ('pending', 'overdue');
-CREATE INDEX idx_installment_plans_completion ON installment_plans(completion_percentage) WHERE status = 'active';
+CREATE INDEX idx_installment_plans_active_user ON installment_plans(user_id, status);
+CREATE INDEX idx_installments_pending_due ON installments(due_date, status);
 
 -- Performance optimization: Create composite indexes for frequent joins
 CREATE INDEX idx_installment_plans_card_user_status ON installment_plans(card_id, user_id, status);
