@@ -87,12 +87,13 @@
 
             <!-- Description Field -->
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Descripción (Opcional)</mat-label>
+              <mat-label>Descripción *</mat-label>
               <textarea matInput
                         placeholder="Describe el motivo del depósito..."
                         formControlName="description"
                         rows="3"
-                        maxlength="200"></textarea>
+                        maxlength="200"
+                        required></textarea>
               <mat-hint align="end">{{ addFundsForm.get('description')?.value?.length || 0 }}/200</mat-hint>
               <mat-error>{{ getDescriptionErrorMessage() }}</mat-error>
             </mat-form-field>
@@ -177,12 +178,13 @@
 
               <!-- Description Field -->
               <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Descripción (Opcional)</mat-label>
+                <mat-label>Descripción *</mat-label>
                 <textarea matInput
                           placeholder="Describe el motivo del retiro..."
                           formControlName="description"
                           rows="3"
-                          maxlength="200"></textarea>
+                          maxlength="200"
+                          required></textarea>
                 <mat-hint align="end">{{ withdrawFundsForm.get('description')?.value?.length || 0 }}/200</mat-hint>
                 <mat-error>{{ getDescriptionErrorMessage() }}</mat-error>
               </mat-form-field>

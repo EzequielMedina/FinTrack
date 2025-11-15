@@ -155,7 +155,7 @@ func (c *TransactionClient) CreateInstallmentPaymentTransaction(userID, accountI
 		Amount:        amount,
 		Currency:      "ARS",
 		ToAccountID:   &accountID, // Payment goes TO the account (reduces debt)
-		Description:   fmt.Sprintf("Installment #%s payment: %s", installmentNumber, description),
+		Description:   description,
 		PaymentMethod: "installment_payment",
 		ReferenceID:   fmt.Sprintf("installment-%s", installmentID),
 		Metadata: map[string]interface{}{

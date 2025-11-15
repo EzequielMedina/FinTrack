@@ -105,8 +105,8 @@
                   <mat-card-content>
                     <div class="transaction-content">
                       <div class="transaction-info">
-                        <div class="transaction-icon">
-                          <mat-icon [class]="'transaction-' + transaction.type.toLowerCase()">
+                        <div class="transaction-icon" [ngClass]="'transaction-' + transaction.type.toLowerCase()">
+                          <mat-icon>
                             {{ getTransactionIcon(transaction.type) }}
                           </mat-icon>
                         </div>

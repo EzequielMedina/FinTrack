@@ -13,6 +13,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { HasPermissionDirective } from '../../shared/directives/has-permission.directive';
 import { HasRoleDirective } from '../../shared/directives/has-role.directive';
 import { Permission, UserRole, Account, AccountType, Currency, Transaction, TransactionType } from '../../models';
+import { AccountUtils } from '../../models/account-utils';
 import { Subject, takeUntil, forkJoin } from 'rxjs';
 
 @Component({
@@ -297,7 +298,26 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   getTransactionAmount(transaction: Transaction): number {
     // Para mostrar en el dashboard con signo correcto
-    const isPositive = [TransactionType.DEPOSIT, TransactionType.REFUND, TransactionType.SALARY].includes(transaction.type);
+    const isPositive = [
+      TransactionType.DEPOSIT, 
+      TransactionType.WALLET_DEPOSIT,
+      TransactionType.ACCOUNT_DEPOSIT,
+      TransactionType.REFUND, 
+      TransactionType.CREDIT_REFUND,
+      TransactionType.DEBIT_REFUND,
+      TransactionType.SALARY
+    ].includes(transaction.type);
     return isPositive ? transaction.amount : -transaction.amount;
+  }
+
+  // Método para obtener el icono de la cuenta asociada a la transacción
+  getAccountIconForTransaction(transaction: Transaction): string {
+    const accountId = transaction.fromAccountId || transaction.toAccountId;
+    if (!accountId) return 'account_balance_wallet';
+    
+    const account = this.accounts().find(acc => acc.id === accountId);
+    if (!account) return 'account_balance_wallet';
+    
+    return AccountUtils.getAccountIcon(account.accountType);
   }
 }

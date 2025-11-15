@@ -448,34 +448,69 @@
 }
 
 /* Colores por tipo de transacción */
-.transaction-deposit .transaction-icon {
-  background: var(--success-100);
-  color: var(--success-700);
+/* Depósitos - Verde */
+.transaction-wallet_deposit .transaction-icon,
+.transaction-account_deposit .transaction-icon {
+  background: #e8f5e9;
+  color: #2e7d32;
 }
 
-.transaction-withdrawal .transaction-icon {
-  background: var(--error-100);
-  color: var(--error-700);
+/* Retiros - Rojo */
+.transaction-wallet_withdrawal .transaction-icon,
+.transaction-account_withdraw .transaction-icon,
+.transaction-debit_withdrawal .transaction-icon {
+  background: #ffebee;
+  color: #c62828;
 }
 
-.transaction-transfer .transaction-icon {
-  background: var(--info-100);
-  color: var(--info-700);
+/* Transferencias - Azul */
+.transaction-wallet_transfer .transaction-icon,
+.transaction-account_transfer .transaction-icon {
+  background: #e3f2fd;
+  color: #1565c0;
 }
 
-.transaction-payment .transaction-icon {
-  background: var(--warning-100);
-  color: var(--warning-700);
+/* Pagos de tarjeta de crédito - Naranja */
+.transaction-credit_payment .transaction-icon {
+  background: #fff3e0;
+  color: #ef6c00;
 }
 
-.transaction-refund .transaction-icon {
-  background: var(--accent-100);
-  color: var(--accent-700);
+/* Cargos de crédito - Morado */
+.transaction-credit_charge .transaction-icon {
+  background: #f3e5f5;
+  color: #7b1fa2;
 }
 
-.transaction-purchase .transaction-icon {
-  background: var(--gray-200);
-  color: var(--gray-700);
+/* Compras con débito - Índigo */
+.transaction-debit_purchase .transaction-icon {
+  background: #e8eaf6;
+  color: #283593;
+}
+
+/* Reembolsos - Verde azulado */
+.transaction-credit_refund .transaction-icon,
+.transaction-debit_refund .transaction-icon {
+  background: #e0f2f1;
+  color: #00695c;
+}
+
+/* Pagos de cuotas - Amarillo oscuro */
+.transaction-installment_payment .transaction-icon {
+  background: #fff9c4;
+  color: #f57f17;
+}
+
+/* Salarios - Verde oscuro */
+.transaction-salary .transaction-icon {
+  background: #f1f8e9;
+  color: #558b2f;
+}
+
+/* Default para tipos no especificados */
+.transaction-icon:not([class*="transaction-"]) {
+  background: #f5f5f5;
+  color: #616161;
 }
 
 .transaction-details {
@@ -1044,29 +1079,55 @@
   font-size: 24px;
 }
 
-/* Transaction type specific colors */
-.transaction-deposit mat-icon {
-  color: #4CAF50;
+/* Transaction type specific colors - Media Query Section */
+.transaction-wallet_deposit .transaction-icon,
+.transaction-account_deposit .transaction-icon {
+  background: #e8f5e9;
+  color: #2e7d32;
 }
 
-.transaction-withdrawal mat-icon {
-  color: #f44336;
+.transaction-wallet_withdrawal .transaction-icon,
+.transaction-account_withdraw .transaction-icon,
+.transaction-debit_withdrawal .transaction-icon {
+  background: #ffebee;
+  color: #c62828;
 }
 
-.transaction-transfer mat-icon {
-  color: #2196F3;
+.transaction-wallet_transfer .transaction-icon,
+.transaction-account_transfer .transaction-icon {
+  background: #e3f2fd;
+  color: #1565c0;
 }
 
-.transaction-payment mat-icon {
-  color: #FF9800;
+.transaction-credit_payment .transaction-icon {
+  background: #fff3e0;
+  color: #ef6c00;
 }
 
-.transaction-refund mat-icon {
-  color: #9C27B0;
+.transaction-credit_charge .transaction-icon {
+  background: #f3e5f5;
+  color: #7b1fa2;
 }
 
-.transaction-purchase mat-icon {
-  color: #795548;
+.transaction-debit_purchase .transaction-icon {
+  background: #e8eaf6;
+  color: #283593;
+}
+
+.transaction-credit_refund .transaction-icon,
+.transaction-debit_refund .transaction-icon {
+  background: #e0f2f1;
+  color: #00695c;
+}
+
+.transaction-installment_payment .transaction-icon {
+  background: #fff9c4;
+  color: #f57f17;
+}
+
+.transaction-salary .transaction-icon {
+  background: #f1f8e9;
+  color: #558b2f;
 }
 
 .transaction-details h4 {

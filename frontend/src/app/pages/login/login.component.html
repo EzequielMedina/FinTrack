@@ -79,6 +79,62 @@
     <div class="card-footer">
       <p>¿No tienes cuenta? <a routerLink="/register" class="link">Regístrate aquí</a></p>
     </div>
+
+    <!-- Sección Quiénes Somos -->
+    <div class="about-section">
+      <button 
+        type="button"
+        class="about-toggle"
+        (click)="toggleAbout()"
+      >
+        <span>{{ showAbout() ? '▼' : '►' }} Quiénes Somos</span>
+      </button>
+      
+      @if (showAbout()) {
+        <div class="about-content">
+          <div class="about-block">
+            <h3>🎯 Nuestra Misión</h3>
+            <p>
+              FinTrack nace para solucionar la problemática de la gestión financiera personal 
+              fragmentada y desorganizada. Muchas personas utilizan múltiples herramientas 
+              (hojas de cálculo, aplicaciones bancarias, notas) para controlar sus finanzas, 
+              lo que resulta en pérdida de tiempo, información dispersa y falta de visión integral 
+              de su situación económica.
+            </p>
+          </div>
+
+          <div class="about-block">
+            <h3>💡 La Solución</h3>
+            <p>
+              Ofrecemos una plataforma centralizada e intuitiva que permite:
+            </p>
+            <ul>
+              <li>📊 Gestionar cuentas bancarias y billeteras digitales en un solo lugar</li>
+              <li>💳 Control integral de tarjetas de crédito y débito con seguimiento de cuotas</li>
+              <li>🔄 Registro automático y categorización de transacciones</li>
+              <li>📈 Visualización en tiempo real de tu salud financiera</li>
+              <li>🤖 Asistente inteligente para consultas y reportes personalizados</li>
+              <li>📱 Notificaciones de vencimientos y alertas importantes</li>
+            </ul>
+          </div>
+
+          <div class="about-block">
+            <h3>👥 Quiénes Somos</h3>
+            <p>
+              Somos un equipo de desarrolladores y diseñadores apasionados por la tecnología 
+              financiera (FinTech), comprometidos con democratizar el acceso a herramientas 
+              de gestión financiera de calidad profesional. FinTrack es el resultado de 
+              entender las necesidades reales de personas que buscan tomar control de sus 
+              finanzas de manera simple y efectiva.
+            </p>
+          </div>
+
+          <div class="about-footer">
+            <p><strong>FinTrack</strong> - Tu aliado en la gestión financiera inteligente</p>
+          </div>
+        </div>
+      }
+    </div>
   </div>
 
   <!-- Sección Quiénes Somos -->
