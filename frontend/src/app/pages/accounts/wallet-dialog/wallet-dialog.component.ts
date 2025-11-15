@@ -93,6 +93,7 @@ export class WalletDialogComponent implements OnInit, OnDestroy {
         Validators.max(this.MAX_AMOUNT)
       ]],
       description: ['', [
+        Validators.required,
         Validators.maxLength(200)
       ]],
       reference: ['', [
@@ -108,6 +109,7 @@ export class WalletDialogComponent implements OnInit, OnDestroy {
         Validators.max(this.currentBalance()) // Can't withdraw more than balance
       ]],
       description: ['', [
+        Validators.required,
         Validators.maxLength(200)
       ]],
       reference: ['', [

@@ -441,30 +441,53 @@ export class TransactionService {
   }
 
   /**
-   * Obtener icono para el tipo de transacción (para UI)
+   * Obtener icono para el tipo de transacción (para UI) - Material Design Icons
    */
   getTransactionIcon(type: TransactionType): string {
     switch (type) {
+      // Depósitos
       case TransactionType.WALLET_DEPOSIT:
       case TransactionType.ACCOUNT_DEPOSIT:
-        return 'arrow-down-circle';
+        return 'arrow_downward';
+      
+      // Retiros
       case TransactionType.WALLET_WITHDRAWAL:
+      case TransactionType.ACCOUNT_WITHDRAW:
       case TransactionType.DEBIT_WITHDRAWAL:
-        return 'arrow-up-circle';
+        return 'arrow_upward';
+      
+      // Transferencias
       case TransactionType.WALLET_TRANSFER:
       case TransactionType.ACCOUNT_TRANSFER:
-        return 'repeat';
+        return 'sync_alt';
+      
+      // Pagos con tarjeta
       case TransactionType.CREDIT_PAYMENT:
-        return 'card';
+        return 'credit_card';
+      
+      // Cargos de crédito
+      case TransactionType.CREDIT_CHARGE:
+        return 'shopping_cart';
+      
+      // Compras
       case TransactionType.DEBIT_PURCHASE:
-        return 'bag';
+        return 'shopping_bag';
+      
+      // Reembolsos
       case TransactionType.CREDIT_REFUND:
       case TransactionType.DEBIT_REFUND:
-        return 'return-up-back';
+        return 'undo';
+      
+      // Pagos de cuotas
+      case TransactionType.INSTALLMENT_PAYMENT:
+        return 'payment';
+      
+      // Salarios
       case TransactionType.SALARY:
-        return 'briefcase';
+        return 'work';
+      
       default:
-        return 'swap-horizontal';
+        return 'swap_horiz';
     }
   }
 }

@@ -100,20 +100,28 @@ export class AccountService implements IAccountService {
   }
 
   getAccountsByUser(userId: string, page: number = 1, pageSize: number = 20): Observable<AccountsListResponse> {
+    console.log('🔍 AccountService.getAccountsByUser called with userId:', userId);
+    
     const params = new HttpParams()
       .set('page', page.toString())
       .set('pageSize', pageSize.toString());
 
-    return this.http.get<any>(`${this.apiUrl}/user/${userId}`, { params }).pipe(
+    const url = `${this.apiUrl}/user/${userId}`;
+    console.log('🌐 Calling URL:', url);
+
+    return this.http.get<any>(url, { params }).pipe(
       map(response => {
-        console.log('Backend response:', response); // Para debugging
+        console.log('✅ Backend response:', response);
         return this.mapBackendResponseToAccountsList(response);
       }),
       catchError(error => {
-        console.error('Error getting accounts by user:', error);
+        console.error('❌ Error getting accounts by user:', error);
+        console.error('   URL was:', url);
+        console.error('   UserId was:', userId);
         
         // Si es un error 404 (usuario sin cuentas), devolver lista vacía
         if (error.status === 404) {
+          console.warn('⚠️ 404 error - returning empty list');
           return of({
             accounts: [],
             total: 0,

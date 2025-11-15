@@ -182,7 +182,12 @@ export class AccountsComponent implements OnInit, OnDestroy {
   private loadUserAccounts(): void {
     const user = this.currentUser;
     
+    console.log('🔍 loadUserAccounts called');
+    console.log('   Current user:', user);
+    console.log('   User ID:', user?.id);
+    
     if (!user?.id) {
+      console.error('❌ No user ID found!');
       this.handleAuthenticationError();
       return;
     }

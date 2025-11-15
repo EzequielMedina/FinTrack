@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subject, takeUntil, finalize } from 'rxjs';
+import { MatIconModule } from '@angular/material/icon';
 
 import { 
   TransactionService, 
@@ -24,7 +25,12 @@ import {
 @Component({
   selector: 'app-transactions',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [
+    CommonModule, 
+    FormsModule, 
+    ReactiveFormsModule,
+    MatIconModule
+  ],
   templateUrl: './transactions.component.html',
   styleUrls: ['./transactions.component.css']
 })
@@ -89,20 +95,20 @@ export class TransactionsComponent implements OnInit, OnDestroy {
       fromAccountId: ['', Validators.required],
       toAccountId: ['', Validators.required],
       amount: ['', [Validators.required, Validators.min(0.01)]],
-      description: ['']
+      description: ['', Validators.required]
     });
 
     this.depositForm = this.formBuilder.group({
       accountId: ['', Validators.required],
       amount: ['', [Validators.required, Validators.min(0.01)]],
-      description: [''],
+      description: ['', Validators.required],
       method: ['BANK_TRANSFER']
     });
 
     this.withdrawalForm = this.formBuilder.group({
       accountId: ['', Validators.required],
       amount: ['', [Validators.required, Validators.min(0.01)]],
-      description: [''],
+      description: ['', Validators.required],
       method: ['ATM']
     });
 
@@ -310,7 +316,27 @@ export class TransactionsComponent implements OnInit, OnDestroy {
 
   getAccountName(accountId: string): string {
     const account = this.accounts.find(acc => acc.id === accountId);
-    return account ? `${account.accountType} - ${account.name}` : accountId;
+    return account ? account.name : 'Cuenta no encontrada';
+  }
+
+  getTransactionTypeLabel(type: TransactionType): string {
+    const labels: { [key: string]: string } = {
+      'wallet_deposit': 'Depósito',
+      'wallet_withdrawal': 'Retiro',
+      'wallet_transfer': 'Transferencia',
+      'account_deposit': 'Depósito',
+      'account_withdraw': 'Retiro',
+      'account_transfer': 'Transferencia',
+      'credit_payment': 'Pago de Tarjeta',
+      'credit_charge': 'Cargo de Crédito',
+      'credit_refund': 'Reembolso de Crédito',
+      'debit_purchase': 'Compra con Débito',
+      'debit_withdrawal': 'Retiro con Débito',
+      'debit_refund': 'Reembolso de Débito',
+      'installment_payment': 'Pago de Cuota',
+      'salary': 'Salario'
+    };
+    return labels[type] || type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   }
 
   canCancelTransaction(transaction: Transaction): boolean {

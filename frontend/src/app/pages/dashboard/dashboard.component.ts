@@ -13,6 +13,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { HasPermissionDirective } from '../../shared/directives/has-permission.directive';
 import { HasRoleDirective } from '../../shared/directives/has-role.directive';
 import { Permission, UserRole, Account, AccountType, Currency, Transaction, TransactionType } from '../../models';
+import { AccountUtils } from '../../models/account-utils';
 import { Subject, takeUntil, forkJoin } from 'rxjs';
 
 @Component({
@@ -123,36 +124,36 @@ export class DashboardComponent implements OnInit, OnDestroy {
     // Tasa de cambio aproximada ARS/USD (puedes obtenerla de un API en el futuro)
     const arsToUsd = 0.0011; // Ejemplo: 1 ARS = 0.0011 USD (aprox 900 ARS = 1 USD)
     
-    // Calcular saldo total de billeteras en ARS
+    // Calcular saldo total en ARS (todas las cuentas excepto CREDIT)
     const walletBalanceARS = accounts
       .filter(account => {
-        const isWallet = account.accountType === AccountType.WALLET;
+        const isNotCredit = account.accountType !== AccountType.CREDIT;
         const isARS = account.currency === Currency.ARS;
         const isActive = account.isActive;
         console.log(`Account ${account.name}: type=${account.accountType}, currency=${account.currency}, active=${isActive}, balance=${account.balance}`);
-        return isWallet && isARS && isActive;
+        return isNotCredit && isARS && isActive;
       })
       .reduce((total, account) => {
-        console.log(`Adding ARS wallet balance: ${account.balance}`);
+        console.log(`Adding ARS balance: ${account.balance}`);
         return total + (account.balance || 0);
       }, 0);
     
-    // Calcular saldo total de billeteras en USD (sin conversiones)
+    // Calcular saldo total en USD (todas las cuentas excepto CREDIT)
     const walletBalanceUSD = accounts
       .filter(account => {
-        const isWallet = account.accountType === AccountType.WALLET;
+        const isNotCredit = account.accountType !== AccountType.CREDIT;
         const isUSD = account.currency === Currency.USD;
         const isActive = account.isActive;
         console.log(`Account ${account.name}: type=${account.accountType}, currency=${account.currency}, active=${isActive}, balance=${account.balance}`);
-        return isWallet && isUSD && isActive;
+        return isNotCredit && isUSD && isActive;
       })
       .reduce((total, account) => {
-        console.log(`Adding USD wallet balance: ${account.balance}`);
+        console.log(`Adding USD balance: ${account.balance}`);
         return total + (account.balance || 0);
       }, 0);
     
-    console.log('ARS wallet balance:', walletBalanceARS);
-    console.log('USD wallet balance (direct only):', walletBalanceUSD);
+    console.log('Total ARS balance:', walletBalanceARS);
+    console.log('Total USD balance:', walletBalanceUSD);
     
     this.totalWalletBalance.set(walletBalanceARS);
     this.totalWalletBalanceUSD.set(walletBalanceUSD);
@@ -297,7 +298,26 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   getTransactionAmount(transaction: Transaction): number {
     // Para mostrar en el dashboard con signo correcto
-    const isPositive = [TransactionType.DEPOSIT, TransactionType.REFUND, TransactionType.SALARY].includes(transaction.type);
+    const isPositive = [
+      TransactionType.DEPOSIT, 
+      TransactionType.WALLET_DEPOSIT,
+      TransactionType.ACCOUNT_DEPOSIT,
+      TransactionType.REFUND, 
+      TransactionType.CREDIT_REFUND,
+      TransactionType.DEBIT_REFUND,
+      TransactionType.SALARY
+    ].includes(transaction.type);
     return isPositive ? transaction.amount : -transaction.amount;
+  }
+
+  // Método para obtener el icono de la cuenta asociada a la transacción
+  getAccountIconForTransaction(transaction: Transaction): string {
+    const accountId = transaction.fromAccountId || transaction.toAccountId;
+    if (!accountId) return 'account_balance_wallet';
+    
+    const account = this.accounts().find(acc => acc.id === accountId);
+    if (!account) return 'account_balance_wallet';
+    
+    return AccountUtils.getAccountIcon(account.accountType);
   }
 }

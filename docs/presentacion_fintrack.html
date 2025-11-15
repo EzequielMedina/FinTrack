@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinTrack — Presentación de Negocio</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #111827;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --accent: #60a5fa;
+    }
+    html, body { height: 100%; }
+    body {
+      margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background: radial-gradient(1000px 600px at 20% 0%, #1f2937 0%, var(--bg) 50%, #0b1020 100%);
+      color: var(--text);
+    }
+    .deck { max-width: 1000px; margin: 0 auto; padding: 32px; }
+    .slide { background: rgba(17,24,39,0.75); border: 1px solid #1f2937; border-radius: 14px; padding: 28px; margin: 22px 0; backdrop-filter: blur(4px); }
+    h1, h2 { margin: 0 0 12px 0; }
+    h1 { font-size: 28px; letter-spacing: 0.3px; }
+    h2 { font-size: 22px; color: var(--accent); }
+    p { line-height: 1.6; color: var(--text); }
+    ul { margin: 10px 0 0 18px; }
+    li { margin: 6px 0; color: var(--text); }
+    .muted { color: var(--muted); }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .card { background: var(--card); border: 1px solid #1f2937; border-radius: 12px; padding: 14px; }
+    .img { width: 100%; background: #0b1220; border: 1px solid #1f2937; border-radius: 10px; padding: 10px; display: flex; align-items: center; justify-content: center; }
+    .img img { max-width: 100%; height: auto; }
+    .footer { text-align: center; font-size: 12px; color: var(--muted); margin-top: 18px; }
+    .small { font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="deck">
+    <div class="slide">
+      <h1>FinTrack — Gestión Financiera con Chatbot y Reportes</h1>
+      <p class="muted">Proyecto/Tesis — [Tu Nombre]</p>
+      <div class="img" aria-label="Dashboard principal">
+        <img src="./dashboard_principal.svg" alt="Dashboard principal FinTrack" />
+      </div>
+      <p class="small muted">Presentación enfocada en propuesta de valor, modelo y diferenciadores.</p>
+    </div>
+
+    <div class="slide">
+      <h2>Problema y Oportunidad</h2>
+      <ul>
+        <li>Datos financieros dispersos (bancos, tarjetas, planillas).</li>
+        <li>Control de cuotas y vencimientos complejo y manual.</li>
+        <li>Reportes poco claros para decisiones rápidas.</li>
+        <li>Oportunidad: automatización y visualización simple para finanzas personales.</li>
+      </ul>
+    </div>
+
+    <div class="slide">
+      <h2>Propuesta de Valor</h2>
+      <ul>
+        <li>Centraliza cuentas, tarjetas y transacciones.</li>
+        <li>Automatiza cuotas, vencimientos y saldos.</li>
+        <li>Reportes y analytics listos para usar.</li>
+        <li>Chatbot para consultas en lenguaje natural.</li>
+      </ul>
+    </div>
+
+    <div class="slide">
+      <h2>Producto: Experiencia del Usuario</h2>
+      <div class="grid">
+        <div class="card">
+          <strong>Dashboard</strong>
+          <ul>
+            <li>Visión rápida de gastos/ingresos y tendencias.</li>
+            <li>Acceso a reportes PDF/HTML.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <strong>Tarjetas y Cuotas</strong>
+          <ul>
+            <li>Gestión de cuotas, vencimientos y saldos pendientes.</li>
+            <li>Alertas y recordatorios.</li>
+          </ul>
+        </div>
+        <div class="img" aria-label="Gestión de tarjetas">
+          <img src="./gestion_tarjetas.svg" alt="Gestión de tarjetas FinTrack" />
+        </div>
+        <div class="img" aria-label="Chatbot conversacional">
+          <img src="./chatbot_interface.svg" alt="Chatbot conversacional FinTrack" />
+        </div>
+      </div>
+    </div>
+
+    <div class="slide">
+      <h2>Diferenciadores</h2>
+      <ul>
+        <li>Arquitectura modular en microservicios (escalable y mantenible).</li>
+        <li>Despliegue reproducible con Docker Compose + NGINX.</li>
+        <li>Reportes PDF/HTML, métricas y analytics.</li>
+        <li>Chatbot con persistencia de conversación y contexto.</li>
+      </ul>
+    </div>
+
+    <div class="slide">
+      <h2>Modelo de Negocio</h2>
+      <ul>
+        <li>Freemium: funciones base y límites de reportes/cuotas.</li>
+        <li>Premium: analytics avanzados, alertas inteligentes, exportaciones.</li>
+        <li>Potencial B2B: instituciones educativas y fintech.</li>
+      </ul>
+    </div>
+
+    <div class="slide">
+      <h2>Roadmap y Métricas</h2>
+      <ul>
+        <li>Integraciones bancarias y APIs de cambio USD.</li>
+        <li>Alertas inteligentes y dashboards avanzados.</li>
+        <li>Métricas: usuarios activos, uso del chatbot, reportes generados, tiempo ahorrado.</li>
+      </ul>
+      <div class="img" aria-label="Reportes y analytics">
+        <img src="./reportes_analytics.svg" alt="Reportes y analytics FinTrack" />
+      </div>
+    </div>
+
+    <div class="slide">
+      <h2>Demo y Cierre</h2>
+      <ul>
+        <li>Demo: dashboard, tarjetas/cuotas, chatbot respondiendo preguntas.</li>
+        <li>Beneficios: claridad, automatización y experiencia conversacional.</li>
+        <li>Despliegue: Docker Compose y verificación de logs.</li>
+      </ul>
+      <p class="small muted">Comandos (PowerShell): <code>docker compose up --build</code> y <code>docker compose logs -f</code></p>
+    </div>
+
+    <div class="footer">FinTrack — Presentación de Negocio • © Proyecto/Tesis</div>
+  </div>
+</body>
+</html>

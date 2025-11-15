@@ -20,6 +20,12 @@ export enum TransactionType {
   DEBIT_WITHDRAWAL = 'debit_withdrawal',
   DEBIT_REFUND = 'debit_refund',
 
+  // Installment transactions
+  INSTALLMENT_PAYMENT = 'installment_payment',
+  
+  // Salary
+  SALARY = 'salary',
+
   // Legacy types (for backward compatibility)
   DEPOSIT = 'wallet_deposit',
   WITHDRAWAL = 'wallet_withdrawal',
@@ -31,7 +37,6 @@ export enum TransactionType {
   FEE = 'debit_purchase',
   INTEREST = 'credit_refund',
   DIVIDEND = 'wallet_deposit',
-  SALARY = 'wallet_deposit',
   INVESTMENT = 'wallet_deposit'
 }
 

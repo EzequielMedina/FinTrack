@@ -8,7 +8,12 @@ INSERT IGNORE INTO migration_history (migration_file) VALUES
 ('01_V1__users.sql'),
 ('02_V2__user_profiles.sql'),
 ('03_V3__accounts_extended_fields.sql'),
-('04_V4__cards.sql');
+('04_V4__cards.sql'),
+('05_V5__card_balance.sql'),
+('06_V6__transactions.sql'),
+('07_V7__installments.sql'),
+('08_V8__notifications.sql'),
+('09_V9__conversation_history.sql');
 
 -- Show migration summary
 SELECT 
