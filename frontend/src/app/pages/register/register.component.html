@@ -84,8 +84,10 @@
 
       <div class="terms-section">
         <mat-checkbox formControlName="acceptTerms" color="primary">
-          Acepto los <a href="/terms" target="_blank" class="terms-link">términos y condiciones</a> 
-          y la <a href="/privacy" target="_blank" class="terms-link">política de privacidad</a>
+          Acepto los 
+          <a href="#" (click)="openTermsDialog($event)" class="terms-link">términos y condiciones</a> 
+          y la 
+          <a href="#" (click)="openPrivacyDialog($event)" class="terms-link">política de privacidad</a>
         </mat-checkbox>
         <mat-error *ngIf="acceptTermsControl?.touched && acceptTermsControl?.invalid" class="terms-error">
           Debes aceptar los términos y condiciones

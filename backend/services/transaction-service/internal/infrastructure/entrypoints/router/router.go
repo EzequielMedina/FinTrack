@@ -3,6 +3,8 @@ package router
 import (
 	"database/sql"
 	"net/http"
+
+	"github.com/fintrack/transaction-service/internal/infrastructure/entrypoints/middleware"
 )
 
 // Router handles all HTTP routing for the transaction service
@@ -26,7 +28,7 @@ func NewRouter(db *sql.DB) *Router {
 }
 
 // SetupRoutes configures all routes using standard net/http
-func (r *Router) SetupRoutes() *http.ServeMux {
+func (r *Router) SetupRoutes() http.Handler {
 	mux := http.NewServeMux()
 
 	// Health check
@@ -45,7 +47,8 @@ func (r *Router) SetupRoutes() *http.ServeMux {
 	mux.HandleFunc("POST /api/v1/cards/credit/payment", r.cardHandler.PayCreditCardHTTP)
 	mux.HandleFunc("POST /api/v1/cards/debit/transaction", r.cardHandler.ProcessDebitCardTransactionHTTP)
 
-	return mux
+	// Apply auth middleware to all routes except health check
+	return middleware.AuthMiddleware(mux)
 }
 
 // healthCheck handles health check requests

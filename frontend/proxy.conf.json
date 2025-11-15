@@ -41,6 +41,12 @@
     "changeOrigin": true,
     "logLevel": "info"
   },
+  "/api/chat/**": {
+    "target": "http://localhost:8090",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "info"
+  },
   "/api/**": {
     "target": "http://localhost:8081",
     "secure": false,

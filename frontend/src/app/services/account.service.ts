@@ -209,6 +209,28 @@ export class AccountService implements IAccountService {
 
   // Helper methods
   private mapBackendResponseToAccount(response: any): Account {
+    // Mapear las tarjetas si existen
+    const cards = response.cards ? response.cards.map((card: any) => ({
+      id: card.id,
+      accountId: card.account_id,
+      cardType: card.card_type,
+      cardBrand: card.card_brand,
+      lastFourDigits: card.last_four_digits,
+      maskedNumber: card.masked_number,
+      holderName: card.holder_name,
+      expirationMonth: card.expiration_month,
+      expirationYear: card.expiration_year,
+      status: card.status,
+      isDefault: card.is_default,
+      nickname: card.nickname,
+      balance: card.balance,
+      creditLimit: card.credit_limit,
+      closingDate: card.closing_date,
+      dueDate: card.due_date,
+      createdAt: card.created_at,
+      updatedAt: card.updated_at
+    })) : undefined;
+
     return {
       id: response.id,
       userId: response.user_id,
@@ -220,6 +242,7 @@ export class AccountService implements IAccountService {
       isActive: response.is_active,
       createdAt: response.created_at,
       updatedAt: response.updated_at,
+      cards: cards,
       creditLimit: response.credit_limit,
       closingDate: response.closing_date,
       dueDate: response.due_date,

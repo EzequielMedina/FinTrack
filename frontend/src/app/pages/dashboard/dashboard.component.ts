@@ -9,6 +9,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatExpansionModule } from '@angular/material/expansion';
 import { HasPermissionDirective } from '../../shared/directives/has-permission.directive';
 import { HasRoleDirective } from '../../shared/directives/has-role.directive';
 import { Permission, UserRole, Account, AccountType, Currency, Transaction, TransactionType } from '../../models';
@@ -25,6 +26,7 @@ import { Subject, takeUntil, forkJoin } from 'rxjs';
     MatIconModule,
     MatGridListModule,
     MatProgressSpinnerModule,
+    MatExpansionModule,
     HasPermissionDirective,
     HasRoleDirective
   ],
@@ -47,6 +49,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   totalCreditLimit = signal(0);
   activeAccountsCount = signal(0);
   transactionsCount = signal(0);
+  transactionsPanelExpanded = signal(true); // Panel expandido por defecto
+  accountNamesMap = signal<Map<string, string>>(new Map()); // Mapeo de accountId -> nombre
 
   // Exponemos los enums para usar en el template
   readonly Permission = Permission;
@@ -154,15 +158,34 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.totalWalletBalanceUSD.set(walletBalanceUSD);
 
     // Calcular límite total de crédito
-    const creditLimit = accounts
+    let creditLimit = 0;
+    
+    // Sumar límite de cuentas de tipo CREDIT (legacy)
+    const legacyCreditLimit = accounts
       .filter(account => {
         const isCredit = account.accountType === AccountType.CREDIT;
         const isActive = account.isActive;
+        console.log(`Credit account ${account.name}: isCredit=${isCredit}, isActive=${isActive}, creditLimit=${account.creditLimit}`);
         return isCredit && isActive;
       })
       .reduce((total, account) => total + (account.creditLimit || 0), 0);
     
-    console.log('Total credit limit:', creditLimit);
+    creditLimit += legacyCreditLimit;
+    
+    // Sumar límite de tarjetas de crédito en TODAS las cuentas activas con tarjetas
+    // Incluye: BANK_ACCOUNT, CHECKING, y cualquier otro tipo con tarjetas
+    accounts
+      .filter(account => account.isActive && account.cards && account.cards.length > 0)
+      .forEach(account => {
+        account.cards?.forEach(card => {
+          if (card.cardType === 'credit' && card.status === 'active' && card.creditLimit) {
+            console.log(`Credit card ${card.lastFourDigits} in account ${account.name}: creditLimit=${card.creditLimit}`);
+            creditLimit += card.creditLimit;
+          }
+        });
+      });
+    
+    console.log('Total credit limit (legacy + cards):', creditLimit);
     this.totalCreditLimit.set(creditLimit);
 
     // Contar cuentas activas
@@ -188,7 +211,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     console.log('Dashboard: Loading recent transactions for user ID:', user.id);
     this.loadingTransactions.set(true);
     
-    this.transactionService.getRecentTransactions(user.id, 5).pipe(
+    this.transactionService.getRecentTransactions(user.id, 10).pipe(
       takeUntil(this.destroy$)
     ).subscribe({
       next: (transactions) => {
@@ -196,6 +219,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.recentTransactions.set(transactions);
         this.transactionsCount.set(transactions.length);
         this.loadingTransactions.set(false);
+        this.loadAccountNamesForTransactions(transactions);
       },
       error: (error) => {
         console.error('Error loading recent transactions:', error);
@@ -204,6 +228,66 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.transactionsCount.set(0);
       }
     });
+  }
+
+  private loadAccountNamesForTransactions(transactions: Transaction[]): void {
+    // Obtener todos los IDs únicos de cuentas de las transacciones
+    const accountIds = new Set<string>();
+    transactions.forEach(tx => {
+      if (tx.fromAccountId) accountIds.add(tx.fromAccountId);
+      if (tx.toAccountId) accountIds.add(tx.toAccountId);
+    });
+
+    // Cargar nombres de las cuentas
+    const accountsArray = Array.from(accountIds);
+    if (accountsArray.length === 0) {
+      return;
+    }
+
+    // Buscar en las cuentas ya cargadas primero
+    const accountMap = new Map<string, string>();
+    const currentAccounts = this.accounts();
+    
+    accountsArray.forEach(accountId => {
+      const account = currentAccounts.find(acc => acc.id === accountId);
+      if (account) {
+        accountMap.set(accountId, account.name);
+      }
+    });
+
+    this.accountNamesMap.set(accountMap);
+  }
+
+  getAccountNameForTransaction(transaction: Transaction): string {
+    const accountMap = this.accountNamesMap();
+    
+    // Priorizar fromAccountId para transacciones salientes
+    if (transaction.fromAccountId) {
+      const name = accountMap.get(transaction.fromAccountId);
+      if (name) return name;
+    }
+    
+    // Usar toAccountId para depósitos
+    if (transaction.toAccountId) {
+      const name = accountMap.get(transaction.toAccountId);
+      if (name) return name;
+    }
+
+    // Si hay metadata con nombre de cuenta
+    if (transaction.metadata?.accountName) {
+      return transaction.metadata.accountName;
+    }
+    
+    // Fallback: mostrar tipo de transacción formateado
+    return this.formatTransactionType(transaction.type);
+  }
+
+  private formatTransactionType(type: TransactionType): string {
+    // Convertir el tipo de transacción a un formato más legible
+    return type.replace(/_/g, ' ')
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
   }
 
   // Métodos para el template

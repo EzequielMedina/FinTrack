@@ -221,3 +221,16 @@ func (s *NotificationService) GetJobHistory(limit int) ([]*entities.JobRun, erro
 func (s *NotificationService) GetNotificationLogs(jobRunID string, limit int) ([]*entities.NotificationLog, error) {
 	return s.notificationRepo.GetNotificationLogs(jobRunID, limit)
 }
+
+// SendSupportEmail envía un email de soporte desde el FAQ
+func (s *NotificationService) SendSupportEmail(name, email, subject, message string) error {
+	log.Printf("📧 Sending support email from %s (%s): %s", name, email, subject)
+
+	if err := s.emailService.SendSupportEmail(name, email, subject, message); err != nil {
+		log.Printf("❌ Error sending support email: %v", err)
+		return fmt.Errorf("failed to send support email: %w", err)
+	}
+
+	log.Printf("✅ Support email sent successfully")
+	return nil
+}

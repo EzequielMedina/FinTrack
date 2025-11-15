@@ -231,3 +231,38 @@ func (h *Handler) GetSchedulerStatus(c *gin.Context) {
 
 	c.JSON(http.StatusOK, response)
 }
+
+// SupportEmailRequest representa la solicitud de email de soporte
+type SupportEmailRequest struct {
+	Name    string `json:"name" binding:"required"`
+	Email   string `json:"email" binding:"required,email"`
+	Subject string `json:"subject" binding:"required"`
+	Message string `json:"message" binding:"required"`
+}
+
+// SendSupportEmail envía un email de soporte desde el FAQ
+// POST /api/notifications/support
+func (h *Handler) SendSupportEmail(c *gin.Context) {
+	var request SupportEmailRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "Invalid request",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	// Enviar el email de soporte
+	if err := h.notificationService.SendSupportEmail(request.Name, request.Email, request.Subject, request.Message); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "Failed to send support email",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":   "Support email sent successfully",
+		"timestamp": time.Now(),
+	})
+}

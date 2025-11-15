@@ -1,0 +1,213 @@
+<div class="installment-report-container">
+  <div class="header-section">
+    <h2>Reporte de Cuotas</h2>
+    <button 
+      class="btn-download-pdf" 
+      (click)="downloadPDF()" 
+      [disabled]="downloadingPDF || loading"
+      *ngIf="!error && reportData">
+      <mat-icon>picture_as_pdf</mat-icon>
+      <span>{{ downloadingPDF ? 'Generando PDF...' : 'Descargar PDF' }}</span>
+    </button>
+  </div>
+
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner></mat-spinner>
+  </div>
+
+  <div *ngIf="error" class="error-container">
+    <mat-icon>error</mat-icon>
+    <p>{{ error }}</p>
+  </div>
+
+  <div *ngIf="!loading && !error && reportData" class="report-content">
+    <!-- Summary Section -->
+    <div class="summary-grid">
+      <mat-card class="summary-card">
+        <mat-card-header>
+          <mat-icon>shopping_cart</mat-icon>
+          <mat-card-title>Planes Totales</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="metric-value">{{ reportData.summary.total_plans }}</div>
+          <div class="metric-label">{{ reportData.summary.active_plans }} activos</div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="summary-card">
+        <mat-card-header>
+          <mat-icon>attach_money</mat-icon>
+          <mat-card-title>Monto Total</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="metric-value">{{ formatCurrency(reportData.summary.total_amount) }}</div>
+          <div class="metric-label">Monto original</div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="summary-card">
+        <mat-card-header>
+          <mat-icon>check_circle</mat-icon>
+          <mat-card-title>Monto Pagado</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="metric-value success">{{ formatCurrency(reportData.summary.paid_amount) }}</div>
+          <div class="metric-label">{{ reportData.summary.completion_percentage }}% completado</div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="summary-card">
+        <mat-card-header>
+          <mat-icon>schedule</mat-icon>
+          <mat-card-title>Monto Pendiente</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="metric-value warning">{{ formatCurrency(reportData.summary.remaining_amount) }}</div>
+          <div class="metric-label" *ngIf="reportData.summary.next_payment_date">
+            Próx. pago: {{ formatDate(reportData.summary.next_payment_date) }}
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="summary-card" *ngIf="reportData.summary.overdue_amount > 0">
+        <mat-card-header>
+          <mat-icon>warning</mat-icon>
+          <mat-card-title>Vencido</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="metric-value error">{{ formatCurrency(reportData.summary.overdue_amount) }}</div>
+          <div class="metric-label">¡Requiere atención!</div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="summary-card">
+        <mat-card-header>
+          <mat-icon>calendar_today</mat-icon>
+          <mat-card-title>Próximo Pago</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="metric-value">{{ formatCurrency(reportData.summary.next_payment_amount) }}</div>
+          <div class="metric-label" *ngIf="reportData.summary.next_payment_date">
+            {{ formatDate(reportData.summary.next_payment_date) }}
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Overdue Payments Alert -->
+    <div *ngIf="reportData.overdue_payments && reportData.overdue_payments.length > 0" class="alert-section">
+      <mat-card class="alert-card">
+        <mat-card-header>
+          <mat-icon class="alert-icon">error</mat-icon>
+          <mat-card-title>Pagos Vencidos ({{ reportData.overdue_payments.length }})</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="overdue-list">
+            <div *ngFor="let payment of reportData.overdue_payments" class="overdue-item">
+              <div class="payment-info">
+                <strong>{{ payment.description || 'Cuota sin descripción' }}</strong>
+                <span class="merchant" *ngIf="payment.merchant_name">{{ payment.merchant_name }}</span>
+                <span class="card-info">Tarjeta **** {{ payment.card_last_four }}</span>
+              </div>
+              <div class="payment-details">
+                <div class="amount error">{{ formatCurrency(payment.amount) }}</div>
+                <div class="overdue-info">
+                  <span class="days-overdue">{{ payment.days_overdue }} días vencido</span>
+                  <span class="late-fee" *ngIf="payment.late_fee > 0">+ {{ formatCurrency(payment.late_fee) }} mora</span>
+                </div>
+                <div class="due-date">Vencimiento: {{ formatDate(payment.due_date) }}</div>
+              </div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Upcoming Payments -->
+    <div *ngIf="reportData.upcoming_payments && reportData.upcoming_payments.length > 0" class="upcoming-section">
+      <h3>
+        <mat-icon>event</mat-icon>
+        Próximos Pagos ({{ reportData.upcoming_payments.length }})
+      </h3>
+      <div class="upcoming-list">
+        <div *ngFor="let payment of reportData.upcoming_payments" class="upcoming-item">
+          <div class="payment-header">
+            <mat-icon [class]="getDaysUntilDueClass(payment.days_until_due)">
+              {{ getDaysUntilDueIcon(payment.days_until_due) }}
+            </mat-icon>
+            <div class="payment-info">
+              <strong>{{ payment.description || 'Cuota sin descripción' }}</strong>
+              <span class="merchant" *ngIf="payment.merchant_name">{{ payment.merchant_name }}</span>
+            </div>
+          </div>
+          <div class="payment-footer">
+            <span class="card-info">**** {{ payment.card_last_four }}</span>
+            <span class="amount">{{ formatCurrency(payment.amount) }}</span>
+            <span class="due-date" [class]="getDaysUntilDueClass(payment.days_until_due)">
+              {{ formatDate(payment.due_date) }} ({{ payment.days_until_due }} días)
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Plans -->
+    <div *ngIf="reportData.plans && reportData.plans.length > 0" class="plans-section">
+      <h3>
+        <mat-icon>credit_card</mat-icon>
+        Planes Activos ({{ reportData.plans.length }})
+      </h3>
+      <div class="plans-grid">
+        <mat-card *ngFor="let plan of reportData.plans" class="plan-card">
+          <mat-card-header>
+            <mat-icon>shopping_bag</mat-icon>
+            <mat-card-title>{{ plan.description || plan.merchant_name || 'Compra en cuotas' }}</mat-card-title>
+            <mat-card-subtitle>**** {{ plan.card_last_four }}</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="plan-details">
+              <div class="detail-row">
+                <span class="label">Monto total:</span>
+                <span class="value">{{ formatCurrency(plan.total_amount) }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">Cuota mensual:</span>
+                <span class="value">{{ formatCurrency(plan.installment_amount) }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">Cuotas:</span>
+                <span class="value">{{ plan.paid_installments }} / {{ plan.installments_count }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">Pendiente:</span>
+                <span class="value warning">{{ formatCurrency(plan.remaining_amount) }}</span>
+              </div>
+              <div class="detail-row" *ngIf="plan.next_due_date">
+                <span class="label">Próximo vencimiento:</span>
+                <span class="value">{{ formatDate(plan.next_due_date) }}</span>
+              </div>
+            </div>
+            
+            <div class="progress-section">
+              <div class="progress-bar">
+                <div class="progress-fill" [style.width.%]="plan.completion_percentage"></div>
+              </div>
+              <span class="progress-label">{{ plan.completion_percentage }}% completado</span>
+            </div>
+
+            <div class="plan-status">
+              <span class="status-badge" [class]="getStatusClass(plan.status)">
+                {{ getStatusLabel(plan.status) }}
+              </span>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+
+    <div *ngIf="reportData.plans && reportData.plans.length === 0" class="empty-state">
+      <mat-icon>info</mat-icon>
+      <p>No hay planes de cuotas activos</p>
+    </div>
+  </div>
+</div>

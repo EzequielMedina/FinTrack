@@ -574,9 +574,7 @@ export class AccountFormComponent implements OnInit {
     { value: AccountType.WALLET, label: 'Billetera Virtual', icon: 'account_balance_wallet', description: 'Para pagos digitales sin tarjetas físicas' },
     { value: AccountType.BANK_ACCOUNT, label: 'Cuenta Bancaria', icon: 'account_balance', description: 'Cuenta tradicional que puede tener múltiples tarjetas' },
     { value: AccountType.SAVINGS, label: 'Cuenta de Ahorro', icon: 'savings', description: 'Cuenta para ahorrar dinero' },
-    { value: AccountType.CHECKING, label: 'Cuenta Corriente', icon: 'receipt_long', description: 'Cuenta para uso diario con chequera' },
-    { value: AccountType.CREDIT, label: 'Tarjeta de Crédito', icon: 'credit_card', description: 'Línea de crédito con límite establecido' },
-    { value: AccountType.DEBIT, label: 'Tarjeta de Débito', icon: 'payment', description: 'Tarjeta vinculada directamente al balance' }
+    { value: AccountType.CHECKING, label: 'Cuenta Corriente', icon: 'receipt_long', description: 'Cuenta para uso diario con chequera' }
   ];
 
   readonly currencies = [

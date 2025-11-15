@@ -1,0 +1,164 @@
+.dialog-container {
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+}
+
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 2px solid #e0e0e0;
+  background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
+  color: white;
+  margin: -24px -24px 0 -24px;
+}
+
+.dialog-header h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.dialog-header mat-icon {
+  font-size: 28px;
+  width: 28px;
+  height: 28px;
+}
+
+.close-button {
+  color: white;
+}
+
+.close-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.dialog-content {
+  padding: 1.5rem !important;
+  overflow-y: auto;
+}
+
+.privacy-content {
+  color: #333;
+  line-height: 1.7;
+}
+
+.intro {
+  background: #e8f5e9;
+  border-left: 4px solid #2e7d32;
+  padding: 1rem;
+  margin-bottom: 2rem;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.privacy-section {
+  margin-bottom: 2rem;
+}
+
+.privacy-section h3 {
+  color: #2e7d32;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  border-bottom: 2px solid #e0e0e0;
+  padding-bottom: 0.5rem;
+}
+
+.privacy-section h4 {
+  color: #388e3c;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 1rem 0 0.5rem 0;
+}
+
+.privacy-section p {
+  margin-bottom: 0.75rem;
+  color: #555;
+}
+
+.privacy-section ul {
+  margin: 0.5rem 0 1rem 1.5rem;
+  padding: 0;
+}
+
+.privacy-section li {
+  margin-bottom: 0.5rem;
+  color: #555;
+}
+
+.privacy-section li strong {
+  color: #333;
+}
+
+.last-updated {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 2px solid #e0e0e0;
+  text-align: center;
+  color: #666;
+  font-style: italic;
+}
+
+.last-updated p {
+  margin: 0.25rem 0;
+}
+
+.dialog-actions {
+  padding: 1rem 1.5rem !important;
+  border-top: 2px solid #e0e0e0;
+  margin: 0 -24px -24px -24px;
+  background: #f9f9f9;
+}
+
+.dialog-actions button {
+  font-weight: 500;
+  padding: 0.5rem 2rem;
+}
+
+/* Scrollbar personalizada */
+.dialog-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.dialog-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.dialog-content::-webkit-scrollbar-thumb {
+  background: #2e7d32;
+  border-radius: 4px;
+}
+
+.dialog-content::-webkit-scrollbar-thumb:hover {
+  background: #1b5e20;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .dialog-header h2 {
+    font-size: 1.25rem;
+  }
+  
+  .privacy-section h3 {
+    font-size: 1.1rem;
+  }
+  
+  .privacy-section h4 {
+    font-size: 1rem;
+  }
+  
+  .dialog-content {
+    padding: 1rem !important;
+  }
+  
+  .privacy-content {
+    font-size: 0.95rem;
+  }
+}

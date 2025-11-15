@@ -1,0 +1,164 @@
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { ReportService, TransactionReport } from '../../../services/report.service';
+import { AuthService } from '../../../services/auth.service';
+
+@Component({
+  selector: 'app-transaction-report',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  templateUrl: './transaction-report.component.html',
+  styleUrls: ['./transaction-report.component.css']
+})
+export class TransactionReportComponent implements OnInit {
+  userId: string = '';
+  report: TransactionReport | null = null;
+  isLoading: boolean = false;
+  error: string = '';
+  downloadingPDF: boolean = false;
+
+  // Filtros
+  startDate: string = '';
+  endDate: string = '';
+  selectedType: string = '';
+
+  // Tipos de transacciones
+  transactionTypes = [
+    { value: '', label: 'Todas' },
+    { value: 'wallet_deposit', label: 'Depósito en Billetera' },
+    { value: 'wallet_withdrawal', label: 'Retiro de Billetera' },
+    { value: 'credit_charge', label: 'Cargo en Crédito' },
+    { value: 'credit_payment', label: 'Pago de Crédito' },
+    { value: 'debit_purchase', label: 'Compra con Débito' },
+    { value: 'account_deposit', label: 'Depósito en Cuenta' },
+    { value: 'account_withdraw', label: 'Retiro de Cuenta' }
+  ];
+
+  constructor(
+    private reportService: ReportService,
+    private authService: AuthService
+  ) {}
+
+  ngOnInit(): void {
+    const currentUser = this.authService.getCurrentUser();
+    if (currentUser) {
+      this.userId = currentUser.id;
+      this.initializeDates();
+      this.loadReport();
+    }
+  }
+
+  initializeDates(): void {
+    const today = new Date();
+    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    
+    this.endDate = today.toISOString().split('T')[0];
+    this.startDate = firstDayOfMonth.toISOString().split('T')[0];
+  }
+
+  loadReport(): void {
+    if (!this.userId) return;
+
+    this.isLoading = true;
+    this.error = '';
+
+    this.reportService.getTransactionReport(
+      this.userId,
+      this.startDate,
+      this.endDate,
+      this.selectedType
+    ).subscribe({
+      next: (data) => {
+        this.report = data;
+        this.isLoading = false;
+      },
+      error: (err) => {
+        this.error = 'Error al cargar el reporte: ' + (err.message || 'Error desconocido');
+        this.isLoading = false;
+        console.error('Error loading report:', err);
+      }
+    });
+  }
+
+  applyFilters(): void {
+    this.loadReport();
+  }
+
+  resetFilters(): void {
+    this.initializeDates();
+    this.selectedType = '';
+    this.loadReport();
+  }
+
+  formatCurrency(amount: number): string {
+    return new Intl.NumberFormat('es-AR', {
+      style: 'currency',
+      currency: 'ARS'
+    }).format(amount);
+  }
+
+  formatDate(dateStr: string): string {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('es-AR', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  }
+
+  getTypeLabel(type: string): string {
+    const typeObj = this.transactionTypes.find(t => t.value === type);
+    return typeObj ? typeObj.label : type;
+  }
+
+  downloadPDF(): void {
+    if (!this.userId) return;
+
+    this.downloadingPDF = true;
+
+    this.reportService.downloadTransactionReportPDF(
+      this.userId,
+      this.startDate,
+      this.endDate,
+      this.selectedType
+    ).subscribe({
+      next: (blob) => {
+        this.reportService.downloadPDF(blob, 'transacciones');
+        this.downloadingPDF = false;
+      },
+      error: (err) => {
+        console.error('Error downloading PDF:', err);
+        this.error = 'Error al descargar el PDF';
+        this.downloadingPDF = false;
+      }
+    });
+  }
+
+  exportReport(): void {
+    if (!this.report) return;
+
+    const csvContent = this.generateCSV();
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', `reporte_transacciones_${this.startDate}_${this.endDate}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  private generateCSV(): string {
+    if (!this.report) return '';
+
+    const header = 'Fecha,Descripción,Tipo,Monto,Comercio\n';
+    const rows = this.report.top_expenses.map(item => {
+      return `${this.formatDate(item.date)},"${item.description}",${this.getTypeLabel(item.type)},${item.amount},"${item.merchant_name || 'N/A'}"`;
+    }).join('\n');
+
+    return header + rows;
+  }
+}

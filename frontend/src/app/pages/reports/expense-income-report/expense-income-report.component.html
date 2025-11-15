@@ -1,0 +1,227 @@
+<div class="expense-income-report-container">
+  <div class="header-section">
+    <h2>Reporte de Gastos vs Ingresos</h2>
+    <button 
+      mat-raised-button 
+      color="primary"
+      (click)="downloadPDF()" 
+      [disabled]="downloadingPDF || loading"
+      *ngIf="!error && reportData">
+      <mat-icon>picture_as_pdf</mat-icon>
+      <span>{{ downloadingPDF ? 'Generando PDF...' : 'Descargar PDF' }}</span>
+    </button>
+  </div>
+
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner></mat-spinner>
+  </div>
+
+  <div *ngIf="error" class="error-container">
+    <mat-icon>error</mat-icon>
+    <p>{{ error }}</p>
+  </div>
+
+  <div *ngIf="!loading && !error && reportData" class="report-content">
+    <!-- Period Info -->
+    <div class="period-info" *ngIf="reportData.period">
+      <mat-icon>date_range</mat-icon>
+      <span>Período: {{ formatDate(reportData.period.start_date) }} - {{ formatDate(reportData.period.end_date) }}</span>
+    </div>
+
+    <!-- Summary Section -->
+    <div class="summary-grid">
+      <mat-card class="summary-card income-card">
+        <mat-card-header>
+          <mat-icon class="icon-income">trending_up</mat-icon>
+          <mat-card-title>Ingresos Totales</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="metric-value income">{{ formatCurrency(reportData.summary.total_income) }}</div>
+          <div class="metric-label">Promedio diario: {{ formatCurrency(reportData.summary.avg_daily_income) }}</div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="summary-card expense-card">
+        <mat-card-header>
+          <mat-icon class="icon-expense">trending_down</mat-icon>
+          <mat-card-title>Gastos Totales</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="metric-value expense">{{ formatCurrency(reportData.summary.total_expenses) }}</div>
+          <div class="metric-label">Promedio diario: {{ formatCurrency(reportData.summary.avg_daily_expense) }}</div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="summary-card balance-card">
+        <mat-card-header>
+          <mat-icon [class]="reportData.summary.net_balance >= 0 ? 'icon-positive' : 'icon-negative'">
+            {{ reportData.summary.net_balance >= 0 ? 'check_circle' : 'warning' }}
+          </mat-icon>
+          <mat-card-title>Balance Neto</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="metric-value" [class]="reportData.summary.net_balance >= 0 ? 'positive' : 'negative'">
+            {{ formatCurrency(reportData.summary.net_balance) }}
+          </div>
+          <div class="metric-label">
+            {{ reportData.summary.net_balance >= 0 ? 'Superávit' : 'Déficit' }}
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="summary-card savings-card">
+        <mat-card-header>
+          <mat-icon>savings</mat-icon>
+          <mat-card-title>Tasa de Ahorro</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="metric-value">{{ formatPercentage(reportData.summary.savings_rate) }}</div>
+          <div class="metric-label">Ratio gasto/ingreso: {{ formatPercentage(reportData.summary.expense_ratio) }}</div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Trend Analysis -->
+    <div class="trend-section" *ngIf="reportData.trend">
+      <h3>
+        <mat-icon>insights</mat-icon>
+        Análisis de Tendencias
+      </h3>
+      <div class="trend-grid">
+        <mat-card class="trend-card">
+          <mat-card-header>
+            <mat-icon [class]="getTrendClass(reportData.trend.incomes_trend, false)">
+              {{ getTrendIcon(reportData.trend.incomes_trend) }}
+            </mat-icon>
+            <mat-card-title>Tendencia de Ingresos</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="trend-label" [class]="getTrendClass(reportData.trend.incomes_trend, false)">
+              {{ getTrendLabel(reportData.trend.incomes_trend) }}
+            </div>
+            <div class="trend-change">
+              <span [class]="reportData.trend.income_change >= 0 ? 'positive' : 'negative'">
+                {{ reportData.trend.income_change >= 0 ? '+' : '' }}{{ formatPercentage(reportData.trend.income_change) }}
+              </span>
+              vs período anterior
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="trend-card">
+          <mat-card-header>
+            <mat-icon [class]="getTrendClass(reportData.trend.expenses_trend, true)">
+              {{ getTrendIcon(reportData.trend.expenses_trend) }}
+            </mat-icon>
+            <mat-card-title>Tendencia de Gastos</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="trend-label" [class]="getTrendClass(reportData.trend.expenses_trend, true)">
+              {{ getTrendLabel(reportData.trend.expenses_trend) }}
+            </div>
+            <div class="trend-change">
+              <span [class]="reportData.trend.expense_change >= 0 ? 'negative' : 'positive'">
+                {{ reportData.trend.expense_change >= 0 ? '+' : '' }}{{ formatPercentage(reportData.trend.expense_change) }}
+              </span>
+              vs período anterior
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="trend-card forecast-card" *ngIf="reportData.trend.forecast">
+          <mat-card-header>
+            <mat-icon>auto_graph</mat-icon>
+            <mat-card-title>Proyección Próximo Mes</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="forecast-row">
+              <span class="label">Ingresos estimados:</span>
+              <span class="value income">{{ formatCurrency(reportData.trend.forecast.next_month_income) }}</span>
+            </div>
+            <div class="forecast-row">
+              <span class="label">Gastos estimados:</span>
+              <span class="value expense">{{ formatCurrency(reportData.trend.forecast.next_month_expenses) }}</span>
+            </div>
+            <div class="forecast-row total">
+              <span class="label">Balance estimado:</span>
+              <span class="value" [class]="reportData.trend.forecast.next_month_net >= 0 ? 'positive' : 'negative'">
+                {{ formatCurrency(reportData.trend.forecast.next_month_net) }}
+              </span>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+
+    <!-- By Period Timeline -->
+    <div class="timeline-section" *ngIf="reportData.by_period && reportData.by_period.length > 0">
+      <h3>
+        <mat-icon>timeline</mat-icon>
+        Evolución Temporal
+      </h3>
+      <div class="timeline-list">
+        <div *ngFor="let period of reportData.by_period" class="timeline-item">
+          <div class="period-header">
+            <span class="period-name">{{ period.period }}</span>
+            <span class="period-date">{{ formatDate(period.date) }}</span>
+          </div>
+          <div class="period-bars">
+            <div class="bar-row income-bar">
+              <span class="bar-label">Ingresos</span>
+              <div class="bar-container">
+                <div class="bar-fill income" [style.width.%]="getBarWidth(period.income, reportData.summary.total_income)"></div>
+              </div>
+              <span class="bar-value">{{ formatCurrency(period.income) }}</span>
+            </div>
+            <div class="bar-row expense-bar">
+              <span class="bar-label">Gastos</span>
+              <div class="bar-container">
+                <div class="bar-fill expense" [style.width.%]="getBarWidth(period.expenses, reportData.summary.total_expenses)"></div>
+              </div>
+              <span class="bar-value">{{ formatCurrency(period.expenses) }}</span>
+            </div>
+          </div>
+          <div class="period-footer">
+            <span class="net-label">Neto:</span>
+            <span class="net-value" [class]="period.net >= 0 ? 'positive' : 'negative'">
+              {{ formatCurrency(period.net) }}
+            </span>
+            <span class="savings-badge" [class]="period.savings_rate >= 20 ? 'good' : period.savings_rate >= 10 ? 'medium' : 'low'">
+              Ahorro: {{ formatPercentage(period.savings_rate) }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- By Category -->
+    <div class="category-section" *ngIf="reportData.by_category && reportData.by_category.length > 0">
+      <h3>
+        <mat-icon>category</mat-icon>
+        Distribución por Categoría
+      </h3>
+      <div class="category-grid">
+        <mat-card *ngFor="let cat of reportData.by_category" class="category-card" [class]="getTypeClass(cat.type)">
+          <mat-card-header>
+            <mat-icon>{{ getCategoryIcon(cat.category) }}</mat-icon>
+            <mat-card-title>{{ cat.category }}</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="category-amount" [class]="getTypeClass(cat.type)">
+              {{ formatCurrency(cat.amount) }}
+            </div>
+            <div class="category-details">
+              <span class="transaction-count">{{ cat.count }} transacciones</span>
+              <span class="category-percentage">{{ formatPercentage(cat.percentage) }}</span>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+
+    <div *ngIf="reportData.by_category && reportData.by_category.length === 0" class="empty-state">
+      <mat-icon>info</mat-icon>
+      <p>No hay datos de categorías en este período</p>
+    </div>
+  </div>
+</div>

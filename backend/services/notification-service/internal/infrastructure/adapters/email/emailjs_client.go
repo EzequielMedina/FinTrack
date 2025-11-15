@@ -189,3 +189,178 @@ func (c *EmailJSClient) sendRequest(request EmailJSRequest) error {
 
 	return nil
 }
+
+// SendSupportEmail envía un email de soporte usando el template template_yst8bd2
+func (c *EmailJSClient) SendSupportEmail(name, email, subject, message string) error {
+	// Obtener timestamp formateado
+	timestamp := time.Now().Format("02/01/2006 15:04:05")
+
+	// Construir HTML bonito para el email
+	htmlContent := c.buildSupportEmailHTML(name, email, subject, message, timestamp)
+
+	templateParams := map[string]string{
+		"from_email":   email, // Email del usuario (para {{from_email}} en el template)
+		"subject":      fmt.Sprintf("💬 Nuevo mensaje de soporte: %s", subject),
+		"to_email":     "soporte@fintrack.com", // Email de soporte de FinTrack
+		"reply_to":     email,                  // El email del usuario para responder
+		"message":      message,
+		"html_content": htmlContent,
+		"user_email":   email,
+		"user_name":    name,
+		"timestamp":    timestamp,
+	}
+
+	request := EmailJSRequest{
+		ServiceID:      c.config.ServiceID,
+		TemplateID:     "template_yst8bd2", // Template específico de soporte
+		UserID:         c.config.PublicKey,
+		TemplateParams: templateParams,
+	}
+
+	return c.sendRequest(request)
+}
+
+// buildSupportEmailHTML construye el HTML bonito para el email de soporte
+func (c *EmailJSClient) buildSupportEmailHTML(name, email, subject, message, timestamp string) string {
+	html := fmt.Sprintf(`
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mensaje de Soporte - FinTrack</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f5f5f5;">
+    <table width="100%%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 20px 0;">
+        <tr>
+            <td align="center">
+                <!-- Main Container -->
+                <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); overflow: hidden;">
+                    
+                    <!-- Header -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #667eea 0%%, #764ba2 100%%); padding: 30px; text-align: center;">
+                            <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 600;">
+                                💬 Nuevo Mensaje de Soporte
+                            </h1>
+                            <p style="margin: 10px 0 0 0; color: #e0e7ff; font-size: 14px;">
+                                FinTrack Support System
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Alert Banner -->
+                    <tr>
+                        <td style="background-color: #fef3c7; padding: 15px 30px; border-left: 4px solid #f59e0b;">
+                            <p style="margin: 0; color: #92400e; font-size: 14px;">
+                                <strong>⚡ Acción requerida:</strong> Un usuario necesita asistencia. Por favor, responde a la brevedad.
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding: 40px 30px;">
+                            
+                            <!-- User Info Card -->
+                            <table width="100%%" cellpadding="0" cellspacing="0" style="background-color: #f9fafb; border-radius: 8px; padding: 20px; margin-bottom: 25px;">
+                                <tr>
+                                    <td>
+                                        <h2 style="margin: 0 0 15px 0; color: #1f2937; font-size: 18px; border-bottom: 2px solid #667eea; padding-bottom: 10px;">
+                                            👤 Información del Usuario
+                                        </h2>
+                                        
+                                        <table width="100%%" cellpadding="8" cellspacing="0">
+                                            <tr>
+                                                <td width="120" style="color: #6b7280; font-size: 14px; font-weight: 600;">
+                                                    Nombre:
+                                                </td>
+                                                <td style="color: #1f2937; font-size: 14px;">
+                                                    <strong>%s</strong>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="color: #6b7280; font-size: 14px; font-weight: 600;">
+                                                    Email:
+                                                </td>
+                                                <td style="color: #1f2937; font-size: 14px;">
+                                                    <a href="mailto:%s" style="color: #667eea; text-decoration: none;">
+                                                        %s
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="color: #6b7280; font-size: 14px; font-weight: 600;">
+                                                    Fecha:
+                                                </td>
+                                                <td style="color: #1f2937; font-size: 14px;">
+                                                    %s
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <!-- Subject -->
+                            <div style="margin-bottom: 25px;">
+                                <h3 style="margin: 0 0 10px 0; color: #1f2937; font-size: 16px;">
+                                    📋 Asunto
+                                </h3>
+                                <p style="margin: 0; padding: 15px; background-color: #ede9fe; border-left: 4px solid #7c3aed; color: #5b21b6; font-size: 15px; font-weight: 500; border-radius: 4px;">
+                                    %s
+                                </p>
+                            </div>
+                            
+                            <!-- Message -->
+                            <div style="margin-bottom: 25px;">
+                                <h3 style="margin: 0 0 10px 0; color: #1f2937; font-size: 16px;">
+                                    💬 Mensaje
+                                </h3>
+                                <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; border: 1px solid #e5e7eb;">
+                                    <p style="margin: 0; color: #374151; font-size: 14px; line-height: 1.6; white-space: pre-wrap;">%s</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Action Button -->
+                            <table width="100%%" cellpadding="0" cellspacing="0" style="margin-top: 30px;">
+                                <tr>
+                                    <td align="center" style="padding: 20px; background: linear-gradient(135deg, #667eea 0%%, #764ba2 100%%); border-radius: 8px;">
+                                        <a href="mailto:%s?subject=Re: %s" style="display: inline-block; padding: 12px 30px; background-color: #ffffff; color: #667eea; text-decoration: none; font-weight: 600; border-radius: 6px; font-size: 15px;">
+                                            ✉️ Responder al Usuario
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #f9fafb; padding: 25px 30px; text-align: center; border-top: 1px solid #e5e7eb;">
+                            <p style="margin: 0 0 10px 0; color: #6b7280; font-size: 13px;">
+                                Este email fue enviado automáticamente por el sistema de soporte de FinTrack
+                            </p>
+                            <p style="margin: 0; color: #9ca3af; font-size: 12px;">
+                                © 2025 FinTrack. Todos los derechos reservados.
+                            </p>
+                        </td>
+                    </tr>
+                    
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>`,
+		name,
+		email, email, // Para el mailto
+		timestamp,
+		subject,
+		message,
+		email, subject, // Para el botón de responder
+	)
+
+	return html
+}

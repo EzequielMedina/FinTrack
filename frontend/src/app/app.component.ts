@@ -5,6 +5,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { AuthService } from './services/auth.service';
 import { PermissionService } from './services/permission.service';
 import { HasPermissionDirective, HasRoleDirective } from './shared';
@@ -21,6 +22,7 @@ import { Permission, UserRole } from './models';
     MatButtonModule,
     MatIconModule,
     MatMenuModule,
+    MatTooltipModule,
     HasPermissionDirective,
     HasRoleDirective
   ],

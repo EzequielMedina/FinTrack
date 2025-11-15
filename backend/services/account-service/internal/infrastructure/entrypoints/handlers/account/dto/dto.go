@@ -83,6 +83,28 @@ type AvailableCreditResponse struct {
 	AvailableCredit float64 `json:"available_credit"`
 }
 
+// CardResponse represents the response for card operations
+type CardResponse struct {
+	ID              string     `json:"id"`
+	AccountID       string     `json:"account_id"`
+	CardType        string     `json:"card_type"`
+	CardBrand       string     `json:"card_brand"`
+	LastFourDigits  string     `json:"last_four_digits"`
+	MaskedNumber    string     `json:"masked_number"`
+	HolderName      string     `json:"holder_name"`
+	ExpirationMonth int        `json:"expiration_month"`
+	ExpirationYear  int        `json:"expiration_year"`
+	Status          string     `json:"status"`
+	IsDefault       bool       `json:"is_default"`
+	Nickname        string     `json:"nickname"`
+	Balance         float64    `json:"balance"`
+	CreditLimit     *float64   `json:"credit_limit,omitempty"`
+	ClosingDate     *time.Time `json:"closing_date,omitempty"`
+	DueDate         *time.Time `json:"due_date,omitempty"`
+	CreatedAt       time.Time  `json:"created_at"`
+	UpdatedAt       time.Time  `json:"updated_at"`
+}
+
 // AccountResponse represents the response for account operations
 type AccountResponse struct {
 	ID          string    `json:"id"`
@@ -96,7 +118,10 @@ type AccountResponse struct {
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 
-	// Credit card specific fields
+	// Cards relationship (for bank_account type)
+	Cards []CardResponse `json:"cards,omitempty"`
+
+	// Credit card specific fields (legacy - for backward compatibility)
 	CreditLimit *float64   `json:"credit_limit,omitempty"`
 	ClosingDate *time.Time `json:"closing_date,omitempty"`
 	DueDate     *time.Time `json:"due_date,omitempty"`
@@ -127,6 +152,34 @@ type PaginationMeta struct {
 
 // ToAccountResponse converts an Account entity to AccountResponse DTO
 func ToAccountResponse(account *entities.Account) AccountResponse {
+	// Convert cards if present
+	var cards []CardResponse
+	if len(account.Cards) > 0 {
+		cards = make([]CardResponse, len(account.Cards))
+		for i, card := range account.Cards {
+			cards[i] = CardResponse{
+				ID:              card.ID,
+				AccountID:       card.AccountID,
+				CardType:        string(card.CardType),
+				CardBrand:       string(card.CardBrand),
+				LastFourDigits:  card.LastFourDigits,
+				MaskedNumber:    card.MaskedNumber,
+				HolderName:      card.HolderName,
+				ExpirationMonth: card.ExpirationMonth,
+				ExpirationYear:  card.ExpirationYear,
+				Status:          string(card.Status),
+				IsDefault:       card.IsDefault,
+				Nickname:        card.Nickname,
+				Balance:         card.Balance,
+				CreditLimit:     card.CreditLimit,
+				ClosingDate:     card.ClosingDate,
+				DueDate:         card.DueDate,
+				CreatedAt:       card.CreatedAt,
+				UpdatedAt:       card.UpdatedAt,
+			}
+		}
+	}
+
 	return AccountResponse{
 		ID:          account.ID,
 		UserID:      account.UserID,
@@ -138,6 +191,7 @@ func ToAccountResponse(account *entities.Account) AccountResponse {
 		IsActive:    account.IsActive,
 		CreatedAt:   account.CreatedAt,
 		UpdatedAt:   account.UpdatedAt,
+		Cards:       cards,
 		CreditLimit: account.CreditLimit,
 		ClosingDate: account.ClosingDate,
 		DueDate:     account.DueDate,

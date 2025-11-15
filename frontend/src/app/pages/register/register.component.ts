@@ -10,6 +10,9 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { TermsDialogComponent } from '../../components/terms-dialog/terms-dialog.component';
+import { PrivacyDialogComponent } from '../../components/privacy-dialog/privacy-dialog.component';
 
 // Custom validator for password confirmation
 function passwordMatchValidator(control: AbstractControl): { [key: string]: any } | null {
@@ -34,7 +37,8 @@ function passwordMatchValidator(control: AbstractControl): { [key: string]: any 
     MatInputModule,
     MatButtonModule,
     MatIconModule,
-    MatCheckboxModule
+    MatCheckboxModule,
+    MatDialogModule
   ],
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.css'],
@@ -44,6 +48,7 @@ export class RegisterComponent {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
+  private readonly dialog = inject(MatDialog);
 
   registerForm: FormGroup;
   loading = signal(false);
@@ -132,6 +137,28 @@ export class RegisterComponent {
 
   toggleConfirmPasswordVisibility(): void {
     this.hideConfirmPassword.set(!this.hideConfirmPassword());
+  }
+
+  openTermsDialog(event: Event): void {
+    event.preventDefault();
+    this.dialog.open(TermsDialogComponent, {
+      width: '800px',
+      maxWidth: '95vw',
+      maxHeight: '90vh',
+      autoFocus: false,
+      restoreFocus: false
+    });
+  }
+
+  openPrivacyDialog(event: Event): void {
+    event.preventDefault();
+    this.dialog.open(PrivacyDialogComponent, {
+      width: '800px',
+      maxWidth: '95vw',
+      maxHeight: '90vh',
+      autoFocus: false,
+      restoreFocus: false
+    });
   }
 
   async onSubmit(): Promise<void> {

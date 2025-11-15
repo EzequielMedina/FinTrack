@@ -51,6 +51,70 @@ export const routes: Routes = [
       )
   },
   {
+    path: 'chatbot',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/chatbot/chatbot.component').then(
+        (m) => m.ChatbotComponent
+      )
+  },
+  {
+    path: 'faq',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/faq/faq.component').then(
+        (m) => m.FaqComponent
+      )
+  },
+  {
+    path: 'reports',
+    canActivate: [authGuard],
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import('./pages/reports/reports.component').then(
+            (m) => m.ReportsComponent
+          )
+      },
+      {
+        path: 'transactions',
+        loadComponent: () =>
+          import('./pages/reports/transaction-report/transaction-report.component').then(
+            (m) => m.TransactionReportComponent
+          )
+      },
+      {
+        path: 'installments',
+        loadComponent: () =>
+          import('./pages/reports/installment-report/installment-report.component').then(
+            (m) => m.InstallmentReportComponent
+          )
+      },
+      {
+        path: 'accounts',
+        loadComponent: () =>
+          import('./pages/reports/account-report/account-report.component').then(
+            (m) => m.AccountReportComponent
+          )
+      },
+      {
+        path: 'expenses-income',
+        loadComponent: () =>
+          import('./pages/reports/expense-income-report/expense-income-report.component').then(
+            (m) => m.ExpenseIncomeReportComponent
+          )
+      },
+      {
+        path: 'notifications',
+        loadComponent: () =>
+          import('./pages/reports/notification-report/notification-report.component').then(
+            (m) => m.NotificationReportComponent
+          )
+      }
+    ]
+  },
+  {
     path: 'admin',
     canActivate: [adminPanelGuard],
     children: [

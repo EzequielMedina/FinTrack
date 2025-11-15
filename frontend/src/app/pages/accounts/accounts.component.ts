@@ -10,7 +10,7 @@ import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { Subject, takeUntil, finalize } from 'rxjs';
 import { AccountService, AuthService } from '../../services';
-import { Account, AccountType, Currency, AccountsListResponse, User } from '../../models';
+import { Account, AccountType, Currency, AccountsListResponse, User, Card } from '../../models';
 import { AccountListComponent } from './account-list/account-list.component';
 import { WalletDialogComponent } from './wallet-dialog/wallet-dialog.component';
 import { CreditDialogComponent } from './credit-dialog/credit-dialog.component';
@@ -101,7 +101,33 @@ export class AccountsComponent implements OnInit, OnDestroy {
   }
 
   get totalCreditLimit(): number {
-    return this.creditCards.reduce((total, account) => total + (account.creditLimit || 0), 0);
+    let creditLimit = 0;
+    
+    // Sumar límite de cuentas de tipo CREDIT (legacy)
+    const legacyCreditLimit = this.creditCards.reduce((total, account) => total + (account.creditLimit || 0), 0);
+    console.log('💳 Legacy credit limit:', legacyCreditLimit);
+    creditLimit += legacyCreditLimit;
+    
+    // Sumar límite de tarjetas de crédito en TODAS las cuentas activas que tengan tarjetas
+    // Incluye: BANK_ACCOUNT, CHECKING, y cualquier otro tipo con tarjetas
+    const accountsWithCards = this.accounts()
+      .filter(account => account.isActive && account.cards && account.cards.length > 0);
+    
+    console.log('🏦 Accounts with cards:', accountsWithCards.length);
+    
+    accountsWithCards.forEach(account => {
+      console.log(`  Account: ${account.name} (${account.accountType}), Cards: ${account.cards?.length || 0}`);
+      account.cards?.forEach(card => {
+        console.log(`    Card: ${card.cardType}, Status: ${card.status}, Limit: ${card.creditLimit}`);
+        if (card.cardType === 'credit' && card.status === 'active' && card.creditLimit) {
+          creditLimit += card.creditLimit;
+          console.log(`      ✓ Added ${card.creditLimit} to total`);
+        }
+      });
+    });
+    
+    console.log('💰 Total credit limit:', creditLimit);
+    return creditLimit;
   }
 
   get totalCreditLimitFormatted(): string {
@@ -181,6 +207,24 @@ export class AccountsComponent implements OnInit, OnDestroy {
    */
   private handleAccountsLoaded(response: AccountsListResponse): void {
     const accounts = response.accounts || [];
+    
+    // DEBUG: Verificar datos recibidos
+    console.log('🔍 DEBUG - Accounts loaded:', accounts.length);
+    accounts.forEach(account => {
+      console.log(`📊 Account: ${account.name} (${account.accountType})`);
+      if (account.cards && account.cards.length > 0) {
+        console.log(`  └─ Cards (${account.cards.length}):`);
+        account.cards.forEach(card => {
+          console.log(`     └─ ${card.cardType} - ${card.cardBrand} - Limit: ${card.creditLimit} - Status: ${card.status}`);
+        });
+      } else {
+        console.log(`  └─ No cards`);
+      }
+      if (account.creditLimit) {
+        console.log(`  └─ Legacy credit limit: ${account.creditLimit}`);
+      }
+    });
+    
     this.accounts.set(accounts);
     this.error.set(null);
     
