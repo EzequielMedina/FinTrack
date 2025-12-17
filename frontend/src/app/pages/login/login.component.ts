@@ -127,7 +127,7 @@ export class LoginComponent {
     <div class="about-dialog-content">
       <div class="dialog-header">
         <h1 mat-dialog-title>
-          <img src="assets/icons/wallet.svg" class="dialog-logo" alt="FinTrack">
+          <mat-icon class="dialog-logo">account_balance_wallet</mat-icon>
           FinTrack
         </h1>
         <button mat-icon-button mat-dialog-close class="close-button">
@@ -241,6 +241,8 @@ export class LoginComponent {
     .dialog-logo {
       width: 32px;
       height: 32px;
+      font-size: 32px;
+      color: var(--accent-600);
     }
 
     .close-button {
