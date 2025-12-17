@@ -1,3 +1,17 @@
+<!-- Navbar Superior -->
+<mat-toolbar class="login-navbar" color="primary">
+  <div class="navbar-content">
+    <div class="navbar-logo">
+      <img src="assets/icons/wallet.svg" class="navbar-icon" alt="FinTrack">
+      <span class="navbar-title">FinTrack</span>
+    </div>
+    <button mat-button class="about-button" (click)="openAboutDialog()">
+      <mat-icon>info</mat-icon>
+      Quiénes Somos
+    </button>
+  </div>
+</mat-toolbar>
+
 <div class="login-wrapper">
   <div class="login-card">
     <div class="card-header">
@@ -79,93 +93,5 @@
     <div class="card-footer">
       <p>¿No tienes cuenta? <a routerLink="/register" class="link">Regístrate aquí</a></p>
     </div>
-  </div>
-
-  <!-- Sección Quiénes Somos -->
-  <div class="about-section">
-    <button 
-      type="button" 
-      class="about-toggle"
-      (click)="toggleAbout()"
-      [attr.aria-expanded]="showAbout()">
-      <span>{{ showAbout() ? '▼' : '►' }} Quiénes Somos</span>
-    </button>
-    
-    @if (showAbout()) {
-      <div class="about-content">
-        <div class="about-card">
-          <h2>🎯 ¿Qué Problema Solucionamos?</h2>
-          <p>
-            Muchas personas y familias enfrentan dificultades para <strong>gestionar sus finanzas personales</strong>:
-          </p>
-          <ul>
-            <li>📊 <strong>Falta de visibilidad</strong>: No saben en qué gastan su dinero</li>
-            <li>💳 <strong>Control de deudas</strong>: Pierden el rastro de pagos de tarjetas y cuotas</li>
-            <li>💰 <strong>Sin presupuesto</strong>: Gastan más de lo que ganan sin darse cuenta</li>
-            <li>📈 <strong>Objetivos difusos</strong>: No pueden ahorrar para metas específicas</li>
-            <li>🔄 <strong>Múltiples cuentas</strong>: Información dispersa en varios bancos y apps</li>
-          </ul>
-          <p>
-            El resultado: <strong>estrés financiero, deudas acumuladas y objetivos no cumplidos</strong>.
-          </p>
-        </div>
-
-        <div class="about-card">
-          <h2>🚀 Nuestra Solución: FinTrack</h2>
-          <p>
-            FinTrack es una <strong>plataforma integral de gestión financiera personal</strong> que centraliza 
-            todas tus finanzas en un solo lugar:
-          </p>
-          <div class="features-grid">
-            <div class="feature">
-              <span class="feature-icon">📱</span>
-              <h3>Control Total</h3>
-              <p>Gestiona cuentas, tarjetas y transacciones en tiempo real</p>
-            </div>
-            <div class="feature">
-              <span class="feature-icon">💡</span>
-              <h3>Asistente IA</h3>
-              <p>Chatbot inteligente que responde tus dudas financieras</p>
-            </div>
-            <div class="feature">
-              <span class="feature-icon">📊</span>
-              <h3>Reportes Visuales</h3>
-              <p>Gráficos y análisis de tus gastos e ingresos</p>
-            </div>
-            <div class="feature">
-              <span class="feature-icon">🎯</span>
-              <h3>Metas y Ahorro</h3>
-              <p>Define objetivos y monitorea tu progreso</p>
-            </div>
-            <div class="feature">
-              <span class="feature-icon">🔔</span>
-              <h3>Notificaciones</h3>
-              <p>Alertas de vencimientos y recordatorios de pagos</p>
-            </div>
-            <div class="feature">
-              <span class="feature-icon">🌐</span>
-              <h3>Multi-divisa</h3>
-              <p>Soporte para múltiples monedas con conversión automática</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="about-card">
-          <h2>👥 Quiénes Somos</h2>
-          <p>
-            Somos un equipo de <strong>desarrolladores y especialistas en fintech</strong> comprometidos con 
-            democratizar el acceso a herramientas de gestión financiera profesional.
-          </p>
-          <p>
-            <strong>Nuestra misión</strong>: Empoderar a las personas para que tomen el control de sus finanzas 
-            y alcancen sus objetivos económicos mediante tecnología accesible e inteligente.
-          </p>
-          <p class="tech-stack">
-            <strong>Tecnología:</strong> Construido con Angular, Go, MySQL y Docker. 
-            Arquitectura de microservicios escalable y segura.
-          </p>
-        </div>
-      </div>
-    }
   </div>
 </div>
