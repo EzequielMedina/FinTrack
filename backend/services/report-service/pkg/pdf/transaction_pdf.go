@@ -109,13 +109,39 @@ func GenerateTransactionReportPDF(report *dto.TransactionReportResponse) ([]byte
 
 func translateTransactionType(txType string) string {
 	switch txType {
+	// Tipos genéricos
 	case "income":
 		return "Ingreso"
 	case "expense":
 		return "Egreso"
 	case "transfer":
 		return "Transferencia"
+	// Tipos específicos de billetera
+	case "wallet_deposit":
+		return "Depósito en Billetera"
+	case "wallet_withdrawal":
+		return "Retiro de Billetera"
+	case "wallet_transfer":
+		return "Transferencia de Billetera"
+	// Tipos de tarjeta de crédito
+	case "credit_charge":
+		return "Cargo en Crédito"
+	case "credit_payment":
+		return "Pago de Crédito"
+	case "credit_refund":
+		return "Reembolso de Crédito"
+	// Tipos de tarjeta de débito
+	case "debit_purchase":
+		return "Compra con Débito"
+	case "debit_refund":
+		return "Reembolso de Débito"
+	// Tipos de cuenta
+	case "account_deposit":
+		return "Depósito en Cuenta"
+	case "account_withdraw":
+		return "Retiro de Cuenta"
 	default:
+		// Si no se encuentra traducción, devolver el tipo original
 		return txType
 	}
 }

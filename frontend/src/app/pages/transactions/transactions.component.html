@@ -14,7 +14,7 @@
   </div>
 
   <!-- Tabs Navigation -->
-  <div class="tabs-container">
+  <!-- <div class="tabs-container">
     <div class="tabs">
       <button 
         class="tab" 
@@ -52,18 +52,18 @@
         Pagar
       </button>
     </div>
-  </div>
+  </div> -->
 
   <!-- Filters Panel -->
-  <div class="filters-panel" *ngIf="showFilters && activeTab === 'list'">
+  <div class="filters-panel" *ngIf="showFilters">
     <div class="filters-grid">
       <div class="filter-group">
-        <label for="typeFilter">Tipo</label>
+        <label for="typeFilter" class="form-label">Tipo</label>
         <select 
           id="typeFilter" 
           [(ngModel)]="filters.type" 
           (ngModelChange)="onFilterChange()"
-          class="form-control">
+          class="input">
           <option value="">Todos</option>
           <option [value]="TransactionType.DEPOSIT">Depósito</option>
           <option [value]="TransactionType.WITHDRAWAL">Retiro</option>
@@ -75,12 +75,12 @@
       </div>
 
       <div class="filter-group">
-        <label for="statusFilter">Estado</label>
+        <label for="statusFilter" class="form-label">Estado</label>
         <select 
           id="statusFilter" 
           [(ngModel)]="filters.status" 
           (ngModelChange)="onFilterChange()"
-          class="form-control">
+          class="input">
           <option value="">Todos</option>
           <option [value]="TransactionStatus.PENDING">Pendiente</option>
           <option [value]="TransactionStatus.COMPLETED">Completado</option>
@@ -90,45 +90,45 @@
       </div>
 
       <div class="filter-group">
-        <label for="startDate">Desde</label>
+        <label for="startDate" class="form-label">Desde</label>
         <input 
           type="date" 
           id="startDate"
           [(ngModel)]="filters.startDate" 
           (ngModelChange)="onFilterChange()"
-          class="form-control">
+          class="input">
       </div>
 
       <div class="filter-group">
-        <label for="endDate">Hasta</label>
+        <label for="endDate" class="form-label">Hasta</label>
         <input 
           type="date" 
           id="endDate"
           [(ngModel)]="filters.endDate" 
           (ngModelChange)="onFilterChange()"
-          class="form-control">
+          class="input">
       </div>
 
       <div class="filter-group">
-        <label for="minAmount">Monto Mínimo</label>
+        <label for="minAmount" class="form-label">Monto Mínimo</label>
         <input 
           type="number" 
           id="minAmount"
           [(ngModel)]="filters.minAmount" 
           (ngModelChange)="onFilterChange()"
           step="0.01"
-          class="form-control">
+          class="input">
       </div>
 
       <div class="filter-group">
-        <label for="maxAmount">Monto Máximo</label>
+        <label for="maxAmount" class="form-label">Monto Máximo</label>
         <input 
           type="number" 
           id="maxAmount"
           [(ngModel)]="filters.maxAmount" 
           (ngModelChange)="onFilterChange()"
           step="0.01"
-          class="form-control">
+          class="input">
       </div>
 
       <div class="filter-actions">
@@ -146,7 +146,7 @@
   <div class="content-container">
     
     <!-- LISTA DE TRANSACCIONES -->
-    <div *ngIf="activeTab === 'list'" class="transactions-list">
+    <div class="transactions-list">
       <div *ngIf="loading" class="loading-container">
         <div class="spinner"></div>
         <p>Cargando transacciones...</p>
@@ -166,8 +166,10 @@
           class="transaction-card"
           [class]="getStatusClass(transaction.status)">
           
-          <div class="transaction-icon">
-            <i [class]="'icon-' + getTransactionIcon(transaction.type)"></i>
+          <div class="transaction-icon" [class]="getTransactionIconClass(transaction.type)">
+            <mat-icon>
+              {{ getTransactionIcon(transaction.type) }}
+            </mat-icon>
           </div>
 
           <div class="transaction-content">
@@ -182,23 +184,28 @@
 
             <div class="transaction-details">
               <p *ngIf="transaction.description" class="description">
-                {{ transaction.description }}
+                <mat-icon class="detail-icon">description</mat-icon>
+                {{ translateTransactionDescription(transaction.description) }}
               </p>
               
               <div class="transaction-accounts" *ngIf="transaction.fromAccountId || transaction.toAccountId">
                 <span *ngIf="transaction.fromAccountId" class="from-account">
+                  <mat-icon class="detail-icon">arrow_upward</mat-icon>
                   Desde: {{ getAccountName(transaction.fromAccountId) }}
                 </span>
                 <span *ngIf="transaction.toAccountId" class="to-account">
+                  <mat-icon class="detail-icon">arrow_downward</mat-icon>
                   Hacia: {{ getAccountName(transaction.toAccountId) }}
                 </span>
               </div>
 
               <div class="transaction-meta">
                 <span class="transaction-date">
+                  <mat-icon class="detail-icon">calendar_today</mat-icon>
                   {{ transaction.createdAt | date:'short' }}
                 </span>
                 <span class="transaction-status" [class]="'status-' + transaction.status.toLowerCase()">
+                  <mat-icon class="detail-icon">info</mat-icon>
                   {{ transaction.status | titlecase }}
                 </span>
               </div>
@@ -249,7 +256,7 @@
     </div>
 
     <!-- FORMULARIO DE TRANSFERENCIA -->
-    <div *ngIf="activeTab === 'transfer'" class="form-container">
+    <!-- <div *ngIf="activeTab === 'transfer'" class="form-container">
       <form [formGroup]="transferForm" (ngSubmit)="onTransfer()" class="transaction-form">
         <h2>Realizar Transferencia</h2>
         
@@ -329,10 +336,10 @@
           </button>
         </div>
       </form>
-    </div>
+    </div> -->
 
     <!-- FORMULARIO DE DEPÓSITO -->
-    <div *ngIf="activeTab === 'deposit'" class="form-container">
+    <!-- <div *ngIf="activeTab === 'deposit'" class="form-container">
       <form [formGroup]="depositForm" (ngSubmit)="onDeposit()" class="transaction-form">
         <h2>Realizar Depósito</h2>
         
@@ -399,10 +406,10 @@
           </button>
         </div>
       </form>
-    </div>
+    </div> -->
 
     <!-- FORMULARIO DE RETIRO -->
-    <div *ngIf="activeTab === 'withdrawal'" class="form-container">
+    <!-- <div *ngIf="activeTab === 'withdrawal'" class="form-container">
       <form [formGroup]="withdrawalForm" (ngSubmit)="onWithdrawal()" class="transaction-form">
         <h2>Realizar Retiro</h2>
         
@@ -466,10 +473,10 @@
           </button>
         </div>
       </form>
-    </div>
+    </div> -->
 
     <!-- FORMULARIO DE PAGO -->
-    <div *ngIf="activeTab === 'payment'" class="form-container">
+    <!-- <div *ngIf="activeTab === 'payment'" class="form-container">
       <form [formGroup]="paymentForm" (ngSubmit)="onPayment()" class="transaction-form">
         <h2>Realizar Pago</h2>
         
@@ -532,7 +539,7 @@
           </button>
         </div>
       </form>
-    </div>
+    </div> -->
 
   </div>
 </div>

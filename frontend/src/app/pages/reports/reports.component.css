@@ -1,5 +1,6 @@
 /**
  * Reports Component - Diseño Empresarial
+ * Usa variables del design-system.css y componentes reutilizables
  */
 
 .reports-container {
@@ -10,26 +11,7 @@
   min-height: 100vh;
 }
 
-/* Header */
-.page-header {
-  margin-bottom: var(--space-8);
-  padding-bottom: var(--space-6);
-  border-bottom: 1px solid var(--border-color);
-}
-
-.header-content h1 {
-  color: var(--text-primary);
-  font-family: var(--font-heading);
-  font-weight: var(--font-semibold);
-  font-size: var(--text-3xl);
-  margin: 0 0 var(--space-2) 0;
-}
-
-.subtitle {
-  color: var(--text-tertiary);
-  font-size: var(--text-sm);
-  margin: 0;
-}
+/* Header - Usa .page-header del sistema */
 
 /* Reports Grid */
 .reports-grid {
@@ -39,9 +21,10 @@
   margin-bottom: var(--space-8);
 }
 
+/* Usa .card del sistema con modificadores */
 .report-card {
-  background: white;
-  border: 1px solid var(--border-color);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-light);
   border-radius: var(--radius-lg);
   padding: var(--space-6);
   cursor: pointer;
@@ -95,10 +78,10 @@
   width: 100%;
 }
 
-/* Quick Info */
+/* Quick Info - Usa .card del sistema */
 .quick-info {
-  background: white;
-  border: 1px solid var(--border-color);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-light);
   border-radius: var(--radius-lg);
   padding: var(--space-6);
 }

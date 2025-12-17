@@ -58,7 +58,7 @@ export class ExpenseIncomeReportComponent implements OnInit {
         this.loading = false;
       },
       error: (err) => {
-        console.error('Error loading expense-income report:', err);
+        console.error('Error al cargar el reporte de gastos vs ingresos:', err);
         this.error = 'Error al cargar el reporte de gastos vs ingresos';
         this.loading = false;
       }
@@ -72,16 +72,33 @@ export class ExpenseIncomeReportComponent implements OnInit {
       return;
     }
 
+    if (!this.reportData) {
+      this.error = 'No hay datos para generar el PDF. Por favor, carga el reporte primero.';
+      return;
+    }
+
+    if (!this.startDate || !this.endDate) {
+      this.error = 'Por favor, selecciona un rango de fechas antes de descargar el PDF.';
+      return;
+    }
+
     this.downloadingPDF = true;
+    this.error = null;
 
     this.reportService.downloadExpenseIncomeReportPDF(user.id, this.startDate, this.endDate).subscribe({
       next: (blob) => {
-        this.reportService.downloadPDF(blob, 'gastos-ingresos');
-        this.downloadingPDF = false;
+        try {
+          this.reportService.downloadPDF(blob, 'gastos-ingresos', this.startDate, this.endDate);
+          this.downloadingPDF = false;
+        } catch (error) {
+          console.error('Error al procesar el PDF:', error);
+          this.error = 'Error al procesar el archivo PDF';
+          this.downloadingPDF = false;
+        }
       },
       error: (err) => {
-        console.error('Error downloading PDF:', err);
-        this.error = 'Error al descargar el PDF';
+        console.error('Error al descargar el PDF:', err);
+        this.error = err.error?.message || 'Error al descargar el PDF. Por favor, intenta nuevamente.';
         this.downloadingPDF = false;
       }
     });

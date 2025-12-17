@@ -23,36 +23,32 @@
       <div class="financial-summary">
         <div class="summary-cards">
           <!-- Balance ARS -->
-          <mat-card class="balance-card ars-card" appearance="outlined">
-            <mat-card-content>
-              <div class="balance-header">
-                <mat-icon class="balance-icon">account_balance_wallet</mat-icon>
-                <div>
-                  <h3>Balance ARS</h3>
-                  <p>Pesos argentinos</p>
-                </div>
+          <div class="balance-card ars-card">
+            <div class="balance-header">
+              <mat-icon class="balance-icon">account_balance_wallet</mat-icon>
+              <div>
+                <h3>Balance ARS</h3>
+                <p>Pesos argentinos</p>
               </div>
-              <div class="balance-amount">
-                <span class="amount">{{ totalWalletBalance() | currency:'ARS':'symbol':'1.2-2' }}</span>
-              </div>
-            </mat-card-content>
-          </mat-card>
+            </div>
+            <div class="balance-amount">
+              <span class="amount">{{ totalWalletBalance() | currency:'ARS':'symbol':'1.2-2' }}</span>
+            </div>
+          </div>
 
           <!-- Balance USD -->
-          <mat-card class="balance-card usd-card" appearance="outlined">
-            <mat-card-content>
-              <div class="balance-header">
-                <mat-icon class="balance-icon">attach_money</mat-icon>
-                <div>
-                  <h3>Balance USD</h3>
-                  <p>Dólares americanos</p>
-                </div>
+          <div class="balance-card usd-card">
+            <div class="balance-header">
+              <mat-icon class="balance-icon">attach_money</mat-icon>
+              <div>
+                <h3>Balance USD</h3>
+                <p>Dólares americanos</p>
               </div>
-              <div class="balance-amount">
-                <span class="amount">{{ totalWalletBalanceUSD() | currency:'USD':'symbol':'1.2-2' }}</span>
-              </div>
-            </mat-card-content>
-          </mat-card>
+            </div>
+            <div class="balance-amount">
+              <span class="amount">{{ totalWalletBalanceUSD() | currency:'USD':'symbol':'1.2-2' }}</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -105,17 +101,18 @@
                   <mat-card-content>
                     <div class="transaction-content">
                       <div class="transaction-info">
-                        <div class="transaction-icon">
-                          <mat-icon [class]="'transaction-' + transaction.type.toLowerCase()">
+                        <div class="transaction-icon" [class]="getTransactionIconClass(transaction.type)">
+                          <mat-icon>
                             {{ getTransactionIcon(transaction.type) }}
                           </mat-icon>
                         </div>
                         <div class="transaction-details">
                           <h4>{{ getAccountNameForTransaction(transaction) }}</h4>
                           <p class="transaction-description" *ngIf="transaction.description">
-                            {{ transaction.description }}
+                            {{ translateTransactionDescription(transaction.description) }}
                           </p>
                           <span class="transaction-date">
+                            <mat-icon class="date-icon">calendar_today</mat-icon>
                             {{ transaction.createdAt | date:'short' }}
                           </span>
                         </div>

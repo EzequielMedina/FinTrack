@@ -133,6 +133,16 @@ export class CardListComponent {
     return colors[status];
   }
 
+  getStatusIcon(status: CardStatus): string {
+    const icons = {
+      [CardStatus.ACTIVE]: 'check_circle',
+      [CardStatus.INACTIVE]: 'cancel',
+      [CardStatus.BLOCKED]: 'block',
+      [CardStatus.EXPIRED]: 'warning'
+    };
+    return icons[status];
+  }
+
   isCardExpired(card: Card): boolean {
     const now = new Date();
     const currentYear = now.getFullYear();

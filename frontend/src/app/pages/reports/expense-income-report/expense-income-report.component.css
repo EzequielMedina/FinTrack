@@ -20,16 +20,15 @@
   font-weight: 500;
 }
 
-.header-section button {
+/* Botón de descarga PDF - Usa Material Design */
+.btn-download-pdf {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
-.header-section mat-icon {
-  font-size: 20px;
-  width: 20px;
-  height: 20px;
+.btn-download-pdf mat-icon {
+  margin-right: 0;
 }
 
 .expense-income-report-container h3 {

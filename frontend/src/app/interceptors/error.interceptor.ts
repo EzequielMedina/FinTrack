@@ -10,32 +10,32 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
-      // Handle authentication errors
+      // Manejar errores de autenticación
       if (error.status === 401) {
-        // Only redirect to login if user is currently authenticated
-        // This prevents redirect loops on login/register pages
+        // Solo redirigir al login si el usuario está autenticado actualmente
+        // Esto previene bucles de redirección en páginas de login/registro
         if (auth.isAuthenticatedSig()) {
           auth.logout();
           router.navigateByUrl('/login');
         }
       }
       
-      // Handle authorization errors
+      // Manejar errores de autorización
       if (error.status === 403) {
-        console.warn('Access forbidden:', error.message);
-        // Could redirect to a 403 error page or dashboard
+        console.warn('Acceso prohibido:', error.message);
+        // Podría redirigir a una página de error 403 o al dashboard
       }
 
-      // Handle server errors
+      // Manejar errores del servidor
       if (error.status >= 500) {
-        console.error('Server error:', error.message);
-        // Could show a global error notification
+        console.error('Error del servidor:', error.message);
+        // Podría mostrar una notificación de error global
       }
 
-      // Handle network errors
+      // Manejar errores de red
       if (error.status === 0) {
-        console.error('Network error:', error.message);
-        // Could show a connectivity warning
+        console.error('Error de red:', error.message);
+        // Podría mostrar una advertencia de conectividad
       }
 
       return throwError(() => error);

@@ -36,31 +36,15 @@
   align-items: center;
 }
 
+/* Botón de descarga PDF - Usa Material Design */
 .btn-download-pdf {
-  padding: var(--space-3) var(--space-6);
-  background: var(--success-500);
-  color: white;
-  border: none;
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  transition: var(--transition-base);
-  font-weight: var(--font-semibold);
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  font-size: var(--text-sm);
 }
 
-.btn-download-pdf:hover:not(:disabled) {
-  background: var(--success-600);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-
-.btn-download-pdf:disabled {
-  background: var(--text-tertiary);
-  cursor: not-allowed;
-  opacity: 0.5;
+.btn-download-pdf mat-icon {
+  margin-right: 0;
 }
 
 .btn-back {

@@ -1,5 +1,16 @@
 <div class="notification-report-container">
-  <h2>Reporte de Notificaciones (Admin)</h2>
+  <div class="header-section">
+    <h2>Reporte de Notificaciones (Admin)</h2>
+    <button 
+      mat-raised-button
+      color="primary"
+      class="btn-download-pdf" 
+      (click)="downloadPDF()" 
+      [disabled]="downloadingPDF || loading || !reportData">
+      <mat-icon>{{ downloadingPDF ? 'hourglass_empty' : 'picture_as_pdf' }}</mat-icon>
+      <span>{{ downloadingPDF ? 'Generando PDF...' : 'Descargar PDF' }}</span>
+    </button>
+  </div>
 
   <div *ngIf="loading" class="loading-container">
     <mat-spinner></mat-spinner>

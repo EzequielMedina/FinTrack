@@ -311,6 +311,17 @@ export class InstallmentPaymentModalComponent implements OnInit {
     }
   }
 
+  getInstallmentStatusText(status: string): string {
+    switch (status) {
+      case InstallmentStatus.PAID: return 'Pagado';
+      case InstallmentStatus.PENDING: return 'Pendiente';
+      case InstallmentStatus.PARTIAL: return 'Parcial';
+      case InstallmentStatus.OVERDUE: return 'Vencido';
+      case InstallmentStatus.CANCELLED: return 'Cancelado';
+      default: return status;
+    }
+  }
+
   getInstallmentStatusIcon(installment: Installment): string {
     const now = new Date();
     const dueDate = new Date(installment.due_date);

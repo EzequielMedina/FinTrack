@@ -1,71 +1,58 @@
+/**
+ * Register Component - Diseño Empresarial
+ * Usa variables del design-system.css y componentes reutilizables
+ */
+
 .register-wrapper {
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: calc(100vh - 64px);
-  padding: 1rem;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: var(--space-6);
+  background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--primary-100) 100%);
 }
 
+/* Usa .card del sistema */
 .register-card {
   width: 100%;
   max-width: 480px;
-  padding: 2rem;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
+  padding: var(--space-8);
+  box-shadow: var(--shadow-xl);
+  border-radius: var(--radius-xl);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-light);
 }
 
 .card-header {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: var(--space-8);
 }
 
 .card-header h2 {
-  margin: 0 0 0.5rem 0;
-  color: var(--brand);
-  font-size: 1.75rem;
-  font-weight: 600;
+  margin: 0 0 var(--space-2) 0;
+  color: var(--accent-600);
+  font-size: var(--text-2xl);
+  font-weight: var(--font-semibold);
+  font-family: var(--font-primary);
 }
 
 .subtitle {
   margin: 0;
-  color: #666;
-  font-size: 0.95rem;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
 }
 
+/* Usa .form-group del sistema */
 .register-form {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: var(--space-5);
 }
 
- .name-row {
-   display: flex;
-   gap: 1rem;
- }
-
- @media (max-width: 600px) {
-   .register-card {
-     padding: 1rem;
-     max-width: 100vw;
-     border-radius: 0;
-   }
-   .register-wrapper {
-     padding: 0.5rem;
-   }
-   .name-row {
-     flex-direction: column;
-     gap: 0.5rem;
-   }
-   .half-width {
-     width: 100%;
-   }
-   .register-form {
-     gap: 0.75rem;
-   }
- }
+.name-row {
+  display: flex;
+  gap: var(--space-4);
+}
 
 .half-width {
   flex: 1;
@@ -76,39 +63,40 @@
 }
 
 .terms-section {
-  margin: 0.5rem 0;
+  margin: var(--space-2) 0;
 }
 
 .terms-section mat-checkbox {
-  font-size: 0.9rem;
+  font-size: var(--text-sm);
 }
 
 .terms-link {
-  color: var(--brand);
+  color: var(--accent-600);
   text-decoration: none;
-  font-weight: 500;
-  transition: color 0.2s ease;
+  font-weight: var(--font-medium);
+  transition: color var(--transition-base);
 }
 
 .terms-link:hover {
-  color: #0a5d75;
+  color: var(--accent-700);
   text-decoration: underline;
 }
 
+/* Usa .form-error del sistema */
 .terms-error {
-  color: #d32f2f;
-  font-size: 0.75rem;
-  margin-top: 0.5rem;
+  color: var(--error-700);
+  font-size: var(--text-xs);
+  margin-top: var(--space-2);
   display: block;
 }
 
 .register-button {
   height: 48px;
-  font-size: 1rem;
-  font-weight: 500;
-  border-radius: 8px;
-  background: var(--brand);
-  margin-top: 0.5rem;
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  border-radius: var(--radius-base);
+  background: var(--accent-600);
+  margin-top: var(--space-2);
 }
 
 .register-button:disabled {
@@ -117,7 +105,7 @@
 
 .spinner {
   animation: spin 1s linear infinite;
-  margin-right: 0.5rem;
+  margin-right: var(--space-2);
 }
 
 @keyframes spin {
@@ -125,64 +113,70 @@
   to { transform: rotate(360deg); }
 }
 
+/* Usa .alert del sistema */
 .error-message {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  color: #d32f2f;
-  background: #ffebee;
-  padding: 0.75rem;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  border-left: 4px solid #d32f2f;
+  gap: var(--space-2);
+  color: var(--error-700);
+  background: var(--error-100);
+  padding: var(--space-3);
+  border-radius: var(--radius-base);
+  font-size: var(--text-sm);
+  border-left: 4px solid var(--error-500);
 }
 
 .card-footer {
   text-align: center;
-  margin-top: 1.5rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid #e0e0e0;
+  margin-top: var(--space-6);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--border-light);
 }
 
 .card-footer p {
   margin: 0;
-  color: #666;
-  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
 }
 
 .login-link {
-  color: var(--brand);
+  color: var(--accent-600);
   text-decoration: none;
-  font-weight: 500;
-  transition: color 0.2s ease;
+  font-weight: var(--font-medium);
+  transition: color var(--transition-base);
 }
 
 .login-link:hover {
-  color: #0a5d75;
+  color: var(--accent-700);
   text-decoration: underline;
 }
 
 /* Responsive design */
 @media (max-width: 600px) {
   .register-wrapper {
-    padding: 0.5rem;
+    padding: var(--space-4);
   }
   
   .register-card {
-    padding: 1.5rem;
+    padding: var(--space-6);
     max-width: 100%;
+    border-radius: var(--radius-lg);
   }
   
   .card-header h2 {
-    font-size: 1.5rem;
+    font-size: var(--text-xl);
   }
   
   .name-row {
     flex-direction: column;
-    gap: 1.25rem;
+    gap: var(--space-4);
   }
   
   .half-width {
     width: 100%;
+  }
+  
+  .register-form {
+    gap: var(--space-4);
   }
 }

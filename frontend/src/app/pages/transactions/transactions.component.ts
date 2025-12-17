@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subject, takeUntil, finalize } from 'rxjs';
+import { MatIconModule } from '@angular/material/icon';
 
 import { 
   TransactionService, 
@@ -24,7 +25,7 @@ import {
 @Component({
   selector: 'app-transactions',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, MatIconModule],
   templateUrl: './transactions.component.html',
   styleUrls: ['./transactions.component.css']
 })
@@ -357,5 +358,28 @@ export class TransactionsComponent implements OnInit, OnDestroy {
 
   getTotalPages(): number {
     return Math.ceil(this.totalTransactions / (this.filters.limit || 10));
+  }
+
+  translateTransactionDescription(description: string | undefined): string {
+    if (!description) return '';
+    
+    // Traducir términos relacionados con installments
+    return description
+      .replace(/installment/gi, 'cuota')
+      .replace(/Installment/gi, 'Cuota')
+      .replace(/INSTALLMENT/gi, 'CUOTA')
+      .replace(/installments/gi, 'cuotas')
+      .replace(/Installments/gi, 'Cuotas')
+      .replace(/INSTALLMENTS/gi, 'CUOTAS')
+      .replace(/payment/gi, 'pago')
+      .replace(/Payment/gi, 'Pago')
+      .replace(/PAYMENT/gi, 'PAGO')
+      .replace(/plan/gi, 'plan')
+      .replace(/Plan/gi, 'Plan')
+      .replace(/PLAN/gi, 'PLAN');
+  }
+
+  getTransactionIconClass(type: TransactionType): string {
+    return 'icon-type-' + type.toLowerCase().replace(/_/g, '-');
   }
 }

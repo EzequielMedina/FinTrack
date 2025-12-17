@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/jung-kurt/gofpdf"
+	"golang.org/x/text/encoding/charmap"
+	"golang.org/x/text/transform"
 )
 
 // Generator maneja la generación de PDFs
@@ -13,13 +15,26 @@ type Generator struct {
 	pdf *gofpdf.Fpdf
 }
 
-// NewGenerator crea un nuevo generador de PDF
+// NewGenerator crea un nuevo generador de PDF con soporte UTF-8
 func NewGenerator() *Generator {
 	pdf := gofpdf.New("P", "mm", "A4", "")
 	pdf.SetMargins(20, 20, 20)
 	pdf.SetAutoPageBreak(true, 25)
-
+	
 	return &Generator{pdf: pdf}
+}
+
+// encodeToLatin1 convierte una cadena UTF-8 a ISO-8859-1 (Latin-1)
+// para que gofpdf pueda mostrar correctamente los acentos en español
+func encodeToLatin1(s string) string {
+	encoder := charmap.ISO8859_1.NewEncoder()
+	encodedBytes, _, err := transform.Bytes(encoder, []byte(s))
+	if err != nil {
+		// Si hay error en la conversión, devolver el string original
+		// Esto puede pasar con caracteres que no están en Latin-1
+		return s
+	}
+	return string(encodedBytes)
 }
 
 // AddHeader agrega el encabezado del documento
@@ -29,24 +44,24 @@ func (g *Generator) AddHeader(title, subtitle string) {
 	// Logo/Título principal
 	g.pdf.SetFont("Arial", "B", 24)
 	g.pdf.SetTextColor(41, 128, 185) // Azul
-	g.pdf.CellFormat(0, 15, "FinTrack", "", 1, "L", false, 0, "")
+	g.pdf.CellFormat(0, 15, encodeToLatin1("FinTrack"), "", 1, "L", false, 0, "")
 
 	// Título del reporte
 	g.pdf.SetFont("Arial", "B", 18)
 	g.pdf.SetTextColor(52, 73, 94) // Gris oscuro
-	g.pdf.CellFormat(0, 10, title, "", 1, "L", false, 0, "")
+	g.pdf.CellFormat(0, 10, encodeToLatin1(title), "", 1, "L", false, 0, "")
 
 	// Subtítulo
 	if subtitle != "" {
 		g.pdf.SetFont("Arial", "", 11)
 		g.pdf.SetTextColor(127, 140, 141) // Gris claro
-		g.pdf.CellFormat(0, 6, subtitle, "", 1, "L", false, 0, "")
+		g.pdf.CellFormat(0, 6, encodeToLatin1(subtitle), "", 1, "L", false, 0, "")
 	}
 
 	// Fecha de generación
 	g.pdf.SetFont("Arial", "I", 9)
 	g.pdf.SetTextColor(149, 165, 166)
-	g.pdf.CellFormat(0, 5, fmt.Sprintf("Generado: %s", time.Now().Format("02/01/2006 15:04")), "", 1, "L", false, 0, "")
+	g.pdf.CellFormat(0, 5, encodeToLatin1(fmt.Sprintf("Generado: %s", time.Now().Format("02/01/2006 15:04"))), "", 1, "L", false, 0, "")
 
 	// Línea separadora
 	g.pdf.Ln(5)
@@ -60,7 +75,7 @@ func (g *Generator) AddHeader(title, subtitle string) {
 func (g *Generator) AddSection(title string) {
 	g.pdf.SetFont("Arial", "B", 14)
 	g.pdf.SetTextColor(44, 62, 80)
-	g.pdf.CellFormat(0, 8, title, "", 1, "L", false, 0, "")
+	g.pdf.CellFormat(0, 8, encodeToLatin1(title), "", 1, "L", false, 0, "")
 	g.pdf.Ln(3)
 }
 
@@ -68,11 +83,11 @@ func (g *Generator) AddSection(title string) {
 func (g *Generator) AddKeyValue(key, value string) {
 	g.pdf.SetFont("Arial", "B", 10)
 	g.pdf.SetTextColor(52, 73, 94)
-	g.pdf.CellFormat(60, 6, key+":", "", 0, "L", false, 0, "")
+	g.pdf.CellFormat(60, 6, encodeToLatin1(key+":"), "", 0, "L", false, 0, "")
 
 	g.pdf.SetFont("Arial", "", 10)
 	g.pdf.SetTextColor(52, 73, 94)
-	g.pdf.CellFormat(0, 6, value, "", 1, "L", false, 0, "")
+	g.pdf.CellFormat(0, 6, encodeToLatin1(value), "", 1, "L", false, 0, "")
 }
 
 // AddTable agrega una tabla con encabezados y datos
@@ -83,7 +98,7 @@ func (g *Generator) AddTable(headers []string, widths []float64, data [][]string
 	g.pdf.SetTextColor(255, 255, 255) // Blanco
 
 	for i, header := range headers {
-		g.pdf.CellFormat(widths[i], 8, header, "1", 0, "C", true, 0, "")
+		g.pdf.CellFormat(widths[i], 8, encodeToLatin1(header), "1", 0, "C", true, 0, "")
 	}
 	g.pdf.Ln(-1)
 
@@ -100,7 +115,7 @@ func (g *Generator) AddTable(headers []string, widths []float64, data [][]string
 		}
 
 		for i, cell := range row {
-			g.pdf.CellFormat(widths[i], 7, cell, "1", 0, "L", true, 0, "")
+			g.pdf.CellFormat(widths[i], 7, encodeToLatin1(cell), "1", 0, "L", true, 0, "")
 		}
 		g.pdf.Ln(-1)
 		fill = !fill
@@ -120,11 +135,11 @@ func (g *Generator) AddSummaryBox(items map[string]string) {
 		g.pdf.SetXY(25, currentY)
 		g.pdf.SetFont("Arial", "B", 10)
 		g.pdf.SetTextColor(52, 73, 94)
-		g.pdf.CellFormat(80, 6, key+":", "", 0, "L", false, 0, "")
+		g.pdf.CellFormat(80, 6, encodeToLatin1(key+":"), "", 0, "L", false, 0, "")
 
 		g.pdf.SetFont("Arial", "", 10)
 		g.pdf.SetTextColor(41, 128, 185)
-		g.pdf.CellFormat(0, 6, value, "", 1, "L", false, 0, "")
+		g.pdf.CellFormat(0, 6, encodeToLatin1(value), "", 1, "L", false, 0, "")
 
 		currentY += 8
 	}
@@ -139,7 +154,7 @@ func (g *Generator) AddFooter() {
 		g.pdf.SetY(-15)
 		g.pdf.SetFont("Arial", "I", 8)
 		g.pdf.SetTextColor(127, 140, 141)
-		g.pdf.CellFormat(0, 10, fmt.Sprintf("Página %d", g.pdf.PageNo()), "", 0, "C", false, 0, "")
+		g.pdf.CellFormat(0, 10, encodeToLatin1(fmt.Sprintf("Página %d", g.pdf.PageNo())), "", 0, "C", false, 0, "")
 	})
 }
 

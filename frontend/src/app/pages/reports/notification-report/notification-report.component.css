@@ -1,3 +1,30 @@
+/* Botón de descarga PDF - Usa Material Design */
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-6);
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.header-section h2 {
+  margin: 0;
+  font-size: var(--text-2xl);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+}
+
+.btn-download-pdf {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.btn-download-pdf mat-icon {
+  margin-right: 0;
+}
+
 .notification-report-container {
   padding: 20px;
   max-width: 1400px;

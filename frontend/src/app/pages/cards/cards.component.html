@@ -8,7 +8,7 @@
         <p class="subtitle">{{ cards().length }} tarjetas registradas</p>
       </div>
       <button class="btn btn-primary" (click)="onAddCard()">
-        <img src="assets/icons/card.svg" class="icon icon-sm" alt="Agregar">
+        <mat-icon>add</mat-icon>
         Agregar Tarjeta
       </button>
     </div>
@@ -24,7 +24,7 @@
         <div class="balance-cards">
           <div class="balance-card">
             <div class="balance-icon">
-              <img src="assets/icons/card.svg" alt="Crédito">
+              <mat-icon>credit_card</mat-icon>
             </div>
             <div class="balance-info">
               <span class="balance-label">Crédito</span>
@@ -34,7 +34,7 @@
 
           <div class="balance-card">
             <div class="balance-icon">
-              <img src="assets/icons/wallet.svg" alt="Débito">
+              <mat-icon>payment</mat-icon>
             </div>
             <div class="balance-info">
               <span class="balance-label">Débito</span>
@@ -44,7 +44,7 @@
 
           <div class="balance-card">
             <div class="balance-icon">
-              <img src="assets/icons/check-circle.svg" alt="Activas">
+              <mat-icon>check_circle</mat-icon>
             </div>
             <div class="balance-info">
               <span class="balance-label">Activas</span>
@@ -53,32 +53,38 @@
           </div>
         </div>
 
-        <!-- Filtro Simple -->
-        <div class="filter-tabs">
-          <button 
-            class="tab-btn"
-            [class.active]="selectedTabIndex() === 0"
-            (click)="onTabChanged(0)">
-            Todas
-          </button>
-          <button 
-            class="tab-btn"
-            [class.active]="selectedTabIndex() === 1"
-            (click)="onTabChanged(1)">
-            Crédito
-          </button>
-          <button 
-            class="tab-btn"
-            [class.active]="selectedTabIndex() === 2"
-            (click)="onTabChanged(2)">
-            Débito
-          </button>
-          <button 
-            class="tab-btn"
-            [class.active]="selectedTabIndex() === 3"
-            (click)="onTabChanged(3)">
-            Activas
-          </button>
+        <!-- Filtro Simple - Usa .tabs-container del sistema -->
+        <div class="tabs-container">
+          <div class="tabs">
+            <button 
+              class="tab"
+              [class.active]="selectedTabIndex() === 0"
+              (click)="onTabChanged(0)">
+              <mat-icon>credit_card</mat-icon>
+              Todas
+            </button>
+            <button 
+              class="tab"
+              [class.active]="selectedTabIndex() === 1"
+              (click)="onTabChanged(1)">
+              <mat-icon>credit_card</mat-icon>
+              Crédito
+            </button>
+            <button 
+              class="tab"
+              [class.active]="selectedTabIndex() === 2"
+              (click)="onTabChanged(2)">
+              <mat-icon>payment</mat-icon>
+              Débito
+            </button>
+            <button 
+              class="tab"
+              [class.active]="selectedTabIndex() === 3"
+              (click)="onTabChanged(3)">
+              <mat-icon>check_circle</mat-icon>
+              Activas
+            </button>
+          </div>
         </div>
 
         <!-- Lista de Tarjetas -->
@@ -86,10 +92,11 @@
           @if (selectedTabIndex() === 0) {
             @if (cards().length === 0) {
               <div class="empty-state">
-                <img src="assets/icons/card.svg" class="empty-icon" alt="Sin tarjetas">
+                <mat-icon class="empty-icon">credit_card_off</mat-icon>
                 <h3>No tienes tarjetas</h3>
                 <p>Agrega tu primera tarjeta para comenzar</p>
                 <button class="btn btn-primary" (click)="onAddCard()">
+                  <mat-icon>add</mat-icon>
                   Agregar Primera Tarjeta
                 </button>
               </div>
@@ -109,7 +116,7 @@
           @if (selectedTabIndex() === 1) {
             @if (creditCards().length === 0) {
               <div class="empty-state">
-                <img src="assets/icons/card.svg" class="empty-icon" alt="Sin crédito">
+                <mat-icon class="empty-icon">credit_card_off</mat-icon>
                 <h3>No tienes tarjetas de crédito</h3>
               </div>
             } @else {
@@ -128,7 +135,7 @@
           @if (selectedTabIndex() === 2) {
             @if (debitCards().length === 0) {
               <div class="empty-state">
-                <img src="assets/icons/wallet.svg" class="empty-icon" alt="Sin débito">
+                <mat-icon class="empty-icon">payment_off</mat-icon>
                 <h3>No tienes tarjetas de débito</h3>
               </div>
             } @else {
@@ -164,7 +171,7 @@
   @if (viewMode() === 'detail' && selectedCard()) {
     <div class="detail-header">
       <button class="btn btn-secondary" (click)="onBackToList()">
-        <img src="assets/icons/arrow-up.svg" class="icon icon-sm" alt="Volver" style="transform: rotate(-90deg);">
+        <mat-icon>arrow_back</mat-icon>
         Volver
       </button>
       <h1>Detalle de Tarjeta</h1>

@@ -39,7 +39,7 @@ func GenerateInstallmentReportPDF(report *dto.InstallmentReportResponse) ([]byte
 		for _, plan := range report.Plans {
 			cardInfo := plan.CardLastFour
 			if cardInfo == "" {
-				cardInfo = "N/A"
+				cardInfo = "-"
 			} else {
 				cardInfo = "*" + cardInfo
 			}
@@ -78,7 +78,7 @@ func GenerateInstallmentReportPDF(report *dto.InstallmentReportResponse) ([]byte
 		for _, payment := range report.Upcoming {
 			cardInfo := payment.CardLastFour
 			if cardInfo == "" {
-				cardInfo = "N/A"
+				cardInfo = "-"
 			} else {
 				cardInfo = "*" + cardInfo
 			}
@@ -115,7 +115,7 @@ func GenerateInstallmentReportPDF(report *dto.InstallmentReportResponse) ([]byte
 		for _, payment := range report.Overdue {
 			cardInfo := payment.CardLastFour
 			if cardInfo == "" {
-				cardInfo = "N/A"
+				cardInfo = "-"
 			} else {
 				cardInfo = "*" + cardInfo
 			}
@@ -151,6 +151,12 @@ func translateStatus(status string) string {
 		return "Activo"
 	case "completed":
 		return "Completado"
+	case "pending":
+		return "Pendiente"
+	case "paid":
+		return "Pagado"
+	case "partial":
+		return "Parcial"
 	case "cancelled":
 		return "Cancelado"
 	case "overdue":

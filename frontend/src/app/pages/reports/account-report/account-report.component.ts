@@ -51,7 +51,7 @@ export class AccountReportComponent implements OnInit {
         this.loading = false;
       },
       error: (err) => {
-        console.error('Error loading account report:', err);
+        console.error('Error al cargar el reporte de cuentas:', err);
         this.error = 'Error al cargar el reporte de cuentas';
         this.loading = false;
       }
@@ -65,16 +65,28 @@ export class AccountReportComponent implements OnInit {
       return;
     }
 
+    if (!this.reportData) {
+      this.error = 'No hay datos para generar el PDF. Por favor, carga el reporte primero.';
+      return;
+    }
+
     this.downloadingPDF = true;
+    this.error = null;
 
     this.reportService.downloadAccountReportPDF(user.id).subscribe({
       next: (blob) => {
-        this.reportService.downloadPDF(blob, 'cuentas');
-        this.downloadingPDF = false;
+        try {
+          this.reportService.downloadPDF(blob, 'cuentas');
+          this.downloadingPDF = false;
+        } catch (error) {
+          console.error('Error al procesar el PDF:', error);
+          this.error = 'Error al procesar el archivo PDF';
+          this.downloadingPDF = false;
+        }
       },
       error: (err) => {
-        console.error('Error downloading PDF:', err);
-        this.error = 'Error al descargar el PDF';
+        console.error('Error al descargar el PDF:', err);
+        this.error = err.error?.message || 'Error al descargar el PDF. Por favor, intenta nuevamente.';
         this.downloadingPDF = false;
       }
     });

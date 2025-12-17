@@ -153,7 +153,7 @@
                     <mat-chip 
                       [color]="getInstallmentStatusColor(installment.status)"
                       class="status-chip">
-                      {{ installment.status | titlecase }}
+                      {{ getInstallmentStatusText(installment.status) }}
                     </mat-chip>
                   </div>
                 </div>

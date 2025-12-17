@@ -447,24 +447,24 @@ export class TransactionService {
     switch (type) {
       case TransactionType.WALLET_DEPOSIT:
       case TransactionType.ACCOUNT_DEPOSIT:
-        return 'arrow-down-circle';
+        return 'arrow_downward';
       case TransactionType.WALLET_WITHDRAWAL:
       case TransactionType.DEBIT_WITHDRAWAL:
-        return 'arrow-up-circle';
+        return 'arrow_upward';
       case TransactionType.WALLET_TRANSFER:
       case TransactionType.ACCOUNT_TRANSFER:
-        return 'repeat';
+        return 'swap_horiz';
       case TransactionType.CREDIT_PAYMENT:
-        return 'card';
+        return 'credit_card';
       case TransactionType.DEBIT_PURCHASE:
-        return 'bag';
+        return 'shopping_bag';
       case TransactionType.CREDIT_REFUND:
       case TransactionType.DEBIT_REFUND:
-        return 'return-up-back';
+        return 'keyboard_return';
       case TransactionType.SALARY:
-        return 'briefcase';
+        return 'work';
       default:
-        return 'swap-horizontal';
+        return 'swap_horiz';
     }
   }
 }

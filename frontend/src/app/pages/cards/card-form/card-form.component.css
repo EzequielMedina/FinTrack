@@ -1,3 +1,8 @@
+/**
+ * Card Form Component - Diseño Empresarial
+ * Usa variables del design-system.css y componentes reutilizables
+ */
+
 .card-form-container {
   max-width: 600px;
   width: 100%;
@@ -7,32 +12,21 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 24px 0;
-  
-  h2 {
-    margin: 0;
-    color: #333;
-    font-weight: 500;
-  }
-
-  .close-button {
-    color: #666;
-  }
+  padding: var(--space-6) var(--space-6) 0;
 }
 
-.loading-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 48px;
-  gap: 16px;
-
-  p {
-    margin: 0;
-    color: #666;
-  }
+.form-header h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-weight: var(--font-medium);
+  font-size: var(--text-xl);
 }
+
+.close-button {
+  color: var(--text-secondary);
+}
+
+/* Usa .loading-container del sistema */
 
 .card-form {
   display: flex;
@@ -41,7 +35,7 @@
 }
 
 .form-content {
-  padding: 20px 24px !important;
+  padding: var(--space-6) !important;
   flex: 1;
   overflow-y: auto;
   max-height: 70vh;
@@ -49,13 +43,13 @@
 
 .full-width {
   width: 100%;
-  margin-bottom: 16px;
+  margin-bottom: var(--space-4);
 }
 
 .form-row {
   display: flex;
-  gap: 16px;
-  margin-bottom: 16px;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
 }
 
 .half-width {
@@ -64,17 +58,17 @@
 
 .expiration-row {
   display: flex;
-  gap: 16px;
-  margin-bottom: 16px;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
 
-  .expiration-field {
-    flex: 1;
-  }
+.expiration-field {
+  flex: 1;
 }
 
 .cvv-field {
   width: 200px;
-  margin-bottom: 16px;
+  margin-bottom: var(--space-4);
 }
 
 .brand-icon {
@@ -83,65 +77,67 @@
   display: flex;
   align-items: center;
   justify-content: center;
-
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-  }
 }
 
+.brand-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* Usa .alert del sistema con modificadores */
 .security-notice {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-  padding: 16px;
-  background: #f8f9fa;
-  border-radius: 8px;
-  border-left: 4px solid #4caf50;
-  margin-top: 16px;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--success-100);
+  border-radius: var(--radius-base);
+  border-left: 4px solid var(--success-500);
+  margin-top: var(--space-4);
+}
 
-  .security-icon {
-    color: #4caf50;
-    font-size: 20px;
-    width: 20px;
-    height: 20px;
-    margin-top: 2px;
-  }
+.security-icon {
+  color: var(--success-700);
+  font-size: var(--text-lg);
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+}
 
-  .security-text {
-    flex: 1;
+.security-text {
+  flex: 1;
+}
 
-    strong {
-      color: #333;
-      font-size: 14px;
-    }
+.security-text strong {
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+}
 
-    p {
-      margin: 4px 0 0;
-      color: #666;
-      font-size: 13px;
-      line-height: 1.4;
-    }
-  }
+.security-text p {
+  margin: var(--space-1) 0 0;
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+  line-height: var(--leading-normal);
 }
 
 .form-actions {
-  padding: 16px 24px !important;
-  border-top: 1px solid #e0e0e0;
+  padding: var(--space-4) var(--space-6) !important;
+  border-top: 1px solid var(--border-light);
   display: flex;
   justify-content: flex-end;
-  gap: 12px;
+  gap: var(--space-3);
+}
 
-  button {
-    min-width: 120px;
-    
-    &[type="submit"] {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-  }
+.form-actions button {
+  min-width: 120px;
+}
+
+.form-actions button[type="submit"] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Account Selector Styling */
@@ -149,54 +145,52 @@
   display: flex;
   flex-direction: column;
   line-height: 1.3;
-  padding: 4px 0;
+  padding: var(--space-1) 0;
+}
 
-  .account-name {
-    font-weight: 500;
-    color: #333;
-    font-size: 14px;
-  }
+.account-name {
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+}
 
-  .account-details {
-    color: #666;
-    font-size: 12px;
-    margin-top: 2px;
-  }
+.account-details {
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+  margin-top: var(--space-1);
 }
 
 .mat-mdc-option .mat-icon {
-  margin-right: 8px;
-  font-size: 18px;
+  margin-right: var(--space-2);
+  font-size: var(--text-lg);
   width: 18px;
   height: 18px;
 }
 
 .mat-mdc-option .mat-mdc-progress-spinner {
-  margin-right: 8px;
+  margin-right: var(--space-2);
 }
 
 /* Form Field Customizations */
-.mat-mdc-form-field {
-  &.full-width .mat-mdc-text-field-wrapper {
-    width: 100%;
-  }
+.mat-mdc-form-field.full-width .mat-mdc-text-field-wrapper {
+  width: 100%;
+}
 
-  .mat-mdc-form-field-error {
-    color: #f44336;
-    font-size: 12px;
-  }
+.mat-mdc-form-field .mat-mdc-form-field-error {
+  color: var(--error-500);
+  font-size: var(--text-xs);
+}
 
-  .mat-mdc-form-field-hint {
-    color: #666;
-    font-size: 12px;
-  }
+.mat-mdc-form-field .mat-mdc-form-field-hint {
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
 }
 
 /* Input Styling */
 input[formControlName="cardNumber"] {
-  font-family: 'Courier New', monospace;
+  font-family: var(--font-mono);
   letter-spacing: 1px;
-  font-size: 16px;
+  font-size: var(--text-base);
 }
 
 input[formControlName="holderName"] {
@@ -204,15 +198,13 @@ input[formControlName="holderName"] {
 }
 
 input[formControlName="cvv"] {
-  font-family: 'Courier New', monospace;
+  font-family: var(--font-mono);
   letter-spacing: 2px;
 }
 
 /* Error States */
-.mat-mdc-form-field.mat-form-field-invalid {
-  .mat-mdc-text-field-wrapper {
-    border-color: #f44336;
-  }
+.mat-mdc-form-field.mat-form-field-invalid .mat-mdc-text-field-wrapper {
+  border-color: var(--error-500);
 }
 
 /* Responsive Design */
@@ -223,21 +215,21 @@ input[formControlName="cvv"] {
   }
 
   .form-header {
-    padding: 16px 20px 0;
+    padding: var(--space-4) var(--space-5) 0;
   }
 
   .form-content {
-    padding: 16px 20px !important;
+    padding: var(--space-4) var(--space-5) !important;
     max-height: calc(100vh - 120px);
   }
 
   .expiration-row {
     flex-direction: column;
     gap: 0;
+  }
 
-    .expiration-field {
-      margin-bottom: 16px;
-    }
+  .expiration-field {
+    margin-bottom: var(--space-4);
   }
 
   .cvv-field {
@@ -245,61 +237,59 @@ input[formControlName="cvv"] {
   }
 
   .form-actions {
-    padding: 16px 20px !important;
+    padding: var(--space-4) var(--space-5) !important;
     flex-direction: column-reverse;
+  }
 
-    button {
-      width: 100%;
-      margin: 0;
-      
-      &:not(:last-child) {
-        margin-top: 8px;
-      }
-    }
+  .form-actions button {
+    width: 100%;
+    margin: 0;
+  }
+
+  .form-actions button:not(:last-child) {
+    margin-top: var(--space-2);
   }
 
   .security-notice {
-    margin-top: 12px;
-    padding: 12px;
+    margin-top: var(--space-3);
+    padding: var(--space-3);
+  }
 
-    .security-text {
-      strong {
-        font-size: 13px;
-      }
+  .security-text strong {
+    font-size: var(--text-xs);
+  }
 
-      p {
-        font-size: 12px;
-      }
-    }
+  .security-text p {
+    font-size: var(--text-xs);
   }
 }
 
 @media (max-width: 480px) {
   .form-header h2 {
-    font-size: 18px;
+    font-size: var(--text-lg);
   }
 
   .security-notice {
     flex-direction: column;
     text-align: center;
+  }
 
-    .security-icon {
-      align-self: center;
-    }
+  .security-icon {
+    align-self: center;
   }
 }
 
 /* Animation for brand detection */
 .brand-icon {
-  transition: all 0.3s ease;
-  
-  &.ng-enter {
-    opacity: 0;
-    transform: scale(0.8);
-  }
-  
-  &.ng-enter-active {
-    opacity: 1;
-    transform: scale(1);
-  }
+  transition: all var(--transition-base);
+}
+
+.brand-icon.ng-enter {
+  opacity: 0;
+  transform: scale(0.8);
+}
+
+.brand-icon.ng-enter-active {
+  opacity: 1;
+  transform: scale(1);
 }

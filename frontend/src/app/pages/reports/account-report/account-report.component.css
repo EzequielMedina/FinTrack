@@ -30,16 +30,15 @@ mat-card-title {
   gap: 12px;
 }
 
+/* Botón de descarga PDF - Usa Material Design */
 .header-actions button {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
-.header-actions mat-icon {
-  font-size: 20px;
-  width: 20px;
-  height: 20px;
+.header-actions button mat-icon {
+  margin-right: 0;
 }
 
 .loading-container {

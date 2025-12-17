@@ -1,13 +1,16 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { ReportService, TransactionReport } from '../../../services/report.service';
 import { AuthService } from '../../../services/auth.service';
 
 @Component({
   selector: 'app-transaction-report',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule, MatButtonModule, MatIconModule],
   templateUrl: './transaction-report.component.html',
   styleUrls: ['./transaction-report.component.css']
 })
@@ -76,7 +79,7 @@ export class TransactionReportComponent implements OnInit {
       error: (err) => {
         this.error = 'Error al cargar el reporte: ' + (err.message || 'Error desconocido');
         this.isLoading = false;
-        console.error('Error loading report:', err);
+        console.error('Error al cargar el reporte:', err);
       }
     });
   }
@@ -113,9 +116,18 @@ export class TransactionReportComponent implements OnInit {
   }
 
   downloadPDF(): void {
-    if (!this.userId) return;
+    if (!this.userId) {
+      this.error = 'Usuario no identificado';
+      return;
+    }
+
+    if (!this.report) {
+      this.error = 'No hay datos para generar el PDF. Por favor, carga el reporte primero.';
+      return;
+    }
 
     this.downloadingPDF = true;
+    this.error = '';
 
     this.reportService.downloadTransactionReportPDF(
       this.userId,
@@ -124,12 +136,20 @@ export class TransactionReportComponent implements OnInit {
       this.selectedType
     ).subscribe({
       next: (blob) => {
-        this.reportService.downloadPDF(blob, 'transacciones');
-        this.downloadingPDF = false;
+        try {
+          this.reportService.downloadPDF(blob, 'transacciones', this.startDate, this.endDate);
+          this.downloadingPDF = false;
+          // Opcional: mostrar mensaje de éxito
+          // this.snackBar?.open('PDF descargado exitosamente', 'Cerrar', { duration: 3000 });
+        } catch (error) {
+          console.error('Error al procesar el PDF:', error);
+          this.error = 'Error al procesar el archivo PDF';
+          this.downloadingPDF = false;
+        }
       },
       error: (err) => {
-        console.error('Error downloading PDF:', err);
-        this.error = 'Error al descargar el PDF';
+        console.error('Error al descargar el PDF:', err);
+        this.error = err.error?.message || 'Error al descargar el PDF. Por favor, intenta nuevamente.';
         this.downloadingPDF = false;
       }
     });
@@ -143,12 +163,21 @@ export class TransactionReportComponent implements OnInit {
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     
+    // Normalizar el nombre del archivo para evitar problemas con acentos
+    const date = new Date().toISOString().split('T')[0];
+    const start = this.startDate ? this.startDate.split('T')[0].replace(/-/g, '') : '';
+    const end = this.endDate ? this.endDate.split('T')[0].replace(/-/g, '') : '';
+    const filename = start && end 
+      ? `reporte-transacciones-${start}-${end}.csv`
+      : `reporte-transacciones-${date}.csv`;
+    
     link.setAttribute('href', url);
-    link.setAttribute('download', `reporte_transacciones_${this.startDate}_${this.endDate}.csv`);
+    link.setAttribute('download', filename);
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   }
 
   private generateCSV(): string {

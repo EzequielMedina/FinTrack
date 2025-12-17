@@ -84,11 +84,17 @@
             <!-- Card Details -->
             <div class="card-details">
               <div class="card-detail">
-                <span class="label">Titular:</span>
+                <div class="detail-label-wrapper">
+                  <mat-icon class="detail-icon">person</mat-icon>
+                  <span class="label">Titular:</span>
+                </div>
                 <span class="value">{{ card.holderName }}</span>
               </div>
               <div class="card-detail">
-                <span class="label">Vence:</span>
+                <div class="detail-label-wrapper">
+                  <mat-icon class="detail-icon">calendar_today</mat-icon>
+                  <span class="label">Vence:</span>
+                </div>
                 <span class="value" [class.expired]="isCardExpired(card)">
                   {{ formatExpirationDate(card.expirationMonth, card.expirationYear) }}
                   @if (isCardExpired(card)) {
@@ -101,6 +107,7 @@
             <!-- Card Status -->
             <div class="card-status">
               <mat-chip [color]="getStatusColor(card.status)" [selected]="true">
+                <mat-icon class="status-icon">{{ getStatusIcon(card.status) }}</mat-icon>
                 {{ getStatusLabel(card.status) }}
               </mat-chip>
             </div>

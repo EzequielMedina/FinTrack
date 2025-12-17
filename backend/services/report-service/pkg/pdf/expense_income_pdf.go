@@ -50,7 +50,7 @@ func GenerateExpenseIncomeReportPDF(report *dto.ExpenseIncomeReportResponse) ([]
 		var tableData [][]string
 		for _, cat := range incomeCategories {
 			row := []string{
-				cat.Category,
+				translateCategory(cat.Category),
 				fmt.Sprintf("%d", cat.Count),
 				FormatCurrency(cat.Amount, "ARS"),
 				fmt.Sprintf("%.1f%%", cat.Percentage),
@@ -71,7 +71,7 @@ func GenerateExpenseIncomeReportPDF(report *dto.ExpenseIncomeReportResponse) ([]
 		var tableData [][]string
 		for _, cat := range expenseCategories {
 			row := []string{
-				cat.Category,
+				translateCategory(cat.Category),
 				fmt.Sprintf("%d", cat.Count),
 				FormatCurrency(cat.Amount, "ARS"),
 				fmt.Sprintf("%.1f%%", cat.Percentage),
@@ -141,4 +141,31 @@ func translateTrend(trend string) string {
 	default:
 		return trend
 	}
+}
+
+func translateCategory(category string) string {
+	// Traducción de categorías comunes
+	categoryMap := map[string]string{
+		// Ingresos
+		"salary":       "Salario",
+		"investment":   "Inversión",
+		"business":     "Negocio",
+		"other_income": "Otros Ingresos",
+		// Gastos
+		"food":         "Alimentos",
+		"transport":    "Transporte",
+		"utilities":    "Servicios",
+		"entertainment": "Entretenimiento",
+		"healthcare":   "Salud",
+		"education":    "Educación",
+		"shopping":     "Compras",
+		"other":        "Otros",
+		// Si la categoría ya está en español o no está en el mapa, devolverla tal cual
+	}
+	
+	if translated, exists := categoryMap[category]; exists {
+		return translated
+	}
+	// Si no está en el mapa, devolver la categoría original (puede estar ya en español)
+	return category
 }

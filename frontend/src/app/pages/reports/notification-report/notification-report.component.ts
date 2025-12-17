@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
 import { ReportService, NotificationReport } from '../../../services/report.service';
 import { AuthService } from '../../../services/auth.service';
 
@@ -13,7 +14,8 @@ import { AuthService } from '../../../services/auth.service';
     CommonModule,
     MatCardModule,
     MatProgressSpinnerModule,
-    MatIconModule
+    MatIconModule,
+    MatButtonModule
   ],
   templateUrl: './notification-report.component.html',
   styleUrls: ['./notification-report.component.css']
@@ -22,6 +24,7 @@ export class NotificationReportComponent implements OnInit {
   loading = false;
   error: string | null = null;
   reportData: NotificationReport | null = null;
+  downloadingPDF = false;
 
   constructor(
     private reportService: ReportService,
@@ -62,7 +65,7 @@ export class NotificationReportComponent implements OnInit {
         this.loading = false;
       },
       error: (err) => {
-        console.error('Error loading notification report:', err);
+        console.error('Error al cargar el reporte de notificaciones:', err);
         this.error = 'Error al cargar el reporte de notificaciones';
         this.loading = false;
       }
@@ -132,5 +135,43 @@ export class NotificationReportComponent implements OnInit {
       'running': 'pending'
     };
     return iconMap[status?.toLowerCase()] || 'help';
+  }
+
+  downloadPDF(): void {
+    const user = this.authService.getCurrentUser();
+    if (!user || user.role !== 'admin') {
+      this.error = 'No tiene permisos para descargar este reporte. Solo administradores.';
+      return;
+    }
+
+    if (!this.reportData) {
+      this.error = 'No hay datos para generar el PDF. Por favor, carga el reporte primero.';
+      return;
+    }
+
+    this.downloadingPDF = true;
+    this.error = null;
+
+    // Obtener fechas del período del reporte
+    const startDate = this.reportData.period?.start_date;
+    const endDate = this.reportData.period?.end_date;
+
+    this.reportService.downloadNotificationReportPDF(startDate, endDate).subscribe({
+      next: (blob) => {
+        try {
+          this.reportService.downloadPDF(blob, 'notificaciones', startDate, endDate);
+          this.downloadingPDF = false;
+        } catch (error) {
+          console.error('Error al procesar el PDF:', error);
+          this.error = 'Error al procesar el archivo PDF';
+          this.downloadingPDF = false;
+        }
+      },
+      error: (err) => {
+        console.error('Error al descargar el PDF:', err);
+        this.error = err.error?.message || 'Error al descargar el PDF. Por favor, intenta nuevamente.';
+        this.downloadingPDF = false;
+      }
+    });
   }
 }

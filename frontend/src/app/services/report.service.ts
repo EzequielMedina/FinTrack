@@ -405,25 +405,93 @@ export class ReportService {
   }
 
   /**
+   * Descarga el reporte de notificaciones en PDF (solo admin)
+   */
+  downloadNotificationReportPDF(startDate?: string, endDate?: string): Observable<Blob> {
+    let params = new HttpParams();
+    
+    if (startDate) params = params.set('start_date', startDate);
+    if (endDate) params = params.set('end_date', endDate);
+
+    return this.http.get(`${this.apiUrl}/notifications/pdf`, { 
+      params, 
+      responseType: 'blob' 
+    });
+  }
+
+  /**
    * Método auxiliar para descargar un blob como archivo
    */
   private downloadBlob(blob: Blob, filename: string): void {
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
+    try {
+      // Verificar que el blob sea válido
+      if (!blob || blob.size === 0) {
+        throw new Error('El archivo PDF está vacío o no es válido');
+      }
+
+      // Verificar que el blob sea un PDF
+      if (blob.type !== 'application/pdf' && !blob.type.includes('pdf')) {
+        console.warn('El archivo descargado podría no ser un PDF válido. Tipo detectado:', blob.type);
+      }
+
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      
+      // Limpiar después de un breve delay
+      setTimeout(() => {
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      }, 100);
+    } catch (error) {
+      console.error('Error al descargar el PDF:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Normaliza un string eliminando acentos y caracteres especiales para nombres de archivo
+   */
+  private normalizeFilename(text: string): string {
+    return text
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // Elimina acentos
+      .replace(/[^a-zA-Z0-9-]/g, '-') // Reemplaza caracteres especiales con guiones
+      .replace(/-+/g, '-') // Reemplaza múltiples guiones con uno solo
+      .toLowerCase();
   }
 
   /**
    * Descarga un reporte PDF con manejo automático del nombre de archivo
+   * @param blob - El blob del PDF recibido del servidor
+   * @param reportType - Tipo de reporte (transacciones, cuentas, cuotas, gastos-ingresos, notificaciones)
+   * @param startDate - Fecha de inicio opcional para incluir en el nombre
+   * @param endDate - Fecha de fin opcional para incluir en el nombre
    */
-  downloadPDF(blob: Blob, reportType: string): void {
-    const date = new Date().toISOString().split('T')[0];
-    const filename = `reporte-${reportType}-${date}.pdf`;
-    this.downloadBlob(blob, filename);
+  downloadPDF(blob: Blob, reportType: string, startDate?: string | undefined, endDate?: string | undefined): void {
+    try {
+      const date = new Date().toISOString().split('T')[0];
+      // Normalizar el tipo de reporte para eliminar acentos
+      const normalizedType = this.normalizeFilename(reportType);
+      let filename = `reporte-${normalizedType}-${date}`;
+      
+      // Agregar fechas al nombre si están disponibles
+      if (startDate && endDate) {
+        const start = startDate.split('T')[0].replace(/-/g, '');
+        const end = endDate.split('T')[0].replace(/-/g, '');
+        filename = `reporte-${normalizedType}-${start}-${end}.pdf`;
+      } else {
+        filename = `${filename}.pdf`;
+      }
+      
+      this.downloadBlob(blob, filename);
+    } catch (error) {
+      console.error('Error al procesar la descarga del PDF:', error);
+      throw error;
+    }
   }
 }
