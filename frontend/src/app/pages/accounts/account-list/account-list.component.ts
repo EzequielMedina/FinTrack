@@ -48,7 +48,6 @@ import { AccountValidationService } from '../../../services';
                     </mat-chip>
                   }
                 </mat-card-title>
-                <mat-card-subtitle>{{ getAccountTypeDisplayName(account.accountType) }} - {{ account.currency }}</mat-card-subtitle>
 
                 <!-- Actions Menu -->
                 <button mat-icon-button [matMenuTriggerFor]="accountMenu" class="account-menu-trigger">
@@ -80,11 +79,6 @@ import { AccountValidationService } from '../../../services';
 
               <!-- Account Content -->
               <mat-card-content class="account-content">
-                <!-- Account ID -->
-                <div class="account-id">
-                  ID: {{ account.id.slice(0, 8) }}...
-                </div>
-
                 <!-- Account Details -->
                 <div class="account-details">
                   <div class="account-detail">
@@ -280,16 +274,6 @@ import { AccountValidationService } from '../../../services';
       padding: 16px !important;
     }
 
-    .account-id {
-      font-family: 'Courier New', monospace;
-      font-size: 0.85rem;
-      color: #6b7280;
-      margin-bottom: 15px;
-      padding: 5px 10px;
-      background: #f9fafb;
-      border-radius: 4px;
-      border: 1px solid #e5e7eb;
-    }
 
     /* Account Details */
     .account-details {

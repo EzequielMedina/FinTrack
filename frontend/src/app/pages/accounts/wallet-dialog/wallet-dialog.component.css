@@ -2,6 +2,20 @@
 .wallet-dialog {
   width: 100%;
   max-width: 600px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+::ng-deep .mat-mdc-dialog-content {
+  max-height: calc(90vh - 120px);
+  overflow-y: auto;
+  padding: 24px !important;
+}
+
+::ng-deep .mat-mdc-dialog-container {
+  max-height: 90vh;
+  overflow: hidden;
 }
 
 /* Dialog Header */
@@ -59,18 +73,18 @@
 
 /* Tab Content */
 .tab-content {
-  padding: 20px 0;
+  padding: 10px 0;
 }
 
 /* Form Fields */
 .full-width {
   width: 100%;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 /* Quick Amounts */
 .quick-amounts {
-  margin: 20px 0;
+  margin: 16px 0;
 }
 
 .quick-amounts h4 {
@@ -94,9 +108,9 @@
 
 /* Transaction Summary */
 .transaction-summary {
-  padding: 20px;
+  padding: 16px;
   border-radius: 8px;
-  margin: 20px 0;
+  margin: 16px 0;
   border: 1px solid #e5e7eb;
 }
 

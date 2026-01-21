@@ -176,8 +176,8 @@
             <div class="transaction-header">
               <h4>{{ transaction.type | titlecase }}</h4>
               <span class="transaction-amount" 
-                    [class.positive]="transaction.type === TransactionType.DEPOSIT || transaction.type === TransactionType.REFUND"
-                    [class.negative]="transaction.type === TransactionType.WITHDRAWAL || transaction.type === TransactionType.PAYMENT">
+                    [class.positive]="isPositiveTransaction(transaction.type)"
+                    [class.negative]="isNegativeTransaction(transaction.type)">
                 {{ transaction.amount | currency:transaction.currency }}
               </span>
             </div>

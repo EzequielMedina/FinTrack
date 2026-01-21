@@ -137,3 +137,5 @@ Este documento mapea los estilos personalizados encontrados en los componentes y
 - **Uso de sistema de diseño**: 90%+
 - **Clases personalizadas restantes**: Solo para casos muy específicos
 
+
+

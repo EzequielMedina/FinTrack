@@ -19,7 +19,13 @@ export enum TransactionType {
   DEBIT_PURCHASE = 'debit_purchase',
   DEBIT_WITHDRAWAL = 'debit_withdrawal',
   DEBIT_REFUND = 'debit_refund',
-
+  
+  // Installment transactions
+  INSTALLMENT_PAYMENT = 'installment_payment',
+  INSTALLMENT_REFUND = 'installment_refund',
+  INSTALLMENT_PLAN_COMPLETION = 'installment_plan_completion',
+  CREDIT_PURCHASE_INSTALLMENTS = 'credit_purchase_installments',
+  
   // Legacy types (for backward compatibility)
   DEPOSIT = 'wallet_deposit',
   WITHDRAWAL = 'wallet_withdrawal',

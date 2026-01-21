@@ -60,35 +60,34 @@ export class AccountsComponent implements OnInit, OnDestroy {
     return !!this.currentUser?.id;
   }
 
-  // SOLUCION: Formatear valores en el component para evitar pipes reactivos
+  // Computed signals para filtros reactivos
+  readonly savingsAccounts = computed(() => 
+    this.accounts().filter(account => account.accountType === AccountType.SAVINGS)
+  );
   
-  get savingsAccounts(): Account[] {
-    return this.accounts().filter(account => account.accountType === AccountType.SAVINGS);
-  }
+  readonly checkingAccounts = computed(() => 
+    this.accounts().filter(account => account.accountType === AccountType.CHECKING)
+  );
   
-  get checkingAccounts(): Account[] {
-    return this.accounts().filter(account => account.accountType === AccountType.CHECKING);
-  }
+  readonly creditCards = computed(() => 
+    this.accounts().filter(account => account.accountType === AccountType.CREDIT)
+  );
   
-  get creditCards(): Account[] {
-    return this.accounts().filter(account => account.accountType === AccountType.CREDIT);
-  }
+  readonly usdAccounts = computed(() => 
+    this.accounts().filter(account => account.currency === Currency.USD)
+  );
   
-  get usdAccounts(): Account[] {
-    return this.accounts().filter(account => account.currency === Currency.USD);
-  }
+  readonly activeAccounts = computed(() => 
+    this.accounts().filter(account => account.isActive)
+  );
   
-  get activeAccounts(): Account[] {
-    return this.accounts().filter(account => account.isActive);
-  }
-  
-  get inactiveAccounts(): Account[] {
-    return this.accounts().filter(account => !account.isActive);
-  }
+  readonly inactiveAccounts = computed(() => 
+    this.accounts().filter(account => !account.isActive)
+  );
 
   // Financial summary - valores ya formateados para evitar pipes
   get totalBalance(): number {
-    return this.activeAccounts
+    return this.activeAccounts()
       .filter(account => account.currency === Currency.ARS && account.accountType !== AccountType.CREDIT)
       .reduce((total, account) => total + account.balance, 0);
   }
@@ -104,7 +103,7 @@ export class AccountsComponent implements OnInit, OnDestroy {
     let creditLimit = 0;
     
     // Sumar límite de cuentas de tipo CREDIT (legacy)
-    const legacyCreditLimit = this.creditCards.reduce((total, account) => total + (account.creditLimit || 0), 0);
+    const legacyCreditLimit = this.creditCards().reduce((total, account) => total + (account.creditLimit || 0), 0);
     console.log('💳 Legacy credit limit:', legacyCreditLimit);
     creditLimit += legacyCreditLimit;
     
@@ -138,7 +137,7 @@ export class AccountsComponent implements OnInit, OnDestroy {
   }
 
   get totalUsdBalance(): number {
-    return this.usdAccounts.reduce((total, account) => total + account.balance, 0);
+    return this.usdAccounts().reduce((total, account) => total + account.balance, 0);
   }
 
   get totalUsdBalanceFormatted(): string {

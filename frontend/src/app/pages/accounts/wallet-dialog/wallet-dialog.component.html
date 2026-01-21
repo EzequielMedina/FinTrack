@@ -87,7 +87,7 @@
 
             <!-- Description Field -->
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Descripción (Opcional)</mat-label>
+              <mat-label>Descripción</mat-label>
               <textarea matInput
                         placeholder="Describe el motivo del depósito..."
                         formControlName="description"
@@ -95,17 +95,6 @@
                         maxlength="200"></textarea>
               <mat-hint align="end">{{ addFundsForm.get('description')?.value?.length || 0 }}/200</mat-hint>
               <mat-error>{{ getDescriptionErrorMessage() }}</mat-error>
-            </mat-form-field>
-
-            <!-- Reference Field -->
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Referencia (Opcional)</mat-label>
-              <input matInput
-                     placeholder="Número de referencia o identificador..."
-                     formControlName="reference"
-                     maxlength="50">
-              <mat-hint align="end">{{ addFundsForm.get('reference')?.value?.length || 0 }}/50</mat-hint>
-              <mat-error>{{ getReferenceErrorMessage() }}</mat-error>
             </mat-form-field>
 
             <!-- Transaction Summary -->
@@ -177,7 +166,7 @@
 
               <!-- Description Field -->
               <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Descripción (Opcional)</mat-label>
+                <mat-label>Descripción</mat-label>
                 <textarea matInput
                           placeholder="Describe el motivo del retiro..."
                           formControlName="description"
@@ -185,17 +174,6 @@
                           maxlength="200"></textarea>
                 <mat-hint align="end">{{ withdrawFundsForm.get('description')?.value?.length || 0 }}/200</mat-hint>
                 <mat-error>{{ getDescriptionErrorMessage() }}</mat-error>
-              </mat-form-field>
-
-              <!-- Reference Field -->
-              <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Referencia (Opcional)</mat-label>
-                <input matInput
-                       placeholder="Número de referencia o identificador..."
-                       formControlName="reference"
-                       maxlength="50">
-                <mat-hint align="end">{{ withdrawFundsForm.get('reference')?.value?.length || 0 }}/50</mat-hint>
-                <mat-error>{{ getReferenceErrorMessage() }}</mat-error>
               </mat-form-field>
 
               <!-- Transaction Summary -->

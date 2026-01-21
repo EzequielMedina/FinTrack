@@ -382,4 +382,43 @@ export class TransactionsComponent implements OnInit, OnDestroy {
   getTransactionIconClass(type: TransactionType): string {
     return 'icon-type-' + type.toLowerCase().replace(/_/g, '-');
   }
+
+  /**
+   * Determina si una transacción es positiva (verde) o negativa (roja)
+   * Las transacciones positivas son depósitos, reembolsos, salarios, etc.
+   * Las transacciones negativas son retiros, pagos, compras, etc.
+   */
+  isPositiveTransaction(type: TransactionType): boolean {
+    const positiveTypes = [
+      TransactionType.WALLET_DEPOSIT,
+      TransactionType.ACCOUNT_DEPOSIT,
+      TransactionType.DEPOSIT,
+      TransactionType.CREDIT_REFUND,
+      TransactionType.DEBIT_REFUND,
+      TransactionType.REFUND,
+      TransactionType.SALARY,
+      TransactionType.DIVIDEND,
+      TransactionType.INVESTMENT,
+      TransactionType.INSTALLMENT_REFUND
+    ];
+    return positiveTypes.includes(type);
+  }
+
+  isNegativeTransaction(type: TransactionType): boolean {
+    const negativeTypes = [
+      TransactionType.WALLET_WITHDRAWAL,
+      TransactionType.ACCOUNT_WITHDRAW,
+      TransactionType.WITHDRAWAL,
+      TransactionType.CREDIT_CHARGE,
+      TransactionType.CREDIT_PAYMENT,
+      TransactionType.PAYMENT,
+      TransactionType.DEBIT_PURCHASE,
+      TransactionType.DEBIT_WITHDRAWAL,
+      TransactionType.PURCHASE,
+      TransactionType.CASH_ADVANCE,
+      TransactionType.INSTALLMENT_PAYMENT,
+      TransactionType.CREDIT_PURCHASE_INSTALLMENTS
+    ];
+    return negativeTypes.includes(type);
+  }
 }

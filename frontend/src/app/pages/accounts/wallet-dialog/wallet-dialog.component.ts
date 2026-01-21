@@ -93,10 +93,8 @@ export class WalletDialogComponent implements OnInit, OnDestroy {
         Validators.max(this.MAX_AMOUNT)
       ]],
       description: ['', [
+        Validators.required,
         Validators.maxLength(200)
-      ]],
-      reference: ['', [
-        Validators.maxLength(50)
       ]]
     });
 
@@ -108,10 +106,8 @@ export class WalletDialogComponent implements OnInit, OnDestroy {
         Validators.max(this.currentBalance()) // Can't withdraw more than balance
       ]],
       description: ['', [
+        Validators.required,
         Validators.maxLength(200)
-      ]],
-      reference: ['', [
-        Validators.maxLength(50)
       ]]
     });
 
@@ -136,8 +132,7 @@ export class WalletDialogComponent implements OnInit, OnDestroy {
     const formValue = this.addFundsForm.value;
     const request: AddFundsRequest = {
       amount: formValue.amount,
-      description: formValue.description || undefined,
-      reference: formValue.reference || undefined
+      description: formValue.description
     };
 
     // Validate using the service
@@ -182,8 +177,7 @@ export class WalletDialogComponent implements OnInit, OnDestroy {
     const formValue = this.withdrawFundsForm.value;
     const request: WithdrawFundsRequest = {
       amount: formValue.amount,
-      description: formValue.description || undefined,
-      reference: formValue.reference || undefined
+      description: formValue.description
     };
 
     // Validate using the service
@@ -262,20 +256,11 @@ export class WalletDialogComponent implements OnInit, OnDestroy {
     
     const control = this.selectedOperation() === 'add' ? addDescControl : withdrawDescControl;
     
+    if (control?.hasError('required')) {
+      return 'La descripción es requerida';
+    }
     if (control?.hasError('maxlength')) {
       return 'La descripción no puede exceder 200 caracteres';
-    }
-    return '';
-  }
-
-  getReferenceErrorMessage(): string {
-    const addRefControl = this.addFundsForm?.get('reference');
-    const withdrawRefControl = this.withdrawFundsForm?.get('reference');
-    
-    const control = this.selectedOperation() === 'add' ? addRefControl : withdrawRefControl;
-    
-    if (control?.hasError('maxlength')) {
-      return 'La referencia no puede exceder 50 caracteres';
     }
     return '';
   }

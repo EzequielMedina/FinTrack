@@ -45,8 +45,8 @@
         </div>
       </div>
 
-      <!-- Filtro Simple -->
-      <div class="filter-tabs">
+      <!-- Filtro Simple - Ocultado -->
+      <div class="filter-tabs" style="display: none;">
         <button 
           class="tab-btn"
           [class.active]="selectedTabIndex() === 0"
@@ -105,14 +105,14 @@
         }
 
         @if (selectedTabIndex() === 1) {
-          @if (savingsAccounts.length === 0) {
+          @if (savingsAccounts().length === 0) {
             <div class="empty-state">
               <img src="assets/icons/wallet.svg" class="empty-icon" alt="Sin ahorros">
               <h3>No tienes cuentas de ahorro</h3>
             </div>
           } @else {
             <app-account-list 
-              [accounts]="savingsAccounts"
+              [accounts]="savingsAccounts()"
               (editAccount)="onEditAccount($event)"
               (deleteAccount)="onDeleteAccount($event)"
               (activateAccount)="onActivateAccount($event)"
@@ -124,14 +124,14 @@
         }
 
         @if (selectedTabIndex() === 2) {
-          @if (checkingAccounts.length === 0) {
+          @if (checkingAccounts().length === 0) {
             <div class="empty-state">
               <img src="assets/icons/account.svg" class="empty-icon" alt="Sin corrientes">
               <h3>No tienes cuentas corrientes</h3>
             </div>
           } @else {
             <app-account-list 
-              [accounts]="checkingAccounts"
+              [accounts]="checkingAccounts()"
               (editAccount)="onEditAccount($event)"
               (deleteAccount)="onDeleteAccount($event)"
               (activateAccount)="onActivateAccount($event)"
@@ -143,14 +143,14 @@
         }
 
         @if (selectedTabIndex() === 3) {
-          @if (creditCards.length === 0) {
+          @if (creditCards().length === 0) {
             <div class="empty-state">
               <img src="assets/icons/card.svg" class="empty-icon" alt="Sin crédito">
               <h3>No tienes tarjetas de crédito</h3>
             </div>
           } @else {
             <app-account-list 
-              [accounts]="creditCards"
+              [accounts]="creditCards()"
               (editAccount)="onEditAccount($event)"
               (deleteAccount)="onDeleteAccount($event)"
               (activateAccount)="onActivateAccount($event)"
@@ -162,14 +162,14 @@
         }
 
         @if (selectedTabIndex() === 4) {
-          @if (usdAccounts.length === 0) {
+          @if (usdAccounts().length === 0) {
             <div class="empty-state">
               <img src="assets/icons/dollar.svg" class="empty-icon" alt="Sin USD">
               <h3>No tienes cuentas en dólares</h3>
             </div>
           } @else {
             <app-account-list 
-              [accounts]="usdAccounts"
+              [accounts]="usdAccounts()"
               (editAccount)="onEditAccount($event)"
               (deleteAccount)="onDeleteAccount($event)"
               (activateAccount)="onActivateAccount($event)"

@@ -118,7 +118,7 @@
                         </div>
                       </div>
                       <div class="transaction-amount">
-                        <span [class]="getTransactionAmount(transaction) > 0 ? 'amount-positive' : 'amount-negative'">
+                        <span [class]="isPositiveTransaction(transaction.type) ? 'amount-positive' : (isNegativeTransaction(transaction.type) ? 'amount-negative' : '')">
                           {{ transaction.amount | currency:transaction.currency }}
                         </span>
                         <span class="transaction-status" [class]="'status-' + transaction.status.toLowerCase()">
