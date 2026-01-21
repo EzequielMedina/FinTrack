@@ -216,13 +216,19 @@ export class DashboardComponent implements OnInit, OnDestroy {
     ).subscribe({
       next: (transactions) => {
         console.log('Dashboard: Loaded recent transactions:', transactions);
-        this.recentTransactions.set(transactions);
-        this.transactionsCount.set(transactions.length);
+        this.recentTransactions.set(transactions || []);
+        this.transactionsCount.set(transactions?.length || 0);
         this.loadingTransactions.set(false);
-        this.loadAccountNamesForTransactions(transactions);
+        if (transactions && transactions.length > 0) {
+          this.loadAccountNamesForTransactions(transactions);
+        }
       },
       error: (error) => {
         console.error('Error loading recent transactions:', error);
+        // Si es un error 502, el servicio no está disponible
+        if (error.status === 502) {
+          console.warn('Transaction service is not available (502 Bad Gateway). The service may be down or starting up.');
+        }
         this.loadingTransactions.set(false);
         this.recentTransactions.set([]);
         this.transactionsCount.set(0);

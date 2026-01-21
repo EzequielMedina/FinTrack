@@ -117,27 +117,17 @@
           <mat-card-actions class="card-actions">
             <button mat-raised-button color="primary" (click)="onViewDetail(card)" [disabled]="card.status !== CardStatus.ACTIVE">
               <mat-icon>account_balance_wallet</mat-icon>
-              Ver Operaciones
+              <span>Operaciones</span>
             </button>
-            <button mat-button (click)="onEdit(card)">
-              <mat-icon>edit</mat-icon>
-              Editar
-            </button>
-            @if (card.status === CardStatus.ACTIVE && !card.isDefault) {
-              <button mat-button color="primary" (click)="onSetDefault(card)">
-                <mat-icon>star</mat-icon>
-                Por defecto
-              </button>
-            }
             @if (card.status === CardStatus.ACTIVE) {
               <button mat-button color="warn" (click)="onChangeStatus(card)">
                 <mat-icon>toggle_off</mat-icon>
-                Desactivar
+                <span>Desactivar</span>
               </button>
             } @else if (card.status === CardStatus.INACTIVE) {
               <button mat-button color="primary" (click)="onChangeStatus(card)">
                 <mat-icon>toggle_on</mat-icon>
-                Activar
+                <span>Activar</span>
               </button>
             }
           </mat-card-actions>
