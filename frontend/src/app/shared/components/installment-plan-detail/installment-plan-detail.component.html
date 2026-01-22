@@ -7,7 +7,6 @@
           {{ currentPlanData.merchantName || currentPlanData.description || 'Plan de Cuotas' }}
         </h2>
         <div class="plan-metadata" *ngIf="currentPlanData">
-          <span class="plan-id">Plan #{{ currentPlanData.id.substring(0, 8) }}</span>
           <mat-chip [class]="getPlanStatusClass(currentPlanData.status)">
             {{ getPlanStatusText(currentPlanData.status) }}
           </mat-chip>

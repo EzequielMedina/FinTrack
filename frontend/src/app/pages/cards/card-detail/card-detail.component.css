@@ -28,15 +28,23 @@
   padding: 24px 16px;
 }
 
-/* Balance Cards */
-.balance-card {
+/* Balance Section */
+.balance-section {
   margin-bottom: 24px;
 }
 
-.balance-card mat-card-header {
+.balance-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: var(--space-4);
+}
+
+.balance-title {
+  font-size: var(--text-xl);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+  margin: 0;
 }
 
 .balance-grid {
@@ -52,8 +60,9 @@
   align-items: center;
   padding: var(--space-4);
   border-radius: var(--radius-lg);
-  background: var(--bg-primary);
+  background: #ffffff !important;
   border: 1px solid var(--border-light);
+  border-left: 3px solid var(--accent-500);
   box-shadow: var(--shadow-sm);
   transition: all var(--transition-base);
 }
@@ -61,21 +70,7 @@
 .balance-item:hover {
   box-shadow: var(--shadow-md);
   transform: translateY(-2px);
-}
-
-.balance-item.debt {
-  background: var(--bg-primary);
-  border-left: 4px solid var(--error-500);
-}
-
-.balance-item.available {
-  background: var(--bg-primary);
-  border-left: 4px solid var(--success-500);
-}
-
-.balance-item.payment {
-  background: var(--bg-primary);
-  border-left: 4px solid var(--warning-500);
+  border-color: var(--accent-300);
 }
 
 .balance-item .label {
@@ -90,26 +85,16 @@
   font-size: var(--text-xl);
   font-weight: var(--font-bold);
   text-align: center;
+  color: var(--text-primary);
 }
 
-.debt-amount {
-  color: var(--error-600);
-}
-
-.available-amount {
-  color: var(--success-600);
-}
-
-.payment-amount {
-  color: var(--warning-600);
-}
 
 .due-date {
   display: flex;
   align-items: center;
   margin-top: var(--space-4);
   padding: var(--space-3);
-  background: var(--bg-secondary);
+  background: #ffffff !important;
   border-radius: var(--radius-base);
   gap: var(--space-2);
   border: 1px solid var(--border-light);
@@ -261,32 +246,17 @@ mat-chip-set {
   overflow: visible;
 }
 
-/* Dark mode support - Usa variables del sistema */
+/* Dark mode support - Mantiene fondo claro siempre */
 @media (prefers-color-scheme: dark) {
   .balance-item {
-    background: var(--gray-800);
+    background: #ffffff !important;
     color: var(--text-primary);
-  }
-  
-  .balance-item.debt {
-    background: var(--error-900);
-    border-color: var(--error-700);
-  }
-  
-  .balance-item.available {
-    background: var(--success-900);
-    border-color: var(--success-700);
-  }
-  
-  .balance-item.payment {
-    background: var(--warning-900);
-    border-color: var(--warning-700);
   }
   
   .due-date {
-    background: var(--warning-900);
-    border-color: var(--warning-700);
-    color: var(--text-primary);
+    background: #ffffff !important;
+    border-color: var(--border-light);
+    color: var(--text-secondary);
   }
 }
 

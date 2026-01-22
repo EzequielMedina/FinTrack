@@ -8,6 +8,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { CardService } from '../../services/card.service';
 import { AccountService } from '../../services/account.service';
 import { AuthService } from '../../services/auth.service';
@@ -29,6 +30,7 @@ import { CardDetailComponent } from './card-detail/card-detail.component';
     MatProgressSpinnerModule,
     MatSnackBarModule,
     MatDialogModule,
+    MatTooltipModule,
     CardListComponent,
     CardDetailComponent
   ],

@@ -24,7 +24,7 @@ import { InstallmentPlan } from '../../../models';
     <div class="modal-header">
       <h2 mat-dialog-title>
         <mat-icon>receipt_long</mat-icon>
-        Detalle del Plan de Cuotas
+        {{ plan.description || plan.merchantName || 'Plan de Cuotas' }}
       </h2>
       <button mat-icon-button (click)="close()" class="close-button">
         <mat-icon>close</mat-icon>
@@ -32,160 +32,83 @@ import { InstallmentPlan } from '../../../models';
     </div>
 
     <mat-dialog-content class="modal-content">
-      <!-- Plan Information -->
-      <mat-card class="info-card">
-        <mat-card-header>
-          <mat-card-title>
-            <mat-icon>info</mat-icon>
-            Información General
-          </mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <div class="info-grid">
-            <div class="info-item">
-              <span class="label">Descripción:</span>
-              <span class="value">{{ plan.description || 'Compra en cuotas' }}</span>
-            </div>
-            <div class="info-item">
-              <span class="label">Comercio:</span>
-              <span class="value">{{ plan.merchantName || 'N/A' }}</span>
-            </div>
-            <div class="info-item">
-              <span class="label">ID del Plan:</span>
-              <span class="value code">{{ plan.id.substring(0, 8) }}...</span>
-            </div>
-            <div class="info-item">
-              <span class="label">Estado:</span>
-              <mat-chip [class]="getStatusClass(plan.status)">
-                <mat-icon>{{ getStatusIcon(plan.status) }}</mat-icon>
-                {{ getStatusText(plan.status) }}
-              </mat-chip>
-            </div>
+      <!-- Summary Cards -->
+      <div class="summary-cards">
+        <div class="summary-card primary">
+          <div class="card-icon">
+            <mat-icon>account_balance_wallet</mat-icon>
           </div>
-        </mat-card-content>
-      </mat-card>
-
-      <mat-divider></mat-divider>
-
-      <!-- Financial Information -->
-      <mat-card class="info-card">
-        <mat-card-header>
-          <mat-card-title>
-            <mat-icon>attach_money</mat-icon>
-            Información Financiera
-          </mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <div class="financial-grid">
-            <div class="financial-item primary">
-              <span class="label">Monto Total:</span>
-              <span class="value amount">{{ formatCurrency(plan.totalAmount) }}</span>
-            </div>
-            <div class="financial-item">
-              <span class="label">Cantidad de Cuotas:</span>
-              <span class="value">{{ plan.installmentsCount }}</span>
-            </div>
-            <div class="financial-item accent">
-              <span class="label">Monto por Cuota:</span>
-              <span class="value amount">{{ formatCurrency(plan.installmentAmount) }}</span>
-            </div>
-            <div class="financial-item">
-              <span class="label">Tasa de Interés:</span>
-              <span class="value">{{ plan.interestRate }}%</span>
-            </div>
-            <div class="financial-item">
-              <span class="label">Interés Total:</span>
-              <span class="value amount">{{ formatCurrency(plan.totalInterest) }}</span>
-            </div>
-            <div class="financial-item">
-              <span class="label">Comisión Admin:</span>
-              <span class="value amount">{{ formatCurrency(plan.adminFee) }}</span>
-            </div>
+          <div class="card-content">
+            <div class="card-label">Total del Plan</div>
+            <div class="card-value">{{ formatCurrency(plan.totalAmount) }}</div>
           </div>
-        </mat-card-content>
-      </mat-card>
+        </div>
 
-      <mat-divider></mat-divider>
+        <div class="summary-card accent">
+          <div class="card-icon">
+            <mat-icon>payment</mat-icon>
+          </div>
+          <div class="card-content">
+            <div class="card-label">Cuota Mensual</div>
+            <div class="card-value">{{ formatCurrency(plan.installmentAmount) }}</div>
+          </div>
+        </div>
 
-      <!-- Progress Information -->
-      <mat-card class="info-card">
-        <mat-card-header>
-          <mat-card-title>
+        <div class="summary-card">
+          <div class="card-icon">
             <mat-icon>trending_up</mat-icon>
-            Progreso del Plan
-          </mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <div class="progress-info">
-            <div class="progress-stats">
-              <div class="stat-item">
-                <span class="stat-label">Cuotas Pagadas:</span>
-                <span class="stat-value">{{ plan.paidInstallments }} de {{ plan.installmentsCount }}</span>
-              </div>
-              <div class="stat-item">
-                <span class="stat-label">Progreso:</span>
-                <span class="stat-value">{{ getProgressPercentage(plan) }}%</span>
-              </div>
-              <div class="stat-item">
-                <span class="stat-label">Monto Restante:</span>
-                <span class="stat-value amount">{{ formatCurrency(plan.remainingAmount) }}</span>
-              </div>
-            </div>
-            
-            <!-- Progress Bar -->
-            <div class="progress-bar-container">
-              <div class="progress-bar">
-                <div 
-                  class="progress-fill" 
-                  [style.width.%]="getProgressPercentage(plan)">
-                </div>
-              </div>
-              <span class="progress-text">{{ getProgressPercentage(plan) }}% completado</span>
-            </div>
           </div>
-        </mat-card-content>
-      </mat-card>
-
-      <mat-divider></mat-divider>
-
-      <!-- Dates Information -->
-      <mat-card class="info-card">
-        <mat-card-header>
-          <mat-card-title>
-            <mat-icon>event</mat-icon>
-            Fechas Importantes
-          </mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <div class="dates-grid">
-            <div class="date-item">
-              <span class="label">Fecha de Inicio:</span>
-              <span class="value">{{ formatDate(plan.startDate) }}</span>
-            </div>
-            <div class="date-item">
-              <span class="label">Creado:</span>
-              <span class="value">{{ formatDate(plan.createdAt) }}</span>
-            </div>
-            <div class="date-item">
-              <span class="label">Última Actualización:</span>
-              <span class="value">{{ formatDate(plan.updatedAt) }}</span>
-            </div>
-            <div class="date-item" *ngIf="plan.completedAt">
-              <span class="label">Completado:</span>
-              <span class="value">{{ formatDate(plan.completedAt) }}</span>
-            </div>
-            <div class="date-item" *ngIf="plan.cancelledAt">
-              <span class="label">Cancelado:</span>
-              <span class="value">{{ formatDate(plan.cancelledAt) }}</span>
-            </div>
+          <div class="card-content">
+            <div class="card-label">Progreso</div>
+            <div class="card-value">{{ plan.paidInstallments }}/{{ plan.installmentsCount }}</div>
+            <div class="card-percentage">{{ getProgressPercentage(plan) }}%</div>
           </div>
-        </mat-card-content>
-      </mat-card>
+        </div>
+
+        <div class="summary-card" [class.warn]="plan.remainingAmount > 0">
+          <div class="card-icon">
+            <mat-icon>schedule</mat-icon>
+          </div>
+          <div class="card-content">
+            <div class="card-label">Restante</div>
+            <div class="card-value">{{ formatCurrency(plan.remainingAmount) }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Progress Bar -->
+      <div class="progress-section">
+        <div class="progress-header">
+          <span>Progreso del Plan</span>
+          <span class="progress-percentage">{{ getProgressPercentage(plan) }}%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" [style.width.%]="getProgressPercentage(plan)"></div>
+        </div>
+      </div>
+
+      <!-- Key Information -->
+      <div class="info-section">
+        <div class="info-row">
+          <span class="info-label">Estado:</span>
+          <mat-chip [class]="getStatusClass(plan.status)">
+            <mat-icon>{{ getStatusIcon(plan.status) }}</mat-icon>
+            {{ getStatusText(plan.status) }}
+          </mat-chip>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Fecha de Inicio:</span>
+          <span class="info-value">{{ formatDate(plan.startDate) }}</span>
+        </div>
+        <div class="info-row" *ngIf="plan.merchantName">
+          <span class="info-label">Comercio:</span>
+          <span class="info-value">{{ plan.merchantName }}</span>
+        </div>
+      </div>
     </mat-dialog-content>
 
     <mat-dialog-actions class="modal-actions">
       <button mat-button (click)="close()">
-        <mat-icon>close</mat-icon>
         Cerrar
       </button>
     </mat-dialog-actions>
@@ -195,207 +118,233 @@ import { InstallmentPlan } from '../../../models';
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 20px 24px 0;
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border-light);
     }
 
     .modal-header h2 {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 12px;
       margin: 0;
-      color: #1976d2;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-primary);
     }
 
     .close-button {
-      color: #666;
+      color: var(--text-secondary);
     }
 
     .modal-content {
-      padding: 20px 24px !important;
+      padding: 24px !important;
       max-height: 70vh;
       overflow-y: auto;
     }
 
-    .info-card {
-      margin-bottom: 16px;
+    .summary-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
     }
 
-    .info-card mat-card-title {
+    .summary-card {
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: 16px;
-      color: #333;
-    }
-
-    .info-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
       gap: 16px;
-      margin-top: 16px;
+      padding: 20px;
+      border-radius: var(--radius-lg);
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-light);
+      transition: all var(--transition-base);
     }
 
-    .financial-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 16px;
-      margin-top: 16px;
+    .summary-card:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
     }
 
-    .dates-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      margin-top: 16px;
+    .summary-card.primary {
+      border-left: 4px solid var(--accent-500);
     }
 
-    .info-item, .financial-item, .date-item {
+    .summary-card.accent {
+      border-left: 4px solid var(--success-500);
+    }
+
+    .summary-card.warn {
+      border-left: 4px solid var(--warning-500);
+    }
+
+    .card-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-md);
       display: flex;
-      flex-direction: column;
-      gap: 4px;
+      align-items: center;
+      justify-content: center;
+      background: var(--gray-100);
+      flex-shrink: 0;
     }
 
-    .financial-item.primary {
-      grid-column: 1 / -1;
-      background: #f5f5f5;
-      padding: 12px;
-      border-radius: 8px;
+    .summary-card.primary .card-icon {
+      background: var(--accent-100);
+      color: var(--accent-700);
     }
 
-    .financial-item.accent {
-      background: #e3f2fd;
-      padding: 12px;
-      border-radius: 8px;
+    .summary-card.accent .card-icon {
+      background: var(--success-100);
+      color: var(--success-700);
     }
 
-    .label {
-      font-size: 12px;
-      color: #666;
-      font-weight: 500;
+    .summary-card.warn .card-icon {
+      background: var(--warning-100);
+      color: var(--warning-700);
+    }
+
+    .card-icon mat-icon {
+      font-size: 24px;
+      width: 24px;
+      height: 24px;
+    }
+
+    .card-content {
+      flex: 1;
+    }
+
+    .card-label {
+      font-size: var(--text-xs);
+      color: var(--text-secondary);
       text-transform: uppercase;
       letter-spacing: 0.5px;
+      margin-bottom: 4px;
     }
 
-    .value {
-      font-size: 14px;
-      color: #333;
-      font-weight: 400;
+    .card-value {
+      font-size: var(--text-lg);
+      font-weight: var(--font-bold);
+      color: var(--text-primary);
     }
 
-    .value.amount {
-      font-weight: 600;
-      color: #1976d2;
+    .card-percentage {
+      font-size: var(--text-sm);
+      color: var(--text-secondary);
+      margin-top: 4px;
     }
 
-    .value.code {
-      font-family: 'Courier New', monospace;
-      background: #f0f0f0;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-size: 12px;
+    .progress-section {
+      margin-bottom: 24px;
+      padding: 20px;
+      background: var(--bg-secondary);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-light);
     }
 
-    .progress-info {
-      margin-top: 16px;
-    }
-
-    .progress-stats {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-      margin-bottom: 16px;
-    }
-
-    .stat-item {
+    .progress-header {
       display: flex;
-      flex-direction: column;
-      gap: 4px;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      font-size: var(--text-sm);
+      font-weight: var(--font-medium);
+      color: var(--text-primary);
     }
 
-    .stat-label {
-      font-size: 12px;
-      color: #666;
-      font-weight: 500;
-    }
-
-    .stat-value {
-      font-size: 16px;
-      font-weight: 600;
-      color: #333;
-    }
-
-    .stat-value.amount {
-      color: #1976d2;
-    }
-
-    .progress-bar-container {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
+    .progress-percentage {
+      font-weight: var(--font-bold);
+      color: var(--accent-600);
     }
 
     .progress-bar {
       width: 100%;
-      height: 8px;
-      background: #e0e0e0;
-      border-radius: 4px;
+      height: 12px;
+      background: var(--gray-200);
+      border-radius: 6px;
       overflow: hidden;
     }
 
     .progress-fill {
       height: 100%;
-      background: linear-gradient(90deg, #4caf50, #2196f3);
+      background: linear-gradient(90deg, var(--success-500), var(--accent-500));
       transition: width 0.3s ease;
     }
 
-    .progress-text {
-      font-size: 12px;
-      color: #666;
-      text-align: center;
+    .info-section {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      padding: 20px;
+      background: var(--bg-secondary);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-light);
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .info-row:last-child {
+      border-bottom: none;
+    }
+
+    .info-label {
+      font-size: var(--text-sm);
+      color: var(--text-secondary);
+      font-weight: var(--font-medium);
+    }
+
+    .info-value {
+      font-size: var(--text-base);
+      color: var(--text-primary);
+      font-weight: var(--font-medium);
     }
 
     .modal-actions {
       padding: 16px 24px;
-      border-top: 1px solid #e0e0e0;
+      border-top: 1px solid var(--border-light);
+      display: flex;
+      justify-content: flex-end;
     }
 
     mat-chip {
-      font-size: 12px;
+      font-size: var(--text-xs);
+      height: 28px;
     }
 
     mat-chip.status-active {
-      background: #e8f5e8;
-      color: #2e7d32;
+      background: var(--success-100);
+      color: var(--success-700);
     }
 
     mat-chip.status-completed {
-      background: #e3f2fd;
-      color: #1976d2;
+      background: var(--accent-100);
+      color: var(--accent-700);
     }
 
     mat-chip.status-cancelled {
-      background: #ffebee;
-      color: #d32f2f;
+      background: var(--error-100);
+      color: var(--error-700);
     }
 
     mat-chip.status-overdue {
-      background: #fff3e0;
-      color: #f57c00;
+      background: var(--warning-100);
+      color: var(--warning-700);
     }
 
     @media (max-width: 600px) {
-      .info-grid,
-      .financial-grid,
-      .dates-grid {
+      .summary-cards {
         grid-template-columns: 1fr;
       }
 
-      .progress-stats {
-        grid-template-columns: 1fr;
-      }
-
-      .financial-item.primary {
-        grid-column: 1;
+      .info-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
       }
     }
   `]

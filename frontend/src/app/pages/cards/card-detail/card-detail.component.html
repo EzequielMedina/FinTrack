@@ -45,45 +45,45 @@
   <mat-tab-group class="operations-tabs" animationDuration="300ms">
     
     <!-- TAB DE BALANCE -->
-    <mat-tab label="Balance">
+    <mat-tab *ngIf="card.cardType === CardType.CREDIT" label="Balance">
       <div class="tab-content">
         
         <!-- Balance de Tarjeta de Crédito -->
-        <mat-card *ngIf="card.cardType === CardType.CREDIT" class="balance-card credit-balance">
-          <mat-card-header>
-            <mat-card-title>Balance de Crédito</mat-card-title>
+        <div class="balance-section" *ngIf="card.cardType === CardType.CREDIT">
+          <div class="balance-header">
+            <h2 class="balance-title">Balance de Crédito</h2>
             <button 
               mat-icon-button 
               (click)="onRefreshBalance()"
               [disabled]="loading()">
               <mat-icon>refresh</mat-icon>
             </button>
-          </mat-card-header>
-          <mat-card-content *ngIf="creditBalance() as balance">
+          </div>
+          <div *ngIf="creditBalance() as balance">
             <div class="balance-grid">
-              <div class="balance-item debt">
+              <div class="balance-item">
                 <span class="label">Deuda Actual</span>
-                <span class="amount debt-amount">{{ formatCurrency(balance.balance) }}</span>
+                <span class="amount">{{ formatCurrency(balance.balance) }}</span>
               </div>
               <div class="balance-item">
                 <span class="label">Límite de Crédito</span>
                 <span class="amount">{{ formatCurrency(balance.creditLimit) }}</span>
               </div>
-              <div class="balance-item available">
+              <div class="balance-item">
                 <span class="label">Crédito Disponible</span>
-                <span class="amount available-amount">{{ formatCurrency(balance.availableCredit) }}</span>
+                <span class="amount">{{ formatCurrency(balance.availableCredit) }}</span>
               </div>
-              <div class="balance-item payment">
+              <div class="balance-item">
                 <span class="label">Pago Mínimo</span>
-                <span class="amount payment-amount">{{ formatCurrency(balance.minimumPayment) }}</span>
+                <span class="amount">{{ formatCurrency(balance.minimumPayment) }}</span>
               </div>
             </div>
             <div class="due-date" *ngIf="balance.dueDate">
               <mat-icon>schedule</mat-icon>
               <span>Fecha de Vencimiento: {{ balance.dueDate | date:'dd/MM/yyyy' }}</span>
             </div>
-          </mat-card-content>
-        </mat-card>
+          </div>
+        </div>
 
         <!-- Planes de Cuotas para Tarjetas de Crédito -->
         <mat-card *ngIf="card.cardType === CardType.CREDIT" class="operation-card">
@@ -111,31 +111,6 @@
           </mat-card-content>
         </mat-card>
 
-        <!-- Balance de Tarjeta de Débito -->
-        <mat-card *ngIf="card.cardType === CardType.DEBIT" class="balance-card debit-balance">
-          <mat-card-header>
-            <mat-card-title>Balance Disponible</mat-card-title>
-            <button 
-              mat-icon-button 
-              (click)="onRefreshBalance()"
-              [disabled]="loading()">
-              <mat-icon>refresh</mat-icon>
-            </button>
-          </mat-card-header>
-          <mat-card-content *ngIf="debitBalance() as balance">
-            <div class="balance-grid">
-              <div class="balance-item">
-                <span class="label">Balance de Cuenta</span>
-                <span class="amount">{{ formatCurrency(balance.accountBalance) }}</span>
-              </div>
-              <div class="balance-item available">
-                <span class="label">Disponible para Usar</span>
-                <span class="amount available-amount">{{ formatCurrency(balance.availableBalance) }}</span>
-              </div>
-            </div>
-          </mat-card-content>
-        </mat-card>
-        
       </div>
     </mat-tab>
 
@@ -144,25 +119,13 @@
       *ngIf="card.cardType === CardType.CREDIT" 
       label="Operaciones">
       <div class="tab-content">
-        
-        <!-- Compra en Cuotas -->
-        <mat-card class="operation-card">
-          <mat-card-header>
-            <mat-card-title>Compra en Cuotas</mat-card-title>
-            <mat-card-subtitle>Calcula y realiza tu compra en cuotas</mat-card-subtitle>
-          </mat-card-header>
-          <mat-card-content>
-            <app-installment-calculator
-              #installmentCalculator
-              [cardId]="card.id"
-              [showPreview]="true"
-              (calculationChanged)="onInstallmentCalculationChanged($event)"
-              (installmentsSelected)="onInstallmentsSelected($event)">
-            </app-installment-calculator>
-          </mat-card-content>
-        </mat-card>
-
-        
+        <app-installment-calculator
+          #installmentCalculator
+          [cardId]="card.id"
+          [showPreview]="true"
+          (calculationChanged)="onInstallmentCalculationChanged($event)"
+          (installmentsSelected)="onInstallmentsSelected($event)">
+        </app-installment-calculator>
       </div>
     </mat-tab>
 
@@ -171,6 +134,25 @@
       *ngIf="card.cardType === CardType.DEBIT" 
       label="Transacciones">
       <div class="tab-content">
+        
+        <!-- Saldo Disponible -->
+        <div class="balance-section" *ngIf="debitBalance() as balance">
+          <div class="balance-header">
+            <h2 class="balance-title">Saldo Disponible</h2>
+            <button 
+              mat-icon-button 
+              (click)="onRefreshBalance()"
+              [disabled]="loading()">
+              <mat-icon>refresh</mat-icon>
+            </button>
+          </div>
+          <div class="balance-grid">
+            <div class="balance-item">
+              <span class="label">Saldo Disponible</span>
+              <span class="amount">{{ formatCurrency(balance.availableBalance) }}</span>
+            </div>
+          </div>
+        </div>
         
         <mat-card class="operation-card">
           <mat-card-header>

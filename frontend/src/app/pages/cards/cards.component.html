@@ -4,7 +4,24 @@
     <!-- Header -->
     <div class="page-header">
       <div class="header-content">
-        <h1>Tarjetas</h1>
+        <div class="header-title-section">
+          <h1>Tarjetas</h1>
+          <!-- Contadores pequeños al lado del título -->
+          <div class="counters-inline">
+            <div class="counter-item" matTooltip="Tarjetas de crédito" matTooltipPosition="below">
+              <mat-icon class="counter-icon">credit_card</mat-icon>
+              <span class="counter-value">{{ creditCards().length }}</span>
+            </div>
+            <div class="counter-item" matTooltip="Tarjetas de débito" matTooltipPosition="below">
+              <mat-icon class="counter-icon">payment</mat-icon>
+              <span class="counter-value">{{ debitCards().length }}</span>
+            </div>
+            <div class="counter-item" matTooltip="Tarjetas activas" matTooltipPosition="below">
+              <mat-icon class="counter-icon">check_circle</mat-icon>
+              <span class="counter-value">{{ activeCards().length }}</span>
+            </div>
+          </div>
+        </div>
         <p class="subtitle">{{ cards().length }} tarjetas registradas</p>
       </div>
       <button class="btn btn-primary" (click)="onAddCard()">
@@ -20,38 +37,6 @@
       </div>
     } @else {
       <div class="cards-content">
-        <!-- Balance Cards - Mismo estilo que dashboard -->
-        <div class="balance-cards">
-          <div class="balance-card">
-            <div class="balance-icon">
-              <mat-icon>credit_card</mat-icon>
-            </div>
-            <div class="balance-info">
-              <span class="balance-label">Crédito</span>
-              <span class="balance-amount">{{ creditCards().length }}</span>
-            </div>
-          </div>
-
-          <div class="balance-card">
-            <div class="balance-icon">
-              <mat-icon>payment</mat-icon>
-            </div>
-            <div class="balance-info">
-              <span class="balance-label">Débito</span>
-              <span class="balance-amount">{{ debitCards().length }}</span>
-            </div>
-          </div>
-
-          <div class="balance-card">
-            <div class="balance-icon">
-              <mat-icon>check_circle</mat-icon>
-            </div>
-            <div class="balance-info">
-              <span class="balance-label">Activas</span>
-              <span class="balance-amount">{{ activeCards().length }}</span>
-            </div>
-          </div>
-        </div>
 
         <!-- Filtro Simple - Usa .tabs-container del sistema -->
         <div class="tabs-container">
