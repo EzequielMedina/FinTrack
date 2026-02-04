@@ -33,8 +33,8 @@ type reportService struct {
 // ReportRepository interfaz del repositorio
 type ReportRepository interface {
 	GetTransactionReport(ctx context.Context, userID string, startDate, endDate time.Time, txType string) (*dto.TransactionReportResponse, error)
-	GetInstallmentReport(ctx context.Context, userID string, status string) (*dto.InstallmentReportResponse, error)
-	GetAccountReport(ctx context.Context, userID string) (*dto.AccountReportResponse, error)
+	GetInstallmentReport(ctx context.Context, userID string, status string, startDate, endDate time.Time) (*dto.InstallmentReportResponse, error)
+	GetAccountReport(ctx context.Context, userID string, startDate, endDate time.Time) (*dto.AccountReportResponse, error)
 	GetExpenseIncomeReport(ctx context.Context, userID string, startDate, endDate time.Time) (*dto.ExpenseIncomeReportResponse, error)
 	GetNotificationReport(ctx context.Context, startDate, endDate time.Time) (*dto.NotificationReportResponse, error)
 }
@@ -66,12 +66,12 @@ func (s *reportService) GetTransactionReport(ctx context.Context, req *dto.Trans
 
 // GetInstallmentReport obtiene el reporte de cuotas
 func (s *reportService) GetInstallmentReport(ctx context.Context, req *dto.InstallmentReportRequest) (*dto.InstallmentReportResponse, error) {
-	return s.repo.GetInstallmentReport(ctx, req.UserID, req.Status)
+	return s.repo.GetInstallmentReport(ctx, req.UserID, req.Status, req.StartDate, req.EndDate)
 }
 
 // GetAccountReport obtiene el reporte de cuentas
 func (s *reportService) GetAccountReport(ctx context.Context, req *dto.AccountReportRequest) (*dto.AccountReportResponse, error) {
-	return s.repo.GetAccountReport(ctx, req.UserID)
+	return s.repo.GetAccountReport(ctx, req.UserID, req.StartDate, req.EndDate)
 }
 
 // GetExpenseIncomeReport obtiene el reporte de gastos vs ingresos

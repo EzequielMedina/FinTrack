@@ -284,21 +284,28 @@ export class ReportService {
   }
 
   /**
-   * Obtiene el reporte de cuotas
+   * Obtiene el reporte de cuotas (startDate/endDate filtran por due_date de las cuotas)
    */
-  getInstallmentReport(userId: string, status?: string): Observable<InstallmentReport> {
+  getInstallmentReport(
+    userId: string,
+    startDate?: string,
+    endDate?: string,
+    status?: string
+  ): Observable<InstallmentReport> {
     let params = new HttpParams().set('user_id', userId);
-    
+    if (startDate) params = params.set('start_date', startDate);
+    if (endDate) params = params.set('end_date', endDate);
     if (status) params = params.set('status', status);
-
     return this.http.get<InstallmentReport>(`${this.apiUrl}/installments`, { params });
   }
 
   /**
-   * Obtiene el reporte de cuentas
+   * Obtiene el reporte de cuentas (startDate/endDate filtran por created_at de cuentas/tarjetas)
    */
-  getAccountReport(userId: string): Observable<AccountReport> {
-    const params = new HttpParams().set('user_id', userId);
+  getAccountReport(userId: string, startDate?: string, endDate?: string): Observable<AccountReport> {
+    let params = new HttpParams().set('user_id', userId);
+    if (startDate) params = params.set('start_date', startDate);
+    if (endDate) params = params.set('end_date', endDate);
     return this.http.get<AccountReport>(`${this.apiUrl}/accounts`, { params });
   }
 
@@ -359,27 +366,27 @@ export class ReportService {
   /**
    * Descarga el reporte de cuotas en PDF
    */
-  downloadInstallmentReportPDF(userId: string, status?: string): Observable<Blob> {
+  downloadInstallmentReportPDF(
+    userId: string,
+    startDate?: string,
+    endDate?: string,
+    status?: string
+  ): Observable<Blob> {
     let params = new HttpParams().set('user_id', userId);
-    
+    if (startDate) params = params.set('start_date', startDate);
+    if (endDate) params = params.set('end_date', endDate);
     if (status) params = params.set('status', status);
-
-    return this.http.get(`${this.apiUrl}/installments/pdf`, { 
-      params, 
-      responseType: 'blob' 
-    });
+    return this.http.get(`${this.apiUrl}/installments/pdf`, { params, responseType: 'blob' });
   }
 
   /**
    * Descarga el reporte de cuentas en PDF
    */
-  downloadAccountReportPDF(userId: string): Observable<Blob> {
-    const params = new HttpParams().set('user_id', userId);
-    
-    return this.http.get(`${this.apiUrl}/accounts/pdf`, { 
-      params, 
-      responseType: 'blob' 
-    });
+  downloadAccountReportPDF(userId: string, startDate?: string, endDate?: string): Observable<Blob> {
+    let params = new HttpParams().set('user_id', userId);
+    if (startDate) params = params.set('start_date', startDate);
+    if (endDate) params = params.set('end_date', endDate);
+    return this.http.get(`${this.apiUrl}/accounts/pdf`, { params, responseType: 'blob' });
   }
 
   /**

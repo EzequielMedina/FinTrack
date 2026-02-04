@@ -31,6 +31,79 @@
   margin-right: 0;
 }
 
+/* Filtros - mismo estilo que otros reportes */
+.filters-card {
+  background: var(--bg-primary, #fff);
+  border-radius: var(--radius-lg, 8px);
+  padding: var(--space-6, 24px);
+  margin-bottom: var(--space-6, 24px);
+  box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.1));
+  border: 1px solid var(--border-color, #e5e7eb);
+}
+
+.filters-card h3 {
+  margin-bottom: var(--space-4, 16px);
+  color: var(--text-primary, #333);
+  font-size: var(--text-lg, 1.125rem);
+  font-weight: 600;
+}
+
+.filters-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-4, 16px);
+  align-items: end;
+}
+
+.filter-group label {
+  display: block;
+  margin-bottom: var(--space-2, 8px);
+  color: var(--text-secondary, #666);
+  font-weight: 500;
+  font-size: var(--text-sm, 0.875rem);
+}
+
+.installment-report-container .form-control {
+  width: 100%;
+  padding: var(--space-3, 12px);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: var(--radius-md, 6px);
+  font-size: var(--text-sm, 0.875rem);
+  color: var(--text-primary, #333);
+  background: var(--bg-primary, #fff);
+}
+
+.filter-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.installment-report-container .btn-primary {
+  padding: 0.75rem 1.5rem;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.installment-report-container .btn-secondary {
+  padding: 0.75rem 1.5rem;
+  background: #e5e7eb;
+  color: #374151;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.filter-hint {
+  margin: 12px 0 0 0;
+  font-size: 0.875rem;
+  color: var(--text-secondary, #666);
+}
+
 .installment-report-container h3 {
   display: flex;
   align-items: center;

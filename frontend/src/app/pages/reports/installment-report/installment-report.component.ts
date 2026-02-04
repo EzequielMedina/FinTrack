@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
@@ -12,6 +13,7 @@ import { AuthService } from '../../../services/auth.service';
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     MatCardModule,
     MatProgressSpinnerModule,
     MatIconModule,
@@ -25,6 +27,8 @@ export class InstallmentReportComponent implements OnInit {
   error: string | null = null;
   reportData: InstallmentReport | null = null;
   downloadingPDF = false;
+  startDate = '';
+  endDate = '';
 
   constructor(
     private reportService: ReportService,
@@ -32,6 +36,16 @@ export class InstallmentReportComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.loadReport();
+  }
+
+  applyFilters(): void {
+    this.loadReport();
+  }
+
+  resetFilters(): void {
+    this.startDate = '';
+    this.endDate = '';
     this.loadReport();
   }
 
@@ -45,7 +59,11 @@ export class InstallmentReportComponent implements OnInit {
     this.loading = true;
     this.error = null;
 
-    this.reportService.getInstallmentReport(user.id).subscribe({
+    this.reportService.getInstallmentReport(
+      user.id,
+      this.startDate || undefined,
+      this.endDate || undefined
+    ).subscribe({
       next: (data) => {
         this.reportData = data;
         this.loading = false;
@@ -73,7 +91,11 @@ export class InstallmentReportComponent implements OnInit {
     this.downloadingPDF = true;
     this.error = null;
 
-    this.reportService.downloadInstallmentReportPDF(user.id).subscribe({
+    this.reportService.downloadInstallmentReportPDF(
+      user.id,
+      this.startDate || undefined,
+      this.endDate || undefined
+    ).subscribe({
       next: (blob) => {
         try {
           this.reportService.downloadPDF(blob, 'cuotas');

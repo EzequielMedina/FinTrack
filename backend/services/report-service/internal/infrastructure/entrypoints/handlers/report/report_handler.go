@@ -87,6 +87,8 @@ func (h *ReportHandler) GetTransactionReport(c *gin.Context) {
 // @Produce json
 // @Param user_id query string true "ID del usuario"
 // @Param status query string false "Estado de los planes (active, completed, overdue)"
+// @Param start_date query string false "Fecha inicio (YYYY-MM-DD) - filtra por due_date"
+// @Param end_date query string false "Fecha fin (YYYY-MM-DD) - filtra por due_date"
 // @Success 200 {object} dto.InstallmentReportResponse
 // @Router /api/v1/reports/installments [get]
 func (h *ReportHandler) GetInstallmentReport(c *gin.Context) {
@@ -99,6 +101,16 @@ func (h *ReportHandler) GetInstallmentReport(c *gin.Context) {
 	req := &dto.InstallmentReportRequest{
 		UserID: userID,
 		Status: c.Query("status"),
+	}
+	if startDateStr := c.Query("start_date"); startDateStr != "" {
+		if t, err := time.Parse("2006-01-02", startDateStr); err == nil {
+			req.StartDate = t
+		}
+	}
+	if endDateStr := c.Query("end_date"); endDateStr != "" {
+		if t, err := time.Parse("2006-01-02", endDateStr); err == nil {
+			req.EndDate = t
+		}
 	}
 
 	report, err := h.reportService.GetInstallmentReport(c.Request.Context(), req)
@@ -118,6 +130,8 @@ func (h *ReportHandler) GetInstallmentReport(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param user_id query string true "ID del usuario"
+// @Param start_date query string false "Fecha inicio (YYYY-MM-DD) - filtra por created_at"
+// @Param end_date query string false "Fecha fin (YYYY-MM-DD) - filtra por created_at"
 // @Success 200 {object} dto.AccountReportResponse
 // @Router /api/v1/reports/accounts [get]
 func (h *ReportHandler) GetAccountReport(c *gin.Context) {
@@ -129,6 +143,16 @@ func (h *ReportHandler) GetAccountReport(c *gin.Context) {
 
 	req := &dto.AccountReportRequest{
 		UserID: userID,
+	}
+	if startDateStr := c.Query("start_date"); startDateStr != "" {
+		if t, err := time.Parse("2006-01-02", startDateStr); err == nil {
+			req.StartDate = t
+		}
+	}
+	if endDateStr := c.Query("end_date"); endDateStr != "" {
+		if t, err := time.Parse("2006-01-02", endDateStr); err == nil {
+			req.EndDate = t
+		}
 	}
 
 	report, err := h.reportService.GetAccountReport(c.Request.Context(), req)
@@ -260,6 +284,16 @@ func (h *ReportHandler) GetInstallmentReportPDF(c *gin.Context) {
 		UserID: userID,
 		Status: c.Query("status"),
 	}
+	if startDateStr := c.Query("start_date"); startDateStr != "" {
+		if t, err := time.Parse("2006-01-02", startDateStr); err == nil {
+			req.StartDate = t
+		}
+	}
+	if endDateStr := c.Query("end_date"); endDateStr != "" {
+		if t, err := time.Parse("2006-01-02", endDateStr); err == nil {
+			req.EndDate = t
+		}
+	}
 
 	report, err := h.reportService.GetInstallmentReport(c.Request.Context(), req)
 	if err != nil {
@@ -298,6 +332,16 @@ func (h *ReportHandler) GetAccountReportPDF(c *gin.Context) {
 
 	req := &dto.AccountReportRequest{
 		UserID: userID,
+	}
+	if startDateStr := c.Query("start_date"); startDateStr != "" {
+		if t, err := time.Parse("2006-01-02", startDateStr); err == nil {
+			req.StartDate = t
+		}
+	}
+	if endDateStr := c.Query("end_date"); endDateStr != "" {
+		if t, err := time.Parse("2006-01-02", endDateStr); err == nil {
+			req.EndDate = t
+		}
 	}
 
 	report, err := h.reportService.GetAccountReport(c.Request.Context(), req)

@@ -9,10 +9,24 @@ import (
 	"github.com/fintrack/report-service/internal/core/domain/dto"
 )
 
-// GetAccountReport obtiene el reporte de cuentas
-func (r *ReportRepository) GetAccountReport(ctx context.Context, userID string) (*dto.AccountReportResponse, error) {
+// GetAccountReport obtiene el reporte de cuentas (startDate/endDate opcionales: filtran por created_at)
+func (r *ReportRepository) GetAccountReport(ctx context.Context, userID string, startDate, endDate time.Time) (*dto.AccountReportResponse, error) {
 	response := &dto.AccountReportResponse{
 		UserID: userID,
+	}
+
+	hasDateFilter := !startDate.IsZero() || !endDate.IsZero()
+	dateFilter := ""
+	accountArgs := []interface{}{userID}
+	if hasDateFilter {
+		if !startDate.IsZero() {
+			dateFilter += " AND created_at >= ?"
+			accountArgs = append(accountArgs, startDate.Format("2006-01-02"))
+		}
+		if !endDate.IsZero() {
+			dateFilter += " AND DATE(created_at) <= ?"
+			accountArgs = append(accountArgs, endDate.Format("2006-01-02"))
+		}
 	}
 
 	// Query para resumen
@@ -22,32 +36,54 @@ func (r *ReportRepository) GetAccountReport(ctx context.Context, userID string) 
 			COUNT(*) as total_accounts,
 			COALESCE(SUM(credit_limit), 0) as total_credit_limit
 		FROM accounts
-		WHERE BINARY user_id = BINARY ? AND is_active = 1 AND deleted_at IS NULL
+		WHERE BINARY user_id = BINARY ? AND is_active = 1 AND deleted_at IS NULL` + dateFilter + `
 	`
 
 	var summary dto.AccountSummary
-	err := r.db.QueryRowContext(ctx, summaryQuery, userID).Scan(
-		&summary.TotalBalance,
-		&summary.TotalAccounts,
-		&summary.TotalCreditLimit,
-	)
+	var err error
+	if hasDateFilter {
+		err = r.db.QueryRowContext(ctx, summaryQuery, accountArgs...).Scan(
+			&summary.TotalBalance,
+			&summary.TotalAccounts,
+			&summary.TotalCreditLimit,
+		)
+	} else {
+		err = r.db.QueryRowContext(ctx, summaryQuery, userID).Scan(
+			&summary.TotalBalance,
+			&summary.TotalAccounts,
+			&summary.TotalCreditLimit,
+		)
+	}
 	if err != nil {
 		return nil, fmt.Errorf("error obteniendo resumen de cuentas: %w", err)
 	}
 
-	// Contar tarjetas
+	// Contar tarjetas (con filtro por created_at si aplica)
+	cardDateFilter := ""
+	if hasDateFilter {
+		if !startDate.IsZero() {
+			cardDateFilter += " AND c.created_at >= ?"
+		}
+		if !endDate.IsZero() {
+			cardDateFilter += " AND DATE(c.created_at) <= ?"
+		}
+	}
 	cardsCountQuery := `
 		SELECT COUNT(*)
 		FROM cards c
 		JOIN accounts a ON BINARY c.account_id = BINARY a.id
-		WHERE BINARY a.user_id = BINARY ? AND c.status = 'active' AND c.deleted_at IS NULL
+		WHERE BINARY a.user_id = BINARY ? AND c.status = 'active' AND c.deleted_at IS NULL` + cardDateFilter + `
 	`
-	err = r.db.QueryRowContext(ctx, cardsCountQuery, userID).Scan(&summary.TotalCards)
+	if hasDateFilter {
+		err = r.db.QueryRowContext(ctx, cardsCountQuery, accountArgs...).Scan(&summary.TotalCards)
+	} else {
+		err = r.db.QueryRowContext(ctx, cardsCountQuery, userID).Scan(&summary.TotalCards)
+	}
 	if err != nil {
 		return nil, fmt.Errorf("error contando tarjetas: %w", err)
 	}
 
-	// Calcular crédito usado (suma de transacciones pendientes en tarjetas de crédito)
+	// Calcular crédito usado (no filtramos por fecha en transacciones para el resumen)
 	creditUsedQuery := `
 		SELECT COALESCE(SUM(t.amount), 0)
 		FROM transactions t
@@ -72,17 +108,21 @@ func (r *ReportRepository) GetAccountReport(ctx context.Context, userID string) 
 
 	response.Summary = summary
 
-	// Query para detalle de cuentas
+	// Query para detalle de cuentas (con filtro por created_at si aplica)
 	accountsQuery := `
 		SELECT 
 			id, account_type, name, currency, balance, 
 			COALESCE(credit_limit, 0) as credit_limit, is_active
 		FROM accounts
-		WHERE BINARY user_id = BINARY ? AND deleted_at IS NULL
+		WHERE BINARY user_id = BINARY ? AND deleted_at IS NULL` + dateFilter + `
 		ORDER BY created_at DESC
 	`
-
-	rows, err := r.db.QueryContext(ctx, accountsQuery, userID)
+	var rows *sql.Rows
+	if hasDateFilter {
+		rows, err = r.db.QueryContext(ctx, accountsQuery, accountArgs...)
+	} else {
+		rows, err = r.db.QueryContext(ctx, accountsQuery, userID)
+	}
 	if err != nil {
 		return nil, fmt.Errorf("error obteniendo cuentas: %w", err)
 	}
@@ -102,7 +142,7 @@ func (r *ReportRepository) GetAccountReport(ctx context.Context, userID string) 
 	}
 	response.Accounts = accounts
 
-	// Query para detalle de tarjetas
+	// Query para detalle de tarjetas (con filtro por created_at si aplica)
 	cardsQuery := `
 		SELECT 
 			c.id, c.account_id, c.card_type, c.card_brand, c.last_four_digits,
@@ -110,11 +150,15 @@ func (r *ReportRepository) GetAccountReport(ctx context.Context, userID string) 
 			COALESCE(c.nickname, '') as nickname
 		FROM cards c
 		JOIN accounts a ON BINARY c.account_id = BINARY a.id
-		WHERE BINARY a.user_id = BINARY ? AND c.deleted_at IS NULL
+		WHERE BINARY a.user_id = BINARY ? AND c.deleted_at IS NULL` + cardDateFilter + `
 		ORDER BY c.created_at DESC
 	`
-
-	cardRows, err := r.db.QueryContext(ctx, cardsQuery, userID)
+	var cardRows *sql.Rows
+	if hasDateFilter {
+		cardRows, err = r.db.QueryContext(ctx, cardsQuery, accountArgs...)
+	} else {
+		cardRows, err = r.db.QueryContext(ctx, cardsQuery, userID)
+	}
 	if err != nil {
 		return nil, fmt.Errorf("error obteniendo tarjetas: %w", err)
 	}
@@ -152,18 +196,22 @@ func (r *ReportRepository) GetAccountReport(ctx context.Context, userID string) 
 	}
 	response.Cards = cards
 
-	// Query para distribución de cuentas
+	// Query para distribución de cuentas (con filtro por created_at si aplica)
 	distributionQuery := `
 		SELECT 
 			account_type,
 			COUNT(*) as count,
 			COALESCE(SUM(balance), 0) as total_balance
 		FROM accounts
-		WHERE BINARY user_id = BINARY ? AND is_active = 1 AND deleted_at IS NULL
+		WHERE BINARY user_id = BINARY ? AND is_active = 1 AND deleted_at IS NULL` + dateFilter + `
 		GROUP BY account_type
 	`
-
-	distRows, err := r.db.QueryContext(ctx, distributionQuery, userID)
+	var distRows *sql.Rows
+	if hasDateFilter {
+		distRows, err = r.db.QueryContext(ctx, distributionQuery, accountArgs...)
+	} else {
+		distRows, err = r.db.QueryContext(ctx, distributionQuery, userID)
+	}
 	if err != nil {
 		return nil, fmt.Errorf("error obteniendo distribución: %w", err)
 	}

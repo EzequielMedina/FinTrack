@@ -169,60 +169,89 @@ func (r *ReportRepository) GetTransactionReport(ctx context.Context, userID stri
 	return response, nil
 }
 
-// GetInstallmentReport obtiene el reporte de cuotas
-func (r *ReportRepository) GetInstallmentReport(ctx context.Context, userID string, status string) (*dto.InstallmentReportResponse, error) {
+// GetInstallmentReport obtiene el reporte de cuotas (startDate/endDate opcionales: filtran por due_date)
+func (r *ReportRepository) GetInstallmentReport(ctx context.Context, userID string, status string, startDate, endDate time.Time) (*dto.InstallmentReportResponse, error) {
 	response := &dto.InstallmentReportResponse{
 		UserID: userID,
 	}
 
-	// Query para resumen
+	hasDateFilter := !startDate.IsZero() || !endDate.IsZero()
+	var planFilter string
+	var dueDateCond string
+	installArgs := []interface{}{userID}
+	if hasDateFilter {
+		planFilter = ` AND ip.id IN (SELECT BINARY plan_id FROM installments WHERE 1=1 `
+		if !startDate.IsZero() {
+			planFilter += ` AND due_date >= ?`
+			dueDateCond += ` AND i.due_date >= ?`
+			installArgs = append(installArgs, startDate.Format("2006-01-02"))
+		}
+		if !endDate.IsZero() {
+			planFilter += ` AND due_date <= ?`
+			dueDateCond += ` AND i.due_date <= ?`
+			installArgs = append(installArgs, endDate.Format("2006-01-02"))
+		}
+		planFilter += `)`
+	}
+
+	// Query para resumen (solo planes que tengan cuotas en el rango si hay filtro)
 	summaryQuery := `
 		SELECT 
 			COUNT(*) as total_plans,
-			COALESCE(SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END), 0) as active_plans,
-			COALESCE(SUM(total_amount), 0) as total_amount,
-			COALESCE(SUM(total_amount - remaining_amount), 0) as paid_amount,
-			COALESCE(SUM(remaining_amount), 0) as remaining_amount
-		FROM installment_plans
-		WHERE user_id = ?
-	`
+			COALESCE(SUM(CASE WHEN ip.status = 'active' THEN 1 ELSE 0 END), 0) as active_plans,
+			COALESCE(SUM(ip.total_amount), 0) as total_amount,
+			COALESCE(SUM(ip.total_amount - ip.remaining_amount), 0) as paid_amount,
+			COALESCE(SUM(ip.remaining_amount), 0) as remaining_amount
+		FROM installment_plans ip
+		WHERE BINARY ip.user_id = BINARY ?` + planFilter
 
 	var summary dto.InstallmentSummary
 	var nextPaymentDate sql.NullTime
 
-	err := r.db.QueryRowContext(ctx, summaryQuery, userID).Scan(
-		&summary.TotalPlans,
-		&summary.ActivePlans,
-		&summary.TotalAmount,
-		&summary.PaidAmount,
-		&summary.RemainingAmount,
-	)
+	var err error
+	if hasDateFilter {
+		err = r.db.QueryRowContext(ctx, summaryQuery, installArgs...).Scan(
+			&summary.TotalPlans,
+			&summary.ActivePlans,
+			&summary.TotalAmount,
+			&summary.PaidAmount,
+			&summary.RemainingAmount,
+		)
+	} else {
+		err = r.db.QueryRowContext(ctx, summaryQuery, userID).Scan(
+			&summary.TotalPlans,
+			&summary.ActivePlans,
+			&summary.TotalAmount,
+			&summary.PaidAmount,
+			&summary.RemainingAmount,
+		)
+	}
 	if err != nil {
 		return nil, fmt.Errorf("error obteniendo resumen de cuotas: %w", err)
 	}
 
-	// Calcular monto vencido
+	// Calcular monto vencido (con filtro de fechas si aplica)
 	overdueQuery := `
 		SELECT COALESCE(SUM(i.remaining_amount), 0)
 		FROM installments i
 		JOIN installment_plans ip ON BINARY i.plan_id = BINARY ip.id
-		WHERE BINARY ip.user_id = BINARY ? AND i.status = 'overdue'
+		WHERE BINARY ip.user_id = BINARY ? AND i.status = 'overdue'` + dueDateCond + `
 	`
-	err = r.db.QueryRowContext(ctx, overdueQuery, userID).Scan(&summary.OverdueAmount)
+	err = r.db.QueryRowContext(ctx, overdueQuery, installArgs...).Scan(&summary.OverdueAmount)
 	if err != nil {
 		return nil, fmt.Errorf("error obteniendo monto vencido: %w", err)
 	}
 
-	// Próximo pago
+	// Próximo pago (con filtro de fechas si aplica)
 	nextPaymentQuery := `
 		SELECT amount, due_date
 		FROM installments i
 		JOIN installment_plans ip ON BINARY i.plan_id = BINARY ip.id
-		WHERE BINARY ip.user_id = BINARY ? AND i.status = 'pending'
+		WHERE BINARY ip.user_id = BINARY ? AND i.status = 'pending'` + dueDateCond + `
 		ORDER BY i.due_date ASC
 		LIMIT 1
 	`
-	err = r.db.QueryRowContext(ctx, nextPaymentQuery, userID).Scan(&summary.NextPaymentAmount, &nextPaymentDate)
+	err = r.db.QueryRowContext(ctx, nextPaymentQuery, installArgs...).Scan(&summary.NextPaymentAmount, &nextPaymentDate)
 	if err != nil && err != sql.ErrNoRows {
 		return nil, fmt.Errorf("error obteniendo próximo pago: %w", err)
 	}
@@ -236,7 +265,7 @@ func (r *ReportRepository) GetInstallmentReport(ctx context.Context, userID stri
 
 	response.Summary = summary
 
-	// Query para planes de cuotas
+	// Query para planes de cuotas (con filtro por rango de due_date si aplica)
 	plansQuery := `
 		SELECT 
 			ip.id, ip.card_id, c.last_four_digits, ip.total_amount, 
@@ -245,11 +274,11 @@ func (r *ReportRepository) GetInstallmentReport(ctx context.Context, userID stri
 			ip.start_date
 		FROM installment_plans ip
 		LEFT JOIN cards c ON BINARY ip.card_id = BINARY c.id
-		WHERE BINARY ip.user_id = BINARY ?
+		WHERE BINARY ip.user_id = BINARY ?` + planFilter + `
 		ORDER BY ip.created_at DESC
 	`
 
-	rows, err := r.db.QueryContext(ctx, plansQuery, userID)
+	rows, err := r.db.QueryContext(ctx, plansQuery, installArgs...)
 	if err != nil {
 		return nil, fmt.Errorf("error obteniendo planes de cuotas: %w", err)
 	}
@@ -296,8 +325,24 @@ func (r *ReportRepository) GetInstallmentReport(ctx context.Context, userID stri
 	}
 	response.Plans = plans
 
-	// Pagos próximos (próximos 30 días)
-	upcomingQuery := `
+	// Pagos próximos (próximos 30 días, o en rango si hay filtro de fechas)
+	var upcomingQuery string
+	if hasDateFilter {
+		upcomingQuery = `
+		SELECT 
+			i.id, i.plan_id, c.last_four_digits, i.amount, i.due_date,
+			DATEDIFF(i.due_date, CURDATE()) as days_until,
+			ip.description, ip.merchant_name
+		FROM installments i
+		JOIN installment_plans ip ON BINARY i.plan_id = BINARY ip.id
+		LEFT JOIN cards c ON BINARY ip.card_id = BINARY c.id
+		WHERE BINARY ip.user_id = BINARY ? 
+			AND i.status = 'pending'` + dueDateCond + `
+		ORDER BY i.due_date ASC
+		LIMIT 10
+		`
+	} else {
+		upcomingQuery = `
 		SELECT 
 			i.id, i.plan_id, c.last_four_digits, i.amount, i.due_date,
 			DATEDIFF(i.due_date, CURDATE()) as days_until,
@@ -310,9 +355,14 @@ func (r *ReportRepository) GetInstallmentReport(ctx context.Context, userID stri
 			AND i.due_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY)
 		ORDER BY i.due_date ASC
 		LIMIT 10
-	`
-
-	upcomingRows, err := r.db.QueryContext(ctx, upcomingQuery, userID)
+		`
+	}
+	var upcomingRows *sql.Rows
+	if hasDateFilter {
+		upcomingRows, err = r.db.QueryContext(ctx, upcomingQuery, installArgs...)
+	} else {
+		upcomingRows, err = r.db.QueryContext(ctx, upcomingQuery, userID)
+	}
 	if err != nil {
 		return nil, fmt.Errorf("error obteniendo pagos próximos: %w", err)
 	}
@@ -345,7 +395,7 @@ func (r *ReportRepository) GetInstallmentReport(ctx context.Context, userID stri
 	}
 	response.Upcoming = upcoming
 
-	// Pagos vencidos
+	// Pagos vencidos (con filtro de fechas si aplica)
 	overduePaymentsQuery := `
 		SELECT 
 			i.id, i.plan_id, c.last_four_digits, i.amount, i.due_date,
@@ -354,11 +404,16 @@ func (r *ReportRepository) GetInstallmentReport(ctx context.Context, userID stri
 		FROM installments i
 		JOIN installment_plans ip ON BINARY i.plan_id = BINARY ip.id
 		LEFT JOIN cards c ON BINARY ip.card_id = BINARY c.id
-		WHERE BINARY ip.user_id = BINARY ? AND i.status = 'overdue'
+		WHERE BINARY ip.user_id = BINARY ? AND i.status = 'overdue'` + dueDateCond + `
 		ORDER BY i.due_date ASC
 	`
 
-	overdueRows, err := r.db.QueryContext(ctx, overduePaymentsQuery, userID)
+	var overdueRows *sql.Rows
+	if hasDateFilter {
+		overdueRows, err = r.db.QueryContext(ctx, overduePaymentsQuery, installArgs...)
+	} else {
+		overdueRows, err = r.db.QueryContext(ctx, overduePaymentsQuery, userID)
+	}
 	if err != nil {
 		return nil, fmt.Errorf("error obteniendo pagos vencidos: %w", err)
 	}

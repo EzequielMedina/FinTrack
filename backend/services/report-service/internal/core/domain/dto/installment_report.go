@@ -4,8 +4,10 @@ import "time"
 
 // InstallmentReportRequest request para reporte de cuotas
 type InstallmentReportRequest struct {
-	UserID string `json:"user_id" binding:"required"`
-	Status string `json:"status"` // active, completed, overdue
+	UserID    string    `json:"user_id" binding:"required"`
+	Status    string    `json:"status"` // active, completed, overdue
+	StartDate time.Time `json:"start_date"` // opcional: filtrar por due_date >= start_date
+	EndDate   time.Time `json:"end_date"`   // opcional: filtrar por due_date <= end_date
 }
 
 // InstallmentReportResponse respuesta del reporte de cuotas

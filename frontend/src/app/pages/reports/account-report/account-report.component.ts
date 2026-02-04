@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
@@ -12,6 +13,7 @@ import { AuthService } from '../../../services/auth.service';
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     MatCardModule,
     MatProgressSpinnerModule,
     MatIconModule,
@@ -34,9 +36,6 @@ export class AccountReportComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const now = new Date();
-    this.startDate = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
-    this.endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
     this.loadReport();
   }
 
@@ -45,9 +44,8 @@ export class AccountReportComponent implements OnInit {
   }
 
   resetFilters(): void {
-    const now = new Date();
-    this.startDate = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
-    this.endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
+    this.startDate = '';
+    this.endDate = '';
     this.loadReport();
   }
 
@@ -61,7 +59,11 @@ export class AccountReportComponent implements OnInit {
     this.loading = true;
     this.error = null;
 
-    this.reportService.getAccountReport(user.id).subscribe({
+    this.reportService.getAccountReport(
+      user.id,
+      this.startDate || undefined,
+      this.endDate || undefined
+    ).subscribe({
       next: (data) => {
         this.reportData = data;
         this.loading = false;
@@ -89,7 +91,11 @@ export class AccountReportComponent implements OnInit {
     this.downloadingPDF = true;
     this.error = null;
 
-    this.reportService.downloadAccountReportPDF(user.id).subscribe({
+    this.reportService.downloadAccountReportPDF(
+      user.id,
+      this.startDate || undefined,
+      this.endDate || undefined
+    ).subscribe({
       next: (blob) => {
         try {
           this.reportService.downloadPDF(blob, 'cuentas');
