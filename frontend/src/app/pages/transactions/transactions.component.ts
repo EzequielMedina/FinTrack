@@ -311,7 +311,12 @@ export class TransactionsComponent implements OnInit, OnDestroy {
 
   getAccountName(accountId: string): string {
     const account = this.accounts.find(acc => acc.id === accountId);
-    return account ? `${account.accountType} - ${account.name}` : accountId;
+    return account ? account.name : accountId;
+  }
+
+  /** Etiqueta en español del tipo de transacción */
+  formatTransactionType(type: TransactionType): string {
+    return this.transactionService.getTransactionTypeLabel(type);
   }
 
   canCancelTransaction(transaction: Transaction): boolean {
@@ -358,6 +363,20 @@ export class TransactionsComponent implements OnInit, OnDestroy {
 
   getTotalPages(): number {
     return Math.ceil(this.totalTransactions / (this.filters.limit || 10));
+  }
+
+  /**
+   * Formatea una fecha en formato yyyy-MM-dd (filtro) a dd/MM/yyyy para mostrar.
+   * Parsea en hora local para evitar desfase por UTC.
+   */
+  formatFilterDate(dateStr: string | undefined): string {
+    if (!dateStr) return '';
+    const [y, m, d] = dateStr.split('T')[0].split('-').map(Number);
+    if (isNaN(y) || isNaN(m) || isNaN(d)) return dateStr;
+    const day = d.toString().padStart(2, '0');
+    const month = m.toString().padStart(2, '0');
+    const year = y.toString();
+    return `${day}/${month}/${year}`;
   }
 
   translateTransactionDescription(description: string | undefined): string {

@@ -12,6 +12,25 @@
     </button>
   </div>
 
+  <!-- Filtros (mismo estilo que reporte de transacciones) -->
+  <div class="filters-card">
+    <h3>Filtros</h3>
+    <div class="filters-grid">
+      <div class="filter-group">
+        <label for="startDate">Fecha Inicio:</label>
+        <input type="date" id="startDate" [(ngModel)]="startDate" class="form-control">
+      </div>
+      <div class="filter-group">
+        <label for="endDate">Fecha Fin:</label>
+        <input type="date" id="endDate" [(ngModel)]="endDate" class="form-control">
+      </div>
+      <div class="filter-actions">
+        <button type="button" class="btn-primary" (click)="applyFilters()">Aplicar Filtros</button>
+        <button type="button" class="btn-secondary" (click)="resetFilters()">Resetear</button>
+      </div>
+    </div>
+  </div>
+
   <div *ngIf="loading" class="loading-container">
     <mat-spinner></mat-spinner>
   </div>

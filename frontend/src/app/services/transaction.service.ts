@@ -467,4 +467,31 @@ export class TransactionService {
         return 'swap_horiz';
     }
   }
+
+  /**
+   * Etiqueta en español del tipo de transacción (para UI).
+   * Claves por valor único del enum (los alias comparten valor).
+   */
+  getTransactionTypeLabel(type: TransactionType): string {
+    const labels: Record<string, string> = {
+      wallet_deposit: 'Depósito',
+      wallet_withdrawal: 'Retiro',
+      wallet_transfer: 'Transferencia',
+      account_deposit: 'Depósito',
+      account_withdraw: 'Retiro',
+      account_transfer: 'Transferencia entre cuentas',
+      credit_charge: 'Cargo en tarjeta de crédito',
+      credit_payment: 'Pago de tarjeta de crédito',
+      credit_refund: 'Reembolso de crédito',
+      debit_purchase: 'Compra con débito',
+      debit_withdrawal: 'Retiro con débito',
+      debit_refund: 'Reembolso en débito',
+      installment_payment: 'Pago de cuota',
+      installment_refund: 'Reembolso de cuota',
+      installment_plan_completion: 'Plan de cuotas completado',
+      credit_purchase_installments: 'Compra en cuotas (crédito)'
+    };
+    const key = typeof type === 'string' ? type : (type as string);
+    return labels[key] ?? key.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
+  }
 }

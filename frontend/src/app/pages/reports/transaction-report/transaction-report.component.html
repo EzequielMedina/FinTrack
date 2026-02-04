@@ -114,45 +114,5 @@
       </div>
     </div>
 
-    <!-- Timeline Chart (Simple representation) -->
-    <div class="chart-card">
-      <h3>📅 Flujo de Transacciones</h3>
-      <div class="timeline-chart">
-        <div *ngFor="let period of report.by_period" class="timeline-item">
-          <div class="timeline-date">{{ formatDate(period.date) }}</div>
-          <div class="timeline-bars">
-            <div class="bar-income" [style.height.px]="(period.income / 10000) * 100" [title]="'Ingresos: ' + formatCurrency(period.income)">
-              <span class="bar-label">{{ formatCurrency(period.income) }}</span>
-            </div>
-            <div class="bar-expense" [style.height.px]="(period.expenses / 10000) * 100" [title]="'Gastos: ' + formatCurrency(period.expenses)">
-              <span class="bar-label">{{ formatCurrency(period.expenses) }}</span>
-            </div>
-          </div>
-          <div class="timeline-count">{{ period.count }} trans.</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Top Expenses -->
-    <div class="chart-card">
-      <h3>🏆 Top Gastos</h3>
-      <div class="expenses-list">
-        <div *ngFor="let expense of report.top_expenses; let i = index" class="expense-item">
-          <div class="expense-rank">{{ i + 1 }}</div>
-          <div class="expense-info">
-            <h4>{{ expense.description }}</h4>
-            <p class="expense-meta">
-              <span>{{ formatDate(expense.date) }}</span>
-              <span *ngIf="expense.merchant_name" class="merchant">{{ expense.merchant_name }}</span>
-              <span class="type-badge">{{ getTypeLabel(expense.type) }}</span>
-            </p>
-          </div>
-          <div class="expense-amount">
-            {{ formatCurrency(expense.amount) }}
-          </div>
-        </div>
-      </div>
-    </div>
-
   </div>
 </div>

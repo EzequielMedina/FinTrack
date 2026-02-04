@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
@@ -12,6 +13,7 @@ import { AuthService } from '../../../services/auth.service';
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     MatCardModule,
     MatProgressSpinnerModule,
     MatIconModule,
@@ -25,6 +27,8 @@ export class NotificationReportComponent implements OnInit {
   error: string | null = null;
   reportData: NotificationReport | null = null;
   downloadingPDF = false;
+  startDate = '';
+  endDate = '';
 
   constructor(
     private reportService: ReportService,
@@ -32,6 +36,24 @@ export class NotificationReportComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    const end = new Date();
+    const start = new Date();
+    start.setDate(start.getDate() - 30);
+    this.endDate = end.toISOString().split('T')[0];
+    this.startDate = start.toISOString().split('T')[0];
+    this.loadReport();
+  }
+
+  applyFilters(): void {
+    this.loadReport();
+  }
+
+  resetFilters(): void {
+    const end = new Date();
+    const start = new Date();
+    start.setDate(start.getDate() - 30);
+    this.endDate = end.toISOString().split('T')[0];
+    this.startDate = start.toISOString().split('T')[0];
     this.loadReport();
   }
 
@@ -51,15 +73,7 @@ export class NotificationReportComponent implements OnInit {
     this.loading = true;
     this.error = null;
 
-    // Get last 30 days by default
-    const endDate = new Date();
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - 30);
-
-    const startDateStr = startDate.toISOString().split('T')[0];
-    const endDateStr = endDate.toISOString().split('T')[0];
-
-    this.reportService.getNotificationReport(startDateStr, endDateStr).subscribe({
+    this.reportService.getNotificationReport(this.startDate, this.endDate).subscribe({
       next: (data) => {
         this.reportData = data;
         this.loading = false;
@@ -152,9 +166,8 @@ export class NotificationReportComponent implements OnInit {
     this.downloadingPDF = true;
     this.error = null;
 
-    // Obtener fechas del período del reporte
-    const startDate = this.reportData.period?.start_date;
-    const endDate = this.reportData.period?.end_date;
+    const startDate = this.startDate || this.reportData.period?.start_date;
+    const endDate = this.endDate || this.reportData.period?.end_date;
 
     this.reportService.downloadNotificationReportPDF(startDate, endDate).subscribe({
       next: (blob) => {

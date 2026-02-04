@@ -90,23 +90,25 @@
       </div>
 
       <div class="filter-group">
-        <label for="startDate" class="form-label">Desde</label>
+        <label for="startDate" class="form-label">Desde (dd/MM/yyyy)</label>
         <input 
           type="date" 
           id="startDate"
           [(ngModel)]="filters.startDate" 
           (ngModelChange)="onFilterChange()"
           class="input">
+        <span *ngIf="filters.startDate" class="filter-date-display">{{ formatFilterDate(filters.startDate) }}</span>
       </div>
 
       <div class="filter-group">
-        <label for="endDate" class="form-label">Hasta</label>
+        <label for="endDate" class="form-label">Hasta (dd/MM/yyyy)</label>
         <input 
           type="date" 
           id="endDate"
           [(ngModel)]="filters.endDate" 
           (ngModelChange)="onFilterChange()"
           class="input">
+        <span *ngIf="filters.endDate" class="filter-date-display">{{ formatFilterDate(filters.endDate) }}</span>
       </div>
 
       <div class="filter-group">
@@ -174,7 +176,7 @@
 
           <div class="transaction-content">
             <div class="transaction-header">
-              <h4>{{ transaction.type | titlecase }}</h4>
+              <h4>{{ formatTransactionType(transaction.type) }}</h4>
               <span class="transaction-amount" 
                     [class.positive]="isPositiveTransaction(transaction.type)"
                     [class.negative]="isNegativeTransaction(transaction.type)">
@@ -202,7 +204,7 @@
               <div class="transaction-meta">
                 <span class="transaction-date">
                   <mat-icon class="detail-icon">calendar_today</mat-icon>
-                  {{ transaction.createdAt | date:'short' }}
+                  {{ transaction.createdAt | date:'dd/MM/yyyy HH:mm' }}
                 </span>
                 <span class="transaction-status" [class]="'status-' + transaction.status.toLowerCase()">
                   <mat-icon class="detail-icon">info</mat-icon>

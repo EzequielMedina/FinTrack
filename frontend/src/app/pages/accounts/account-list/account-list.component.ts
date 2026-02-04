@@ -216,6 +216,9 @@ import { AccountValidationService } from '../../../services';
       overflow: hidden;
       background: white;
       border: 1px solid #e5e7eb;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
     }
 
     .account-item:hover {
@@ -272,6 +275,9 @@ import { AccountValidationService } from '../../../services';
     /* Account Content */
     .account-content {
       padding: 16px !important;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
     }
 
 
@@ -281,6 +287,7 @@ import { AccountValidationService } from '../../../services';
       flex-direction: column;
       gap: 8px;
       margin-bottom: 15px;
+      flex: 1;
     }
 
     .account-detail {
@@ -326,7 +333,8 @@ import { AccountValidationService } from '../../../services';
     .account-status {
       display: flex;
       justify-content: center;
-      margin-bottom: 10px;
+      margin-bottom: 0;
+      margin-top: auto;
     }
 
     .account-status mat-chip {
@@ -347,6 +355,7 @@ import { AccountValidationService } from '../../../services';
       padding: 12px 16px 16px 16px !important;
       border-top: 1px solid #e5e7eb;
       background: #fafafa;
+      margin-top: auto;
     }
 
     .account-actions button {

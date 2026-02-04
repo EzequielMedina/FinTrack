@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
@@ -12,6 +13,7 @@ import { AuthService } from '../../../services/auth.service';
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     MatCardModule,
     MatProgressSpinnerModule,
     MatIconModule,
@@ -34,6 +36,20 @@ export class ExpenseIncomeReportComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    const now = new Date();
+    this.startDate = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+    this.endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
+    this.loadReport();
+  }
+
+  applyFilters(): void {
+    this.loadReport();
+  }
+
+  resetFilters(): void {
+    const now = new Date();
+    this.startDate = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+    this.endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
     this.loadReport();
   }
 
@@ -46,11 +62,6 @@ export class ExpenseIncomeReportComponent implements OnInit {
 
     this.loading = true;
     this.error = null;
-
-    // Get current month date range
-    const now = new Date();
-    this.startDate = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
-    this.endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
 
     this.reportService.getExpenseIncomeReport(user.id, this.startDate, this.endDate).subscribe({
       next: (data) => {

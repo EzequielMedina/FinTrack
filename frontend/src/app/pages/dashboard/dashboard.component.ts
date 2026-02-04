@@ -284,16 +284,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
       return transaction.metadata.accountName;
     }
     
-    // Fallback: mostrar tipo de transacción formateado
-    return this.formatTransactionType(transaction.type);
-  }
-
-  private formatTransactionType(type: TransactionType): string {
-    // Convertir el tipo de transacción a un formato más legible
-    return type.replace(/_/g, ' ')
-      .split(' ')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(' ');
+    // Fallback: mostrar tipo de transacción en español
+    return this.transactionService.getTransactionTypeLabel(transaction.type);
   }
 
   // Métodos para el template

@@ -49,6 +49,12 @@
   margin-bottom: var(--space-2);
 }
 
+.filter-date-display {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin-top: var(--space-1);
+}
+
 /* Asegurar que los selects tengan el mismo estilo que los inputs */
 .filter-group select.input {
   appearance: none;
