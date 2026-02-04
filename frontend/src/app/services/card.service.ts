@@ -45,10 +45,10 @@ export class CardService {
             credit_limit: cardData.creditLimit
           }),
           ...(cardData.closingDate && {
-            closing_date: new Date(cardData.closingDate).toISOString().split('T')[0]
+            closing_date: this.toDateString(cardData.closingDate)
           }),
           ...(cardData.dueDate && {
-            due_date: new Date(cardData.dueDate).toISOString().split('T')[0]
+            due_date: this.toDateString(cardData.dueDate)
           })
         };
 
@@ -136,12 +136,18 @@ export class CardService {
   }
 
   updateCard(accountId: string, cardId: string, cardData: UpdateCardRequest): Observable<Card> {
-    const updatePayload = {
+    const updatePayload: Record<string, unknown> = {
       holder_name: cardData.holderName,
       nickname: cardData.nickname,
       expiration_month: cardData.expirationMonth,
       expiration_year: cardData.expirationYear
     };
+    if (cardData.creditLimit !== undefined && cardData.creditLimit !== null) {
+      updatePayload['credit_limit'] = cardData.creditLimit;
+    }
+    if (cardData.dueDate) {
+      updatePayload['due_date'] = this.toDateString(cardData.dueDate);
+    }
 
     return this.http.put<any>(`${this.apiUrl}/${accountId}/cards/${cardId}`, updatePayload).pipe(
       map(response => this.mapCardResponseToCard(response))
@@ -407,5 +413,17 @@ export class CardService {
     };
 
     return validLengths[brand].includes(cardNumber.length);
+  }
+
+  /** Convierte a YYYY-MM-DD en hora local (evita día anterior por UTC). */
+  private toDateString(value: string | Date): string {
+    if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      return value;
+    }
+    const d = typeof value === 'string' ? new Date(value) : value;
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
   }
 }

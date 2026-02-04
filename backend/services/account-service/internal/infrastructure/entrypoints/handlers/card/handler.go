@@ -198,7 +198,7 @@ func (h *Handler) UpdateCard(c *gin.Context) {
 
 	// Validate that at least one field is being updated
 	if req.HolderName == "" && req.ExpirationMonth == 0 && req.ExpirationYear == 0 &&
-		req.Nickname == "" && req.IsDefault == nil && req.CreditLimit == nil {
+		req.Nickname == "" && req.IsDefault == nil && req.CreditLimit == nil && req.DueDate == nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "At least one field must be provided for update",
 		})

@@ -146,10 +146,10 @@ func (s *CardService) UpdateCard(cardID string, req *dto.UpdateCardRequest) (*en
 	}
 
 	fmt.Printf("🔄 DEBUG - UpdateCard called for card ID: %s\n", cardID)
-	fmt.Printf("🔄 DEBUG - Current card data: HolderName=%s, ExpirationMonth=%d, ExpirationYear=%d, Nickname=%s, IsDefault=%t\n",
-		card.HolderName, card.ExpirationMonth, card.ExpirationYear, card.Nickname, card.IsDefault)
-	fmt.Printf("🔄 DEBUG - Update request: HolderName=%s, ExpirationMonth=%d, ExpirationYear=%d, Nickname=%s, IsDefault=%v, CreditLimit=%v\n",
-		req.HolderName, req.ExpirationMonth, req.ExpirationYear, req.Nickname, req.IsDefault, req.CreditLimit)
+	fmt.Printf("🔄 DEBUG - Current card data: HolderName=%s, ExpirationMonth=%d, ExpirationYear=%d, Nickname=%s, IsDefault=%t, DueDate=%v\n",
+		card.HolderName, card.ExpirationMonth, card.ExpirationYear, card.Nickname, card.IsDefault, card.DueDate)
+	fmt.Printf("🔄 DEBUG - Update request: HolderName=%s, ExpirationMonth=%d, ExpirationYear=%d, Nickname=%s, IsDefault=%v, CreditLimit=%v, DueDate=%v\n",
+		req.HolderName, req.ExpirationMonth, req.ExpirationYear, req.Nickname, req.IsDefault, req.CreditLimit, req.DueDate)
 
 	// Track if any updates were made
 	updated := false
@@ -233,6 +233,27 @@ func (s *CardService) UpdateCard(cardID string, req *dto.UpdateCardRequest) (*en
 			}
 
 			card.CreditLimit = req.CreditLimit
+			updated = true
+		}
+	}
+
+	// Handle DueDate field - only for credit cards (payment due date)
+	if req.DueDate != nil {
+		if card.CardType != entities.CardTypeCredit {
+			return nil, fmt.Errorf("due date can only be updated for credit cards")
+		}
+		newDueDate := req.DueDate.ToTimePointer()
+		currentDueStr := ""
+		if card.DueDate != nil {
+			currentDueStr = card.DueDate.Format("2006-01-02")
+		}
+		newDueStr := ""
+		if newDueDate != nil {
+			newDueStr = newDueDate.Format("2006-01-02")
+		}
+		if newDueStr != currentDueStr {
+			fmt.Printf("🔄 DEBUG - Updating DueDate from %s to %s\n", currentDueStr, newDueStr)
+			card.DueDate = newDueDate
 			updated = true
 		}
 	}

@@ -80,7 +80,7 @@
             </div>
             <div class="due-date" *ngIf="balance.dueDate">
               <mat-icon>schedule</mat-icon>
-              <span>Fecha de Vencimiento: {{ balance.dueDate | date:'dd/MM/yyyy' }}</span>
+              <span>Fecha de Vencimiento: {{ balance.dueDate | dateOnly }}</span>
             </div>
           </div>
         </div>

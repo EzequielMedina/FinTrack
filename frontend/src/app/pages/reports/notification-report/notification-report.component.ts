@@ -166,8 +166,9 @@ export class NotificationReportComponent implements OnInit {
     this.downloadingPDF = true;
     this.error = null;
 
-    const startDate = this.startDate || this.reportData.period?.start_date;
-    const endDate = this.endDate || this.reportData.period?.end_date;
+    // Obtener fechas del período del reporte
+    const startDate = this.reportData.period?.start_date;
+    const endDate = this.reportData.period?.end_date;
 
     this.reportService.downloadNotificationReportPDF(startDate, endDate).subscribe({
       next: (blob) => {

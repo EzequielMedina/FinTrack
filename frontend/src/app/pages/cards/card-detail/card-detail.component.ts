@@ -22,6 +22,7 @@ import {
   InstallmentPlanDetailModalComponent
 } from '../../../shared/components';
 import { InstallmentPaymentModalComponent } from '../../../shared/components/installment-payment-modal/installment-payment-modal.component';
+import { DateOnlyPipe } from '../../../shared/pipes/date-only.pipe';
 import type { 
   InstallmentCalculatorResult,
   InstallmentPlanAction 
@@ -44,7 +45,8 @@ import type {
     MatTabsModule,
     MatDialogModule,
     InstallmentCalculatorComponent,
-    InstallmentPlansListComponent
+    InstallmentPlansListComponent,
+    DateOnlyPipe
   ],
   templateUrl: './card-detail.component.html',
   styleUrls: ['./card-detail.component.css'],

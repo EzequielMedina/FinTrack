@@ -83,6 +83,12 @@ El servicio utiliza EmailJS para el envío de emails. Las credenciales están en
 - **Public Key**: `MSBb87-PQcXWr1gWK`
 - **Private Key**: `sXLmpEZ8y2EYtCDtN5gZv`
 
+**⚠️ Importante – envío desde el servidor:** EmailJS **bloquea por defecto** las peticiones que no vienen del navegador. Si el job corre en el backend y no recibes emails:
+
+1. Entra en [EmailJS Dashboard](https://dashboard.emailjs.com/) → **Account** → **Security**.
+2. Activa **“Allow API requests from non-browser apps”** (o similar) para permitir llamadas desde tu servidor.
+3. Sin esto, la API suele responder **403** y los emails no se envían.
+
 ## 📋 API Endpoints
 
 ### Job Management
@@ -288,21 +294,17 @@ curl http://localhost:8088/health
 
 ## � Troubleshooting
 
-### Problemas Comunes
+### Por qué no me llega ningún mail
 
-```bash
-# 1. Error de conexión a MySQL
-Error: "connection refused"
-Solución: Verificar que MySQL esté ejecutándose
+**1. El job solo considera tarjetas que vencen mañana**  
+La query usa `DATE(c.due_date) = DATE(NOW() + INTERVAL 1 DAY)`. Si no hay ninguna tarjeta con esa fecha, verás `cards_found: 0` y no se envía ningún email. Para probar: pon en una tarjeta de crédito la **fecha de vencimiento de pago** = mañana, ejecutá el job con `POST .../api/notifications/trigger-card-due-job` y revisá `GET .../api/notifications/job-history`.
 
-# 2. EmailJS API error
-Error: "401 Unauthorized"  
-Solución: Verificar credenciales en .env
+**2. EmailJS bloquea peticiones desde el servidor**  
+Por defecto EmailJS devuelve 403 a llamadas que no vienen del navegador. En [EmailJS Dashboard](https://dashboard.emailjs.com/) → Account → Security, activá la opción para **permitir peticiones desde aplicaciones no-navegador** (API / server-side).
 
-# 3. No se encuentran tarjetas
-Info: "Found 0 cards due tomorrow"
-Solución: Verificar datos de prueba en base de datos
-```
+**3. Revisar cada ejecución**  
+- `GET /api/notifications/job-history?limit=20`: ves `cards_found`, `emails_sent`, `errors`, `error_message`.  
+- `GET /api/notifications/logs?job_run_id=<run_id>`: ves cada notificación con `status` (sent/failed) y `error_message` si falló.
 
 ### Debug Mode
 

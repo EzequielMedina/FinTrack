@@ -81,6 +81,10 @@ export interface UpdateCardRequest {
   expirationYear?: number;
   nickname?: string;
   isDefault?: boolean;
+  /** Límite de crédito (tarjetas de crédito); enviar para no perderlo al editar */
+  creditLimit?: number;
+  /** Fecha de vencimiento del pago (YYYY-MM-DD); enviar para actualizarla */
+  dueDate?: string;
 }
 
 export interface CardValidationError {

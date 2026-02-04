@@ -183,11 +183,20 @@ export class CardFormComponent implements OnInit, OnDestroy {
       expirationMonth: card.expirationMonth,
       expirationYear: card.expirationYear,
       nickname: card.nickname,
-      dueDate: card.dueDate ? new Date(card.dueDate) : null // Convertir a Date object
+      creditLimit: card.creditLimit ?? '',
+      dueDate: card.dueDate ? this.parseDateLocal(card.dueDate) : null
     });
 
-    // Para edición, no necesitamos validadores de número de tarjeta y CVV
-    // ya que estos campos no se muestran en modo edición
+    // Asegurar validadores de crédito según tipo (para que creditLimit sea requerido si es crédito)
+    const creditLimitControl = this.cardForm.get('creditLimit');
+    if (creditLimitControl && card.cardType === CardType.CREDIT) {
+      creditLimitControl.setValidators([
+        Validators.required,
+        Validators.min(100),
+        Validators.max(10000000000)
+      ]);
+      creditLimitControl.updateValueAndValidity();
+    }
   }
 
   private setupFormValidation(): void {
@@ -326,11 +335,10 @@ export class CardFormComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Formatear dueDate si se proporciona
+    // Formatear dueDate en hora local para evitar día anterior por UTC
     let dueDate: string | undefined;
     if (formData.dueDate && formData.cardType === CardType.CREDIT) {
-      const selectedDate = new Date(formData.dueDate);
-      dueDate = selectedDate.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+      dueDate = this.formatDateLocal(new Date(formData.dueDate));
     }
 
     const request: CreateCardRequest = {
@@ -373,12 +381,27 @@ export class CardFormComponent implements OnInit, OnDestroy {
   private updateCard(formData: CardFormData): void {
     if (!this.data.card) return;
 
+    let dueDateStr: string | undefined;
+    if (formData.dueDate && formData.cardType === CardType.CREDIT) {
+      dueDateStr = this.formatDateLocal(new Date(formData.dueDate));
+    }
+
     const request: UpdateCardRequest = {
       holderName: formData.holderName,
       expirationMonth: formData.expirationMonth,
       expirationYear: formData.expirationYear,
       nickname: formData.nickname
     };
+
+    if (formData.cardType === CardType.CREDIT) {
+      const rawLimit = formData.creditLimit;
+      if (rawLimit !== undefined && rawLimit !== null && String(rawLimit).trim() !== '') {
+        request.creditLimit = Number(formData.creditLimit);
+      } else if (this.data.card.creditLimit != null) {
+        request.creditLimit = this.data.card.creditLimit;
+      }
+      if (dueDateStr) request.dueDate = dueDateStr;
+    }
 
     this.cardService.updateCard(this.data.card.accountId || this.data.card.id, this.data.card.id, request).subscribe({
       next: (card) => {
@@ -462,5 +485,20 @@ export class CardFormComponent implements OnInit, OnDestroy {
     };
     
     return names[brand];
+  }
+
+  /** Formatea Date a YYYY-MM-DD en hora local (evita día anterior por UTC). */
+  private formatDateLocal(d: Date): string {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+
+  /** Parsea YYYY-MM-DD (o ISO con hora) como fecha local para el datepicker. */
+  private parseDateLocal(iso: string): Date {
+    const dateOnly = iso.slice(0, 10);
+    const [y, m, d] = dateOnly.split('-').map(Number);
+    return new Date(y, (m ?? 1) - 1, d ?? 1);
   }
 }

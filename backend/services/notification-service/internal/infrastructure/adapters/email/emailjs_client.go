@@ -92,7 +92,6 @@ func (c *EmailJSClient) buildEmailHTML(notification *entities.CardDueNotificatio
 
 	// Solo el contenido interno para que el template de EmailJS maneje la estructura externa
 	html := fmt.Sprintf(`
-		<h2 style="color: #333;">Hola %s, tu tarjeta vence mañana 📅</h2>
 		<div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
 			<h3 style="color: #667eea; margin-top: 0;">%s - %s (****%s)</h3>
 			<p style="font-size: 16px; color: #333; margin: 15px 0;">
@@ -106,7 +105,6 @@ func (c *EmailJSClient) buildEmailHTML(notification *entities.CardDueNotificatio
 				</p>
 			</div>
 		</div>`,
-		notification.UserName,
 		notification.CardName,
 		notification.BankName,
 		notification.LastFour,

@@ -25,6 +25,8 @@ export class AccountReportComponent implements OnInit {
   error: string | null = null;
   reportData: AccountReport | null = null;
   downloadingPDF = false;
+  startDate = '';
+  endDate = '';
 
   constructor(
     private reportService: ReportService,
@@ -32,6 +34,20 @@ export class AccountReportComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    const now = new Date();
+    this.startDate = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+    this.endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
+    this.loadReport();
+  }
+
+  applyFilters(): void {
+    this.loadReport();
+  }
+
+  resetFilters(): void {
+    const now = new Date();
+    this.startDate = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+    this.endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
     this.loadReport();
   }
 
