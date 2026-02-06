@@ -564,6 +564,13 @@ func (h *Handler) CancelInstallmentPlan(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	// Use plan ID from URL when not provided in body
+	if req.PlanID == "" {
+		req.PlanID = planID
+	}
+	if req.Reason == "" {
+		req.Reason = "Cancelado por el usuario"
+	}
 
 	// Get user ID from context
 	userID := c.GetString("user_id")
@@ -575,7 +582,7 @@ func (h *Handler) CancelInstallmentPlan(c *gin.Context) {
 		}
 	}
 
-	// Cancel installment plan
+	// Cancel installment plan (planID from URL is the source of truth)
 	plan, err := h.installmentService.CancelInstallmentPlan(planID, req.Reason, userID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

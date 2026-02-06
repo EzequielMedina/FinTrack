@@ -393,3 +393,53 @@ body {
     font-size: var(--text-xl);
   }
 }
+
+/* Diálogos de confirmación: mismo estilo que la página */
+.fintrack-confirm-dialog {
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-md) !important;
+  border: 1px solid var(--border-light);
+}
+.fintrack-confirm-dialog .mat-mdc-dialog-container {
+  padding: var(--space-6) !important;
+  background: var(--bg-primary);
+  border-radius: var(--radius-lg);
+}
+
+/* Panel del mat-select en modal de pago de cuotas: opciones con espacio y sin concatenar */
+.installment-payment-select-panel .mat-mdc-option {
+  min-height: 48px;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.installment-payment-select-panel .mat-mdc-option .payment-method-option {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 10px 0;
+  gap: 4px;
+  width: 100%;
+  white-space: normal;
+  line-height: 1.4;
+}
+
+.installment-payment-select-panel .mat-mdc-option .payment-method-option .method-label {
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.installment-payment-select-panel .mat-mdc-option .payment-method-option .method-description {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* Cuenta: una sola línea "Nombre · Saldo" */
+.installment-payment-select-panel .mat-mdc-option .account-option-line {
+  display: block;
+  font-size: 14px;
+  padding: 2px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

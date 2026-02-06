@@ -44,12 +44,8 @@ export class TransactionReportComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const currentUser = this.authService.getCurrentUser();
-    if (currentUser) {
-      this.userId = currentUser.id;
-      this.initializeDates();
-      this.loadReport();
-    }
+    this.initializeDates();
+    this.loadReport();
   }
 
   initializeDates(): void {
@@ -61,7 +57,12 @@ export class TransactionReportComponent implements OnInit {
   }
 
   loadReport(): void {
-    if (!this.userId) return;
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser?.id) {
+      this.error = 'Usuario no autenticado. Inicia sesión para ver el reporte.';
+      return;
+    }
+    this.userId = currentUser.id;
 
     this.isLoading = true;
     this.error = '';

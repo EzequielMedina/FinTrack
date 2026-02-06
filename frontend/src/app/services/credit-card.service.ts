@@ -57,12 +57,12 @@ export class CreditCardService {
    * Make a charge to a credit card (with optional installments)
    */
   charge(cardId: string, chargeData: CreditCardChargeRequest): Observable<CreditCardBalanceResponse | ChargeWithInstallmentsResponse> {
-    // If installments are requested, use the installment service
-    if (chargeData.installments && chargeData.installments.count > 1) {
+    // Si hay cuotas (1 o más), crear plan de cuotas para que aparezca en "Planes de cuotas"
+    if (chargeData.installments && chargeData.installments.count >= 1) {
       return this.chargeWithInstallments(cardId, chargeData);
     }
 
-    // Regular charge without installments
+    // Cargo simple sin plan de cuotas
     return this.http.post<any>(`${this.apiUrl}/${cardId}/charge`, chargeData).pipe(
       map(response => this.mapToCreditCardBalanceResponse(response)),
       catchError(error => {

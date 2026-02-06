@@ -31,15 +31,7 @@
                 </mat-option>
               } @else {
                 @for (account of availableAccounts(); track account.id) {
-                  <mat-option [value]="account.id">
-                    <div class="account-option">
-                      <span class="account-name">{{ account.name }}</span>
-                      <span class="account-details">
-                        {{ account.accountType | titlecase }} - {{ account.currency }} 
-                        ({{ account.balance | currency:'':'' }})
-                      </span>
-                    </div>
-                  </mat-option>
+                  <mat-option [value]="account.id">{{ account.name }}</mat-option>
                 }
               }
             }

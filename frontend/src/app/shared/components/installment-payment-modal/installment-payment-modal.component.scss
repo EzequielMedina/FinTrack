@@ -271,71 +271,57 @@
       .form-row {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 16px;
-        margin-bottom: 16px;
+        gap: 20px;
+        margin-bottom: 20px;
 
         @media (max-width: 600px) {
           grid-template-columns: 1fr;
+          gap: 16px;
+          margin-bottom: 16px;
         }
+      }
+
+      .form-row-single {
+        grid-template-columns: 1fr;
+        margin-bottom: 12px;
       }
 
       .form-field {
         width: 100%;
+        margin-bottom: 4px;
 
         &.full-width {
           grid-column: 1 / -1;
         }
       }
 
-      // Payment method option styling
+      // Payment method option styling – separación clara entre opciones
       .payment-method-option {
         display: flex;
         flex-direction: column;
         align-items: flex-start;
+        padding: 10px 0;
+        gap: 4px;
 
         .method-label {
           font-weight: 500;
-          margin-bottom: 2px;
+          font-size: 14px;
         }
 
         .method-description {
           font-size: 12px;
           color: rgba(0, 0, 0, 0.6);
+          line-height: 1.3;
         }
       }
 
-      // Account option styling
-      .account-option {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        width: 100%;
-        padding: 8px 0;
-
-        .account-info {
-          display: flex;
-          flex-direction: column;
-
-          .account-name {
-            font-weight: 500;
-            font-size: 14px;
-          }
-
-          .account-type {
-            font-size: 12px;
-            color: rgba(0, 0, 0, 0.6);
-          }
-        }
-
-        .account-balance {
-          text-align: right;
-
-          .balance-label {
-            font-size: 13px;
-            font-weight: 500;
-            color: #4caf50;
-          }
-        }
+      // Cuenta: una sola línea "Nombre · Saldo"
+      .account-option-line {
+        display: block;
+        font-size: 14px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
       // Payment validation styling
@@ -350,6 +336,65 @@
           margin: 0;
           font-size: 14px;
         }
+      }
+    }
+  }
+
+  .actions-card {
+    margin-top: 0;
+
+    mat-card-content {
+      padding: var(--space-4) var(--space-6);
+    }
+  }
+
+  .actions-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+  }
+
+  .payment-total {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-2);
+    flex: 1;
+    min-width: 0;
+
+    .total-label {
+      font-size: var(--text-sm);
+      color: var(--text-secondary);
+    }
+
+    .total-amount {
+      font-size: var(--text-xl);
+      font-weight: 700;
+      color: var(--accent-600);
+      white-space: nowrap;
+    }
+
+    &.empty .total-label {
+      font-style: italic;
+      color: var(--text-tertiary);
+    }
+  }
+
+  .actions-buttons {
+    display: flex;
+    gap: var(--space-3);
+    align-items: center;
+
+    .pay-button {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      min-width: 140px;
+      justify-content: center;
+
+      mat-spinner {
+        margin-right: var(--space-2);
       }
     }
   }
@@ -466,14 +511,18 @@ mat-card-title {
       }
     }
 
-    .modal-actions {
+    .actions-inner {
       flex-direction: column;
-      gap: 12px;
       align-items: stretch;
+      text-align: center;
+    }
 
-      .action-buttons {
-        justify-content: center;
-      }
+    .payment-total {
+      justify-content: center;
+    }
+
+    .actions-buttons {
+      justify-content: center;
     }
   }
 }

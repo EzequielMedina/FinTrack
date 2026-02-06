@@ -16,6 +16,7 @@ import { Card, CardType, CardStatus, AccountsListResponse } from '../../models';
 import { CardListComponent } from './card-list/card-list.component';
 import { CardFormComponent } from './card-form/card-form.component';
 import { CardDetailComponent } from './card-detail/card-detail.component';
+import { ConfirmDialogComponent, ConfirmDialogData } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-cards',
@@ -163,22 +164,36 @@ export class CardsComponent implements OnInit {
   }
 
   onDeleteCard(card: Card): void {
-    if (confirm(`¿Estás seguro de que deseas eliminar la tarjeta terminada en ${card.lastFourDigits}?`)) {
-      this.cardService.deleteCard(card.accountId || card.id, card.id).subscribe({
-        next: () => {
-          this.loadUserCards();
-          this.snackBar.open('Tarjeta eliminada exitosamente', 'Cerrar', {
-            duration: 3000
-          });
-        },
-        error: (error) => {
-          console.error('Error deleting card:', error);
-          this.snackBar.open('Error al eliminar la tarjeta', 'Cerrar', {
-            duration: 3000
-          });
-        }
-      });
-    }
+    const dialogData: ConfirmDialogData = {
+      title: 'Eliminar tarjeta',
+      message: `¿Estás seguro de que deseas eliminar la tarjeta terminada en ${card.lastFourDigits}${card.nickname ? ' (' + card.nickname + ')' : ''}? Esta acción no se puede deshacer.`,
+      confirmText: 'Sí, eliminar',
+      cancelText: 'No, conservar',
+      type: 'warn'
+    };
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '420px',
+      data: dialogData,
+      panelClass: 'fintrack-confirm-dialog'
+    });
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (confirmed) {
+        this.cardService.deleteCard(card.accountId || card.id, card.id).subscribe({
+          next: () => {
+            this.loadUserCards();
+            this.snackBar.open('Tarjeta eliminada exitosamente', 'Cerrar', {
+              duration: 3000
+            });
+          },
+          error: (error) => {
+            console.error('Error deleting card:', error);
+            this.snackBar.open('Error al eliminar la tarjeta', 'Cerrar', {
+              duration: 3000
+            });
+          }
+        });
+      }
+    });
   }
 
   onSetDefaultCard(card: Card): void {

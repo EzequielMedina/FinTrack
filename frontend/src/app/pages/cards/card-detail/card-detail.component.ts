@@ -22,6 +22,7 @@ import {
   InstallmentPlanDetailModalComponent
 } from '../../../shared/components';
 import { InstallmentPaymentModalComponent } from '../../../shared/components/installment-payment-modal/installment-payment-modal.component';
+import { ConfirmDialogComponent, ConfirmDialogData } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { DateOnlyPipe } from '../../../shared/pipes/date-only.pipe';
 import type { 
   InstallmentCalculatorResult,
@@ -401,25 +402,33 @@ export class CardDetailComponent implements OnInit {
   }
 
   cancelInstallmentPlan(plan: InstallmentPlan): void {
-    // Mostrar confirmación antes de cancelar
-    const confirmed = confirm(
-      `¿Estás seguro de que deseas cancelar el plan de cuotas "${plan.description || 'Compra en cuotas'}"?\n\n` +
-      `Esto cancelará todas las cuotas pendientes por un total de $${plan.remainingAmount.toLocaleString()}.`
-    );
-    
-    if (confirmed) {
-      this.installmentService.cancelInstallmentPlan(plan.id, 'Cancelado por el usuario').subscribe({
-        next: () => {
-          this.showSuccessMessage('Plan de cuotas cancelado exitosamente');
-          this.onRefreshInstallmentPlans(); // Refrescar la lista
-          this.loadCardBalance(); // Refrescar el balance
-        },
-        error: (error: any) => {
-          console.error('Error canceling installment plan:', error);
-          this.showErrorMessage('Error al cancelar el plan de cuotas');
-        }
-      });
-    }
+    const dialogData: ConfirmDialogData = {
+      title: 'Cancelar plan de cuotas',
+      message: `¿Estás seguro de que deseas cancelar el plan "${plan.description || 'Compra en cuotas'}"? Esto cancelará todas las cuotas pendientes por un total de $${plan.remainingAmount.toLocaleString()}.`,
+      confirmText: 'Sí, cancelar plan',
+      cancelText: 'No, volver',
+      type: 'warn'
+    };
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '420px',
+      data: dialogData,
+      panelClass: 'fintrack-confirm-dialog'
+    });
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (confirmed) {
+        this.installmentService.cancelInstallmentPlan(plan.id, 'Cancelado por el usuario').subscribe({
+          next: () => {
+            this.showSuccessMessage('Plan de cuotas cancelado exitosamente');
+            this.onRefreshInstallmentPlans();
+            this.loadCardBalance();
+          },
+          error: (error: any) => {
+            console.error('Error canceling installment plan:', error);
+            this.showErrorMessage('Error al cancelar el plan de cuotas');
+          }
+        });
+      }
+    });
   }
 
   private showSuccessMessage(message: string): void {

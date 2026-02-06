@@ -212,11 +212,12 @@ type InstallmentSummaryData struct {
 	OverdueInstallmentsCount int     `json:"overdue_installments_count"`
 }
 
-// CancelInstallmentPlanRequest represents request to cancel an installment plan
+// CancelInstallmentPlanRequest represents request to cancel an installment plan.
+// PlanID can come from the URL path when not sent in body.
 type CancelInstallmentPlanRequest struct {
-	PlanID      string `json:"plan_id" binding:"required"`
+	PlanID      string `json:"plan_id"` // Optional in body; handler uses URL planId when empty
 	Reason      string `json:"reason" binding:"required"`
-	CancelledBy string `json:"-"` // Set by middleware
+	CancelledBy string `json:"-"`       // Set by middleware
 }
 
 // SuspendInstallmentPlanRequest represents request to suspend an installment plan

@@ -58,7 +58,7 @@
           <mat-label>Cantidad de cuotas</mat-label>
           <mat-select formControlName="installmentsCount" (selectionChange)="onInstallmentsCountChange()">
             <mat-option *ngFor="let count of availableInstallments()" [value]="count">
-              {{count}} cuotas
+              {{ count }} {{ count === 1 ? 'cuota' : 'cuotas' }}
             </mat-option>
           </mat-select>
           <mat-error *ngIf="form.get('installmentsCount')?.hasError('required')">

@@ -97,6 +97,11 @@ export class InstallmentPaymentModalComponent implements OnInit {
     }
   ];
 
+  /** Métodos de pago visibles (solo transferencia bancaria) */
+  get paymentMethodsFiltered() {
+    return this.paymentMethods.filter(m => m.value === 'bank_transfer');
+  }
+
   constructor(
     private fb: FormBuilder,
     private installmentService: InstallmentService,
@@ -109,7 +114,7 @@ export class InstallmentPaymentModalComponent implements OnInit {
     this.paymentForm = this.fb.group({
       paymentMethod: ['', Validators.required],
       selectedAccount: ['', Validators.required],
-      paymentReference: ['', Validators.required],
+      paymentReference: [''],
       notes: ['']
     });
     
@@ -120,6 +125,8 @@ export class InstallmentPaymentModalComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // Pre-seleccionar transferencia bancaria (único método disponible)
+    this.paymentForm.patchValue({ paymentMethod: 'bank_transfer' });
     this.loadInstallments();
   }
 
@@ -142,12 +149,14 @@ export class InstallmentPaymentModalComponent implements OnInit {
 
   private analyzeInstallments(): void {
     const now = new Date();
-    const pendingInstallments = this.installments.filter(inst => 
-      inst.status === InstallmentStatus.PENDING || inst.status === InstallmentStatus.PARTIAL
+    const pendingInstallments = this.installments.filter(inst =>
+      inst.status === InstallmentStatus.PENDING ||
+      inst.status === InstallmentStatus.PARTIAL ||
+      inst.status === InstallmentStatus.OVERDUE
     );
 
-    // Find overdue installments
-    this.overdueInstallments = pendingInstallments.filter(inst => 
+    // Find overdue installments (vencidas: se pueden pagar igual)
+    this.overdueInstallments = pendingInstallments.filter(inst =>
       new Date(inst.due_date) < now
     ).sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime());
 
@@ -298,7 +307,11 @@ export class InstallmentPaymentModalComponent implements OnInit {
   }
 
   canSelectInstallment(installment: Installment): boolean {
-    return installment.status === InstallmentStatus.PENDING || installment.status === InstallmentStatus.PARTIAL;
+    return (
+      installment.status === InstallmentStatus.PENDING ||
+      installment.status === InstallmentStatus.PARTIAL ||
+      installment.status === InstallmentStatus.OVERDUE
+    );
   }
 
   getInstallmentStatusColor(status: string): string {
@@ -402,7 +415,12 @@ export class InstallmentPaymentModalComponent implements OnInit {
         installment_id: installmentId,
         amount: installment.remaining_amount,
         payment_method: formValue.paymentMethod,
-        payment_reference: `${formValue.paymentReference}-${installment.installment_number}`,
+        payment_reference: (() => {
+          const base = formValue.paymentReference?.trim()
+            ? formValue.paymentReference.trim().replace(/\s+/g, '-')
+            : 'Pago-cuota';
+          return `${base}-${installment.installment_number}`;
+        })(),
         notes: formValue.notes || '',
         // Add account information - use string values directly
         account_id: selectedAccount.id,
@@ -457,5 +475,47 @@ export class InstallmentPaymentModalComponent implements OnInit {
 
   trackByInstallmentId(index: number, installment: Installment): string {
     return installment.id;
+  }
+
+  /** Etiqueta en español del tipo de cuenta para los desplegables */
+  getAccountTypeLabel(accountType: string): string {
+    const labels: Record<string, string> = {
+      credit: 'Tarjeta de Crédito',
+      debit: 'Tarjeta de Débito',
+      checking: 'Cuenta Corriente',
+      savings: 'Cuenta de Ahorros',
+      bank_account: 'Cuenta Bancaria',
+      wallet: 'Billetera Virtual'
+    };
+    return labels[(accountType || '').toLowerCase()] || (accountType || '').toString();
+  }
+
+  /** Texto del método de pago para el trigger del select (evita concatenación) */
+  getPaymentMethodLabel(value: string): string {
+    if (!value) return '';
+    const method = this.paymentMethods.find(m => m.value === value);
+    return method ? method.label : value;
+  }
+
+  /** Texto de la cuenta seleccionada para el trigger del select: "Nombre · Saldo" */
+  getSelectedAccountDisplay(): string {
+    const id = this.paymentForm.get('selectedAccount')?.value;
+    if (!id) return '';
+    const account = this.availableAccounts.find(a => a.id === id);
+    if (!account) return '';
+    const isCredit = this.paymentForm.get('paymentMethod')?.value === 'credit_card';
+    const amount = isCredit
+      ? (account.creditLimit || 0) - (account.balance || 0)
+      : (account.balance || 0);
+    return `${account.name} · ${amount.toLocaleString('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 2 })}`;
+  }
+
+  /** Saldo o disponible en una línea para la opción de cuenta */
+  getAccountDisplayLine(account: any): string {
+    const isCredit = this.paymentForm.get('paymentMethod')?.value === 'credit_card';
+    const amount = isCredit
+      ? (account.creditLimit || 0) - (account.balance || 0)
+      : (account.balance || 0);
+    return `${account.name} · ${amount.toLocaleString('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 2 })}`;
   }
 }

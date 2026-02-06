@@ -88,8 +88,8 @@
         <!-- Planes de Cuotas para Tarjetas de Crédito -->
         <mat-card *ngIf="card.cardType === CardType.CREDIT" class="operation-card">
           <mat-card-header>
-            <mat-card-title>Mis Planes de Cuotas Activos</mat-card-title>
-            <mat-card-subtitle>Gestiona tus compras en cuotas activas</mat-card-subtitle>
+            <mat-card-title>Mis Planes de Cuotas</mat-card-title>
+            <mat-card-subtitle>Activos y completados (incluye los que ya pagaste)</mat-card-subtitle>
             <button 
               mat-icon-button 
               (click)="onRefreshInstallmentPlans()"
@@ -104,7 +104,6 @@
               [showCardInfo]="false"
               [maxPlansToShow]="10"
               [showPagination]="true"
-              [statusFilter]="'active'"
               (planAction)="onInstallmentPlanAction($event)"
               (plansLoaded)="onInstallmentPlansLoaded($event)">
             </app-installment-plans-list>

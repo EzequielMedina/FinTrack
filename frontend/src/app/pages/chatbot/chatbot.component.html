@@ -30,20 +30,6 @@
           <div class="message-content">
             <p class="message-text">{{ msg.message }}</p>
           </div>
-          
-          <!-- Metadata (solo para mensajes del asistente) -->
-          <div class="message-meta" *ngIf="msg.role === 'assistant' && (msg.inferredContext || msg.inferredPeriod)">
-            <mat-chip-set class="meta-chips">
-              <mat-chip *ngIf="msg.inferredPeriod" class="period-chip">
-                <mat-icon>calendar_today</mat-icon>
-                {{ msg.inferredPeriod }}
-              </mat-chip>
-              <mat-chip *ngIf="msg.inferredContext" class="context-chip">
-                <mat-icon>category</mat-icon>
-                {{ msg.inferredContext }}
-              </mat-chip>
-            </mat-chip-set>
-          </div>
 
           <!-- Sugerencias Rápidas -->
           <div class="quick-suggestions" *ngIf="msg.quickSuggestions && msg.quickSuggestions.length > 0">

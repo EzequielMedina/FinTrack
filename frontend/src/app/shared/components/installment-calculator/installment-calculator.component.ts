@@ -67,7 +67,7 @@ export class InstallmentCalculatorComponent implements OnInit, OnChanges {
   preview = signal<InstallmentPreview | null>(null);
   isCalculating = signal(false);
   error = signal<string | null>(null);
-  availableInstallments = signal([3, 6, 9, 12, 15, 18, 21, 24]);
+  availableInstallments = signal([1, 2, 3, 6, 9, 12, 15, 18, 21, 24]);
 
   // Table columns for preview
   displayedColumns = ['installmentNumber', 'dueDate', 'amount', 'principal', 'interest', 'fee'];

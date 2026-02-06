@@ -358,9 +358,16 @@ func (c *Card) GetAvailableBalance() float64 {
 	if c.CardType == CardTypeDebit {
 		// For debit cards, available balance is the account balance
 		return c.Account.Balance
-	} else if c.CardType == CardTypeCredit && c.CreditLimit != nil {
-		// For credit cards, available balance is credit limit minus debt
-		return *c.CreditLimit - c.Balance
+	}
+	if c.CardType == CardTypeCredit {
+		// For credit cards, available = credit limit minus debt; fallback to account limit if card limit not set
+		limit := c.CreditLimit
+		if limit == nil && c.Account.CreditLimit != nil {
+			limit = c.Account.CreditLimit
+		}
+		if limit != nil {
+			return *limit - c.Balance
+		}
 	}
 	return 0
 }

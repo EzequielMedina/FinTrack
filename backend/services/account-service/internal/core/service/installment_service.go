@@ -232,7 +232,7 @@ func (s *InstallmentService) PayInstallment(req *carddto.PayInstallmentRequest) 
 			"paymentAccountId":   req.AccountID,
 			"paymentAccountType": req.AccountType,
 			"notes":              req.Notes,
-			"recordOnly":         true, // Balance already managed by Account Service for installments
+			"recordOnly":         false, // IMPORTANTE: transaction-service debe descontar el saldo de la cuenta
 		},
 	}
 

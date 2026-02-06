@@ -193,8 +193,9 @@
             <div class="form-row">
               <mat-form-field appearance="outline" class="form-field">
                 <mat-label>Método de Pago</mat-label>
-                <mat-select formControlName="paymentMethod" required>
-                  <mat-option *ngFor="let method of paymentMethods" [value]="method.value">
+                <mat-select formControlName="paymentMethod" required panelClass="installment-payment-select-panel">
+                  <mat-select-trigger>{{ getPaymentMethodLabel(paymentForm.get('paymentMethod')?.value) }}</mat-select-trigger>
+                  <mat-option *ngFor="let method of paymentMethodsFiltered" [value]="method.value">
                     <div class="payment-method-option">
                       <span class="method-label">{{ method.label }}</span>
                       <small class="method-description">{{ method.description }}</small>
@@ -208,26 +209,14 @@
               <!-- Account Selection -->
               <mat-form-field appearance="outline" class="form-field" *ngIf="paymentForm.get('paymentMethod')?.value">
                 <mat-label>Cuenta para Pago</mat-label>
-                <mat-select formControlName="selectedAccount" required>
+                <mat-select formControlName="selectedAccount" required panelClass="installment-payment-select-panel">
+                  <mat-select-trigger>{{ getSelectedAccountDisplay() }}</mat-select-trigger>
                   <mat-option value="" disabled>
                     <span *ngIf="isLoadingAccounts">🔄 Cargando cuentas...</span>
                     <span *ngIf="!isLoadingAccounts && availableAccounts.length === 0">No hay cuentas disponibles</span>
                   </mat-option>
                   <mat-option *ngFor="let account of availableAccounts" [value]="account.id">
-                    <div class="account-option">
-                      <div class="account-info">
-                        <span class="account-name">{{ account.name }}</span>
-                        <span class="account-type">({{ account.accountType | titlecase }})</span>
-                      </div>
-                      <div class="account-balance">
-                        <span *ngIf="paymentForm.get('paymentMethod')?.value === 'credit_card'" class="balance-label">
-                          Disponible: {{ ((account.creditLimit || 0) - (account.balance || 0)) | currency:'ARS':'symbol':'1.2-2' }}
-                        </span>
-                        <span *ngIf="paymentForm.get('paymentMethod')?.value !== 'credit_card'" class="balance-label">
-                          Saldo: {{ (account.balance || 0) | currency:'ARS':'symbol':'1.2-2' }}
-                        </span>
-                      </div>
-                    </div>
+                    <span class="account-option-line">{{ getAccountDisplayLine(account) }}</span>
                   </mat-option>
                 </mat-select>
                 <mat-icon matSuffix>account_balance</mat-icon>
@@ -237,12 +226,13 @@
               </mat-form-field>
             </div>
 
-            <div class="form-row">
+            <div class="form-row form-row-single">
               <mat-form-field appearance="outline" class="form-field">
-                <mat-label>Referencia de Pago</mat-label>
-                <input matInput formControlName="paymentReference" required 
-                       placeholder="Ej: Transferencia #123456">
+                <mat-label>Referencia de Pago (opcional)</mat-label>
+                <input matInput formControlName="paymentReference"
+                       placeholder="Ej: número de transferencia u operación. Si no ingresa nada se usará «Pago-cuota-N»">
                 <mat-icon matSuffix>receipt</mat-icon>
+                <mat-hint>Opcional. Sirve para identificar el pago en tu historial</mat-hint>
               </mat-form-field>
             </div>
 
@@ -260,33 +250,36 @@
           </form>
         </mat-card-content>
       </mat-card>
+
+      <!-- Total y acciones dentro del contenido -->
+      <mat-card class="actions-card" *ngIf="!isLoading">
+        <mat-card-content>
+          <div class="actions-inner">
+            <div class="payment-total" *ngIf="selectedInstallments.size > 0">
+              <span class="total-label">{{ selectedInstallments.size }} cuota(s) · Total a pagar:</span>
+              <span class="total-amount">{{ totalToPay | currency:'ARS':'symbol':'1.2-2' }}</span>
+            </div>
+            <div class="payment-total empty" *ngIf="selectedInstallments.size === 0">
+              <span class="total-label">Selecciona cuotas para ver el total</span>
+            </div>
+            <div class="actions-buttons">
+              <button mat-button (click)="onCancel()" [disabled]="isProcessingPayment">
+                Cancelar
+              </button>
+              <button 
+                mat-raised-button 
+                color="primary" 
+                (click)="processPayment()"
+                [disabled]="selectedInstallments.size === 0 || paymentForm.invalid || isProcessingPayment || !canProcessPayment()"
+                class="pay-button">
+                <mat-spinner diameter="20" *ngIf="isProcessingPayment"></mat-spinner>
+                <mat-icon *ngIf="!isProcessingPayment">payment</mat-icon>
+                {{ isProcessingPayment ? 'Procesando...' : 'Procesar Pago' }}
+              </button>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
     </div>
   </mat-dialog-content>
-
-  <!-- Actions -->
-  <mat-dialog-actions class="modal-actions" *ngIf="!isLoading">
-    <div class="payment-summary" *ngIf="selectedInstallments.size > 0">
-      <div class="summary-text">
-        <span class="count">{{ selectedInstallments.size }} cuota(s) seleccionada(s)</span>
-        <span class="total">Total: {{ totalToPay | currency:'ARS':'symbol':'1.2-2' }}</span>
-      </div>
-    </div>
-    
-    <div class="action-buttons">
-      <button mat-button (click)="onCancel()" [disabled]="isProcessingPayment">
-        Cancelar
-      </button>
-      
-      <button 
-        mat-raised-button 
-        color="primary" 
-        (click)="processPayment()"
-        [disabled]="selectedInstallments.size === 0 || paymentForm.invalid || isProcessingPayment || !canProcessPayment()"
-        class="pay-button">
-        <mat-spinner diameter="20" *ngIf="isProcessingPayment"></mat-spinner>
-        <mat-icon *ngIf="!isProcessingPayment">payment</mat-icon>
-        {{ isProcessingPayment ? 'Procesando...' : 'Procesar Pago' }}
-      </button>
-    </div>
-  </mat-dialog-actions>
 </div>
