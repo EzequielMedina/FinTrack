@@ -1,19 +1,24 @@
 <div class="expense-income-report-container">
-  <div class="header-section">
-    <h2>Reporte de Gastos vs Ingresos</h2>
-    <div class="header-actions">
-      <button 
-        mat-raised-button 
-        color="primary"
-        class="btn-download-pdf"
-        (click)="downloadPDF()" 
-        [disabled]="downloadingPDF || loading || !reportData">
-        <mat-icon>{{ downloadingPDF ? 'hourglass_empty' : 'picture_as_pdf' }}</mat-icon>
-        <span>{{ downloadingPDF ? 'Generando PDF...' : 'Descargar PDF' }}</span>
-      </button>
-      <button class="btn-back" routerLink="/reports">← Volver a Reportes</button>
+  <!-- Header -->
+  <div class="report-header">
+    <div class="header-content">
+      <h1>💰 Reporte de Gastos vs Ingresos</h1>
+      <div class="header-actions">
+        <button 
+          mat-raised-button 
+          color="primary"
+          class="btn-download-pdf"
+          (click)="downloadPDF()" 
+          [disabled]="downloadingPDF || loading || !reportData">
+          <mat-icon>{{ downloadingPDF ? 'hourglass_empty' : 'picture_as_pdf' }}</mat-icon>
+          <span>{{ downloadingPDF ? 'Generando PDF...' : 'Descargar PDF' }}</span>
+        </button>
+        <button class="btn-back" routerLink="/reports">← Volver a Reportes</button>
+      </div>
     </div>
   </div>
+  
+  <div class="content-wrapper">
 
   <!-- Filtros (mismo estilo que reporte de transacciones) -->
   <div class="filters-card">
@@ -234,20 +239,22 @@
             <div class="pie-chart-wrapper">
               <div class="pie-chart">
                 <svg viewBox="0 0 100 100" width="300" height="300">
-                  <ng-container *ngFor="let item of getPieChartData(); let i = index">
-                    <circle
-                      *ngIf="item.percentage > 0"
-                      cx="50"
-                      cy="50"
-                      r="45"
-                      fill="transparent"
-                      [attr.stroke]="item.color"
-                      stroke-width="10"
-                      [attr.stroke-dasharray]="(item.percentage * 2.827) + ' 282.7'"
-                      [attr.stroke-dashoffset]="getPieOffset(i)"
-                      class="pie-segment"
-                    />
-                  </ng-container>
+                  <g transform="rotate(-90 50 50)">
+                    <ng-container *ngFor="let item of getPieChartData(); let i = index">
+                      <circle
+                        *ngIf="item.percentage > 0"
+                        cx="50"
+                        cy="50"
+                        r="45"
+                        fill="transparent"
+                        [attr.stroke]="item.color"
+                        stroke-width="10"
+                        [attr.stroke-dasharray]="getPieDashArray(item.percentage)"
+                        [attr.stroke-dashoffset]="getPieOffset(i)"
+                        class="pie-segment"
+                      />
+                    </ng-container>
+                  </g>
                 </svg>
               </div>
               <div class="pie-legend">
@@ -289,5 +296,6 @@
       <mat-icon>info</mat-icon>
       <p>No hay datos de categorías en este período</p>
     </div>
+  </div>
   </div>
 </div>

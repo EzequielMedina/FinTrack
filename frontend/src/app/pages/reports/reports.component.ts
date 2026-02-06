@@ -47,15 +47,16 @@ export class ReportsComponent implements OnInit {
       description: 'Análisis de flujo de efectivo y tendencias',
       icon: '💰',
       route: '/reports/expenses-income'
-    },
-    {
-      id: 'notifications',
-      title: 'Notificaciones',
-      description: 'Estadísticas de notificaciones del sistema',
-      icon: '🔔',
-      route: '/reports/notifications',
-      adminOnly: true
     }
+    // Reporte de notificaciones temporalmente deshabilitado
+    // {
+    //   id: 'notifications',
+    //   title: 'Notificaciones',
+    //   description: 'Estadísticas de notificaciones del sistema',
+    //   icon: '🔔',
+    //   route: '/reports/notifications',
+    //   adminOnly: true
+    // }
   ];
 
   constructor(
@@ -84,7 +85,7 @@ export class ReportsComponent implements OnInit {
   }
 
   getVisibleReports() {
-    return this.reports.filter(report => !report.adminOnly || this.isAdmin());
+    return this.reports.filter(report => !(report as any).adminOnly || this.isAdmin());
   }
 
   getReportIcon(emoji: string): string {

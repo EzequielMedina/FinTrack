@@ -301,13 +301,27 @@ export class ExpenseIncomeReportComponent implements OnInit {
   }
 
   getPieOffset(index: number): number {
-    if (!this.reportData?.by_category) return 70.675;
+    const circumference = 2 * Math.PI * 45; // 2 * π * r
     
-    let offset = 70.675;
-    const data = this.getPieChartData();
-    for (let i = 0; i < index; i++) {
-      offset -= data[i].percentage * 2.827;
+    if (!this.reportData?.by_category) {
+      return 0;
     }
-    return offset;
+    
+    const data = this.getPieChartData();
+    let accumulatedPercentage = 0;
+    
+    // Acumular todos los porcentajes anteriores
+    for (let i = 0; i < index; i++) {
+      accumulatedPercentage += data[i].percentage;
+    }
+    
+    // El offset negativo hace que el trazo se mueva en sentido horario
+    return -accumulatedPercentage / 100 * circumference;
+  }
+
+  getPieDashArray(percentage: number): string {
+    const circumference = 2 * Math.PI * 45;
+    const arcLength = (percentage / 100) * circumference;
+    return `${arcLength} ${circumference}`;
   }
 }

@@ -1,23 +1,24 @@
 <div class="account-report-container">
-  <mat-card>
-    <mat-card-header>
-      <mat-card-title>
-        <mat-icon>account_balance</mat-icon>
-        Reporte de Cuentas y Tarjetas
-      </mat-card-title>
+  <!-- Header -->
+  <div class="report-header">
+    <div class="header-content">
+      <h1>🏦 Reporte de Cuentas y Tarjetas</h1>
       <div class="header-actions">
         <button 
           mat-raised-button 
           color="primary"
+          class="btn-download-pdf"
           (click)="downloadPDF()" 
           [disabled]="downloadingPDF || loading || !reportData">
-          <mat-icon>picture_as_pdf</mat-icon>
+          <mat-icon>{{ downloadingPDF ? 'hourglass_empty' : 'picture_as_pdf' }}</mat-icon>
           <span>{{ downloadingPDF ? 'Generando PDF...' : 'Descargar PDF' }}</span>
         </button>
         <button class="btn-back" routerLink="/reports">← Volver a Reportes</button>
       </div>
-    </mat-card-header>
+    </div>
+  </div>
 
+  <mat-card class="main-card">
     <mat-card-content>
       <div class="filters-card">
         <h3>Filtros</h3>

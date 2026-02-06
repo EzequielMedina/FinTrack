@@ -1,6 +1,6 @@
 <div class="notification-report-container">
   <div class="header-section">
-    <h2>Reporte de Notificaciones (Admin)</h2>
+    <h2>Reporte de Notificaciones</h2>
     <div class="header-actions">
       <button 
         mat-raised-button
@@ -50,7 +50,7 @@
       <span>Período: {{ formatDate(reportData.period.start_date) }} - {{ formatDate(reportData.period.end_date) }}</span>
     </div>
 
-    <!-- Summary Section -->
+    <!-- Summary Section Simplificado -->
     <div class="summary-grid">
       <mat-card class="summary-card">
         <mat-card-header>
@@ -66,143 +66,115 @@
       <mat-card class="summary-card success-card">
         <mat-card-header>
           <mat-icon class="icon-success">check_circle</mat-icon>
-          <mat-card-title>Enviados Exitosamente</mat-card-title>
+          <mat-card-title>Exitosos</mat-card-title>
         </mat-card-header>
         <mat-card-content>
           <div class="metric-value success">{{ reportData.summary.successful_sent }}</div>
-          <div class="metric-label">{{ formatPercentage(reportData.summary.success_rate) }} tasa de éxito</div>
+          <div class="metric-label">{{ formatPercentage(reportData.summary.success_rate) }}</div>
         </mat-card-content>
       </mat-card>
 
       <mat-card class="summary-card error-card">
         <mat-card-header>
           <mat-icon class="icon-error">error</mat-icon>
-          <mat-card-title>Fallos</mat-card-title>
+          <mat-card-title>Fallidos</mat-card-title>
         </mat-card-header>
         <mat-card-content>
           <div class="metric-value error">{{ reportData.summary.failed }}</div>
-          <div class="metric-label">{{ formatPercentage(reportData.summary.failure_rate) }} tasa de fallo</div>
-        </mat-card-content>
-      </mat-card>
-
-      <mat-card class="summary-card">
-        <mat-card-header>
-          <mat-icon>email</mat-icon>
-          <mat-card-title>Promedio por Ejecución</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <div class="metric-value">{{ reportData.summary.avg_emails_per_run.toFixed(1) }}</div>
-          <div class="metric-label">emails por ejecución</div>
+          <div class="metric-label">{{ formatPercentage(reportData.summary.failure_rate) }}</div>
         </mat-card-content>
       </mat-card>
     </div>
 
-    <!-- Status Distribution -->
-    <div class="status-section" *ngIf="reportData.by_status && reportData.by_status.length > 0">
+    <!-- Gráfico de Torta Visual -->
+    <div class="chart-section">
       <h3>
         <mat-icon>pie_chart</mat-icon>
-        Distribución por Estado
+        Distribución de Resultados
       </h3>
-      <div class="status-grid">
-        <mat-card *ngFor="let status of reportData.by_status" class="status-card">
-          <mat-card-header>
-            <mat-icon [class]="getStatusClass(status.status)">
-              {{ getStatusIcon(status.status) }}
-            </mat-icon>
-            <mat-card-title>{{ getStatusLabel(status.status) }}</mat-card-title>
-          </mat-card-header>
-          <mat-card-content>
-            <div class="status-count" [class]="getStatusClass(status.status)">{{ status.count }}</div>
-            <div class="status-percentage">{{ formatPercentage(status.percentage) }}</div>
-          </mat-card-content>
-        </mat-card>
-      </div>
+      <mat-card class="chart-card">
+        <mat-card-content>
+          <div class="pie-chart-wrapper">
+            <div class="pie-chart">
+              <svg viewBox="0 0 100 100" width="250" height="250">
+                <!-- Círculo de fondo (solo si hay fallos) -->
+                <circle
+                  *ngIf="reportData.summary.failed > 0"
+                  cx="50"
+                  cy="50"
+                  r="40"
+                  fill="transparent"
+                  stroke="#F44336"
+                  stroke-width="20"
+                  class="pie-background"
+                />
+                <!-- Círculo de éxito -->
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="40"
+                  fill="transparent"
+                  stroke="#4CAF50"
+                  stroke-width="20"
+                  [attr.stroke-dasharray]="(reportData.summary.success_rate / 100 * 251.327) + ' 251.327'"
+                  stroke-dashoffset="62.832"
+                  class="pie-segment-progress"
+                />
+                <!-- Texto central -->
+                <text x="50" y="45" text-anchor="middle" class="pie-text-main">
+                  {{ formatPercentage(reportData.summary.success_rate) }}
+                </text>
+                <text x="50" y="58" text-anchor="middle" class="pie-text-label">
+                  Éxito
+                </text>
+              </svg>
+            </div>
+            <div class="chart-legend">
+              <div class="legend-item">
+                <span class="legend-dot" style="background: #4CAF50;"></span>
+                <span class="legend-label">Exitosos: {{ reportData.summary.successful_sent }}</span>
+              </div>
+              <div class="legend-item" *ngIf="reportData.summary.failed > 0">
+                <span class="legend-dot" style="background: #F44336;"></span>
+                <span class="legend-label">Fallidos: {{ reportData.summary.failed }}</span>
+              </div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
     </div>
 
-    <!-- Daily Activity -->
-    <div class="daily-section" *ngIf="reportData.by_day && reportData.by_day.length > 0">
-      <h3>
-        <mat-icon>bar_chart</mat-icon>
-        Actividad Diaria
-      </h3>
-      <div class="daily-list">
-        <div *ngFor="let day of reportData.by_day" class="daily-item">
-          <div class="day-header">
-            <span class="day-name">{{ day.day }}</span>
-            <span class="day-date">{{ formatDate(day.date) }}</span>
-          </div>
-          <div class="day-metrics">
-            <div class="metric sent">
-              <mat-icon>check</mat-icon>
-              <span class="count">{{ day.sent }}</span>
-              <span class="label">enviados</span>
-            </div>
-            <div class="metric failed">
-              <mat-icon>close</mat-icon>
-              <span class="count">{{ day.failed }}</span>
-              <span class="label">fallidos</span>
-            </div>
-            <div class="metric rate">
-              <mat-icon>percent</mat-icon>
-              <span class="count">{{ formatPercentage(day.success_rate) }}</span>
-              <span class="label">éxito</span>
-            </div>
-          </div>
-          <div class="day-progress">
-            <div class="progress-bar">
-              <div class="progress-fill success" [style.width.%]="day.success_rate"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Job Runs - Información simplificada -->
+    <!-- Últimas Ejecuciones - Solo las 3 más recientes -->
     <div class="jobs-section" *ngIf="reportData.job_runs && reportData.job_runs.length > 0">
       <h3>
         <mat-icon>history</mat-icon>
-        Últimas Ejecuciones ({{ reportData.job_runs.length }})
+        Últimas 3 Ejecuciones
       </h3>
       <div class="jobs-list">
-        <mat-card *ngFor="let job of reportData.job_runs; let i = index" class="job-card" [class]="getStatusClass(job.status)">
-          <mat-card-header>
-            <mat-icon [class]="getStatusClass(job.status)">
-              {{ getStatusIcon(job.status) }}
-            </mat-icon>
-            <mat-card-title>
-              <span class="job-number">Ejecución #{{ i + 1 }}</span>
-              <span class="status-badge" [class]="getStatusClass(job.status)">
-                {{ getStatusLabel(job.status) }}
-              </span>
-            </mat-card-title>
-          </mat-card-header>
+        <mat-card *ngFor="let job of reportData.job_runs.slice(0, 3); let i = index" class="job-card" [class]="getStatusClass(job.status)">
           <mat-card-content>
             <div class="job-summary">
-              <div class="metric-item">
-                <mat-icon>email</mat-icon>
-                <span class="value success">{{ job.emails_sent }}</span>
-                <span class="label">enviados</span>
+              <div class="job-info">
+                <mat-icon [class]="getStatusClass(job.status)">
+                  {{ getStatusIcon(job.status) }}
+                </mat-icon>
+                <span class="job-number">{{ formatDateTime(job.started_at) }}</span>
               </div>
-              <div class="metric-item" *ngIf="job.errors > 0">
-                <mat-icon>error</mat-icon>
-                <span class="value error">{{ job.errors }}</span>
-                <span class="label">fallidos</span>
+              <div class="job-stats">
+                <span class="stat-item success">
+                  ✓ {{ job.emails_sent }} enviados
+                </span>
+                <span class="stat-item error" *ngIf="job.errors > 0">
+                  ✗ {{ job.errors }} fallidos
+                </span>
               </div>
-              <div class="metric-item">
-                <mat-icon>schedule</mat-icon>
-                <span class="value">{{ formatDateTime(job.started_at) }}</span>
-              </div>
-            </div>
-            <div class="error-message" *ngIf="job.error_message">
-              <mat-icon>warning</mat-icon>
-              <span>{{ job.error_message }}</span>
             </div>
           </mat-card-content>
         </mat-card>
       </div>
     </div>
 
-    <div *ngIf="reportData.job_runs && reportData.job_runs.length === 0" class="empty-state">
+    <div *ngIf="!reportData.job_runs || reportData.job_runs.length === 0" class="empty-state">
       <mat-icon>info</mat-icon>
       <p>No hay ejecuciones de notificaciones en este período</p>
     </div>

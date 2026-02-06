@@ -1,5 +1,66 @@
 .installment-report-container {
-  padding: 20px;
+  min-height: 100vh;
+  background: var(--bg-secondary);
+  padding: var(--space-8);
+}
+
+.report-header {
+  margin-bottom: var(--space-8);
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  padding-bottom: var(--space-6);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.header-content h1 {
+  font-size: var(--text-3xl);
+  font-weight: var(--font-semibold);
+  font-family: var(--font-heading);
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.header-actions {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.btn-download-pdf {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.btn-download-pdf mat-icon {
+  margin-right: 0;
+}
+
+.btn-back {
+  padding: var(--space-3) var(--space-6);
+  background: white;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: var(--transition-base);
+  font-weight: var(--font-medium);
+  font-size: var(--text-sm);
+}
+
+.btn-back:hover {
+  background: var(--bg-secondary);
+  border-color: var(--accent-300);
+  color: var(--text-primary);
+}
+
+.content-wrapper {
   max-width: 1400px;
   margin: 0 auto;
 }
@@ -207,6 +268,118 @@
   color: #f44336;
 }
 
+/* Gráfico de Torta */
+.chart-section {
+  margin-bottom: 32px;
+}
+
+.chart-section h3 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  color: var(--text-primary, #333);
+  font-size: var(--text-xl, 1.25rem);
+  font-weight: 600;
+}
+
+.chart-card {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.pie-chart-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 60px;
+  padding: 20px;
+}
+
+.pie-chart {
+  position: relative;
+}
+
+.pie-chart svg {
+  transform: rotate(-90deg);
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.15));
+}
+
+.pie-segment {
+  transition: stroke-width 0.3s ease;
+}
+
+.pie-background {
+  opacity: 1;
+}
+
+.pie-segment-progress {
+  transition: stroke-dasharray 0.6s ease;
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+}
+
+.pie-text-main {
+  font-size: 18px;
+  font-weight: 700;
+  fill: #333;
+  transform: rotate(90deg);
+  transform-origin: 50% 50%;
+}
+
+.pie-text-label {
+  font-size: 10px;
+  font-weight: 500;
+  fill: #666;
+  transform: rotate(90deg);
+  transform-origin: 50% 50%;
+}
+
+.chart-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.legend-dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.payment-details-simple {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.payment-desc {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.payment-date {
+  font-size: 13px;
+  color: #666;
+}
+
+.payment-amount {
+  font-size: 18px;
+  font-weight: 700;
+  color: #2196F3;
+}
+
 .metric-label {
   font-size: 13px;
   color: #999;
@@ -306,41 +479,44 @@
   color: #999;
 }
 
-/* Upcoming Payments */
+/* Upcoming Payments Simplificado */
 .upcoming-section {
   margin-bottom: 32px;
 }
 
 .upcoming-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  display: flex;
+  flex-direction: column;
   gap: 12px;
 }
 
-.upcoming-item {
+.upcoming-item-simple {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   background: white;
   border: 1px solid #e0e0e0;
+  border-left: 3px solid #2196F3;
   border-radius: 8px;
-  padding: 16px;
-  transition: all 0.2s;
+  padding: 16px 20px;
+  transition: all 0.3s ease;
 }
 
-.upcoming-item:hover {
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  transform: translateY(-2px);
+.upcoming-item-simple:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateX(4px);
 }
 
-.payment-header {
+.payment-simple-info {
   display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  margin-bottom: 12px;
+  align-items: center;
+  gap: 16px;
 }
 
-.payment-header mat-icon {
-  font-size: 24px;
-  width: 24px;
-  height: 24px;
+.payment-simple-info mat-icon {
+  font-size: 28px;
+  width: 28px;
+  height: 28px;
 }
 
 .payment-header mat-icon.urgent {
@@ -561,9 +737,24 @@
     grid-template-columns: 1fr;
   }
 
-  .upcoming-list,
-  .plans-grid {
-    grid-template-columns: 1fr;
+  .pie-chart-wrapper {
+    flex-direction: column;
+    gap: 30px;
+  }
+
+  .pie-chart svg {
+    width: 200px;
+    height: 200px;
+  }
+
+  .upcoming-item-simple {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .payment-amount {
+    align-self: flex-end;
   }
 
   .overdue-item {
