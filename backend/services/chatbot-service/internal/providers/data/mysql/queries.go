@@ -393,3 +393,63 @@ func (p *DataProvider) GetExchangeRates(ctx context.Context, userID string, from
 	}
 	return res, rows.Err()
 }
+
+// GetLastIncome obtiene el último ingreso del usuario
+func (p *DataProvider) GetLastIncome(ctx context.Context, userID string) (*ports.TransactionDetail, error) {
+	q := `SELECT 
+        id, type, amount, 
+        COALESCE(merchant_name, '') as merchant_name,
+        COALESCE(description, '') as description,
+        status, created_at,
+        COALESCE(from_account_id, '') as from_account_id,
+        COALESCE(to_account_id, '') as to_account_id,
+        COALESCE(from_card_id, '') as from_card_id,
+        COALESCE(to_card_id, '') as to_card_id,
+        COALESCE(currency, 'ARS') as currency
+      FROM transactions 
+      WHERE user_id = ? 
+        AND status = 'completed'
+        AND type IN ('wallet_deposit', 'account_deposit')
+      ORDER BY created_at DESC 
+      LIMIT 1`
+
+	var t ports.TransactionDetail
+	err := p.db.QueryRowContext(ctx, q, userID).Scan(
+		&t.ID, &t.Type, &t.Amount, &t.MerchantName, &t.Description,
+		&t.Status, &t.CreatedAt, &t.FromAccountID, &t.ToAccountID, 
+		&t.FromCardID, &t.ToCardID, &t.Currency)
+	
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &t, nil
+}
+
+// GetSpendingByCardType obtiene gastos desglosados por tipo de tarjeta (crédito/débito) y cuotas
+func (p *DataProvider) GetSpendingByCardType(ctx context.Context, userID string, from, to time.Time) (ports.SpendingByCardType, error) {
+	q := `SELECT 
+        COALESCE(SUM(CASE WHEN type = 'credit_charge' THEN amount ELSE 0 END), 0) as credit_spending,
+        COALESCE(SUM(CASE WHEN type = 'debit_purchase' THEN amount ELSE 0 END), 0) as debit_spending,
+        COALESCE(SUM(CASE WHEN type = 'installment_payment' THEN amount ELSE 0 END), 0) as installment_spending
+      FROM transactions
+      WHERE user_id = ? 
+        AND status = 'completed' 
+        AND created_at BETWEEN ? AND ?`
+	
+	var credit, debit, installment sql.NullFloat64
+	err := p.db.QueryRowContext(ctx, q, userID, from, to).Scan(&credit, &debit, &installment)
+	if err != nil {
+		return ports.SpendingByCardType{}, err
+	}
+	
+	total := credit.Float64 + debit.Float64 + installment.Float64
+	return ports.SpendingByCardType{
+		Credit:      credit.Float64,
+		Debit:       debit.Float64,
+		Installment: installment.Float64,
+		Total:       total,
+	}, nil
+}

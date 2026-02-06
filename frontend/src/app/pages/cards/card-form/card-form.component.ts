@@ -193,7 +193,7 @@ export class CardFormComponent implements OnInit, OnDestroy {
       creditLimitControl.setValidators([
         Validators.required,
         Validators.min(100),
-        Validators.max(10000000000)
+        Validators.max(999999999) // Hasta 9 dígitos
       ]);
       creditLimitControl.updateValueAndValidity();
     }
@@ -246,7 +246,7 @@ export class CardFormComponent implements OnInit, OnDestroy {
           creditLimitControl.setValidators([
             Validators.required,
             Validators.min(100),
-            Validators.max(10000000000)
+            Validators.max(999999999) // Hasta 9 dígitos
           ]);
         } else {
           // Para tarjetas de débito, no se requiere límite

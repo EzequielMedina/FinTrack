@@ -77,6 +77,8 @@ func (s *ChatbotServiceImpl) HandleQuery(ctx context.Context, req ports.ChatQuer
 
 	instSummary, _ := s.data.GetInstallmentsSummary(ctx, req.UserID, req.Period.From, req.Period.To)
 	plans, _ := s.data.GetInstallmentPlans(ctx, req.UserID)
+	cardSpending, _ := s.data.GetSpendingByCardType(ctx, req.UserID, req.Period.From, req.Period.To)
+	lastIncome, _ := s.data.GetLastIncome(ctx, req.UserID)
 
 	// Contexto específico basado en el enfoque seleccionado
 	var ctxText string
@@ -92,13 +94,7 @@ func (s *ChatbotServiceImpl) HandleQuery(ctx context.Context, req ports.ChatQuer
 		debitPurchases := getVal(byType, "debit_purchase")
 		totalCardExpenses := getTotalFromByCard(byCard) + installmentPayments + creditCharges + debitPurchases
 
-		ctxText = fmt.Sprintf(`TARJETAS: %s
-GASTOS CON TARJETAS PERÍODO: $%.2f
-- Consumos directos: $%.2f
-- Pagos de cuotas: $%.2f  
-- Cargos de crédito: $%.2f
-- Compras débito: $%.2f
-GASTOS TOTALES: $%.2f | INGRESOS: $%.2f`,
+		ctxText = fmt.Sprintf(`TARJETAS: %s | GASTOS: $%.2f (Directos: $%.2f, Cuotas: $%.2f, Crédito: $%.2f, Débito: $%.2f) | TOTAL GASTOS: $%.2f | INGRESOS: $%.2f`,
 			formatCards(cardsInfo), totalCardExpenses, getTotalFromByCard(byCard),
 			installmentPayments, creditCharges, debitPurchases, totals.Expenses, totals.Incomes)
 	case "installments":
@@ -106,55 +102,81 @@ GASTOS TOTALES: $%.2f | INGRESOS: $%.2f`,
 		installmentPayments := getVal(byType, "installment_payment")
 		byMonth, _ := s.data.GetInstallmentsByMonth(ctx, req.UserID)
 
-		ctxText = fmt.Sprintf(`CUOTAS ACTIVAS: %d | VENCIDAS: %d | RESTANTE: $%.2f
-PAGOS DE CUOTAS EN PERÍODO: $%.2f
-PLANES: %s
-CUOTAS PENDIENTES POR MES: %s
-GASTOS TOTALES: $%.2f | INGRESOS: $%.2f`,
-			instSummary.Active, instSummary.Overdue, instSummary.RemainingAmount,
-			installmentPayments, formatPlans(plans), formatInstallmentsByMonth(byMonth), totals.Expenses, totals.Incomes)
+		// Si se está preguntando por un mes futuro específico, enfocar en ese mes
+		isFuturePeriod := inferredCtx.PeriodLabel == "next month" || req.Period.From.After(time.Now())
+		if isFuturePeriod {
+			targetMonth := req.Period.From.Format("2006-01")
+			monthInfo := getMonthInfo(byMonth, targetMonth)
+			if monthInfo != "" {
+				ctxText = fmt.Sprintf(`CUOTAS DEL MES CONSULTADO (%s): %s | TOTAL ACTIVAS: %d | TOTAL RESTANTE: $%.2f`,
+					formatYearMonth(targetMonth), monthInfo, instSummary.Active, instSummary.RemainingAmount)
+			} else {
+				ctxText = fmt.Sprintf(`No hay cuotas programadas para %s | TOTAL ACTIVAS: %d | TOTAL RESTANTE: $%.2f`,
+					formatYearMonth(targetMonth), instSummary.Active, instSummary.RemainingAmount)
+			}
+		} else {
+			ctxText = fmt.Sprintf(`CUOTAS: Activas: %d, Vencidas: %d, Restante: $%.2f | Pagos período: $%.2f | PLANES: %s | Por mes: %s | GASTOS: $%.2f | INGRESOS: $%.2f`,
+				instSummary.Active, instSummary.Overdue, instSummary.RemainingAmount,
+				installmentPayments, formatPlans(plans), formatInstallmentsByMonth(byMonth), totals.Expenses, totals.Incomes)
+		}
 	case "merchants":
 		topMerchants, _ := s.data.GetTopMerchants(ctx, req.UserID, req.Period.From, req.Period.To, 5)
-		ctxText = fmt.Sprintf(`TOP COMERCIOS: %s
-GASTOS: $%.2f | INGRESOS: $%.2f`,
+		ctxText = fmt.Sprintf(`TOP COMERCIOS: %s | GASTOS: $%.2f | INGRESOS: $%.2f`,
 			formatMerchants(topMerchants), totals.Expenses, totals.Incomes)
 	case "expenses":
-		byType, _ := s.data.GetByType(ctx, req.UserID, req.Period.From, req.Period.To)
-		installmentPayments := getVal(byType, "installment_payment")
-		creditCharges := getVal(byType, "credit_charge")
-		debitPurchases := getVal(byType, "debit_purchase")
-		allExpenses := totals.Expenses + installmentPayments
+		allExpenses := totals.Expenses + cardSpending.Installment
 
-		ctxText = fmt.Sprintf(`GASTOS DETALLADOS:
-- Gastos directos: $%.2f
-- Pagos de cuotas: $%.2f
-- Cargos tarjetas: $%.2f  
-- Compras débito: $%.2f
-TOTAL GASTOS: $%.2f | INGRESOS: $%.2f`,
-			totals.Expenses, installmentPayments, creditCharges, debitPurchases, allExpenses, totals.Incomes)
+		ctxText = fmt.Sprintf(`GASTOS: Crédito $%.2f, Débito $%.2f, Cuotas $%.2f, Otros $%.2f | TOTAL: $%.2f | INGRESOS: $%.2f`,
+			cardSpending.Credit, cardSpending.Debit, cardSpending.Installment, 
+			totals.Expenses, allExpenses, totals.Incomes)
 	case "income":
-		ctxText = fmt.Sprintf(`INGRESOS TOTALES: $%.2f | GASTOS: $%.2f
-PLANES ACTIVOS: %d`,
-			totals.Incomes, totals.Expenses, instSummary.Active)
+		lastIncomeInfo := "(sin ingresos)"
+		if lastIncome != nil {
+			lastIncomeInfo = fmt.Sprintf("$%.2f el %s (%s)", 
+				lastIncome.Amount, 
+				lastIncome.CreatedAt.Format("2006-01-02"), 
+				lastIncome.Description)
+		}
+		ctxText = fmt.Sprintf(`INGRESOS: $%.2f | Último: %s | GASTOS: $%.2f | Planes activos: %d`,
+			totals.Incomes, lastIncomeInfo, totals.Expenses, instSummary.Active)
 	default:
 		// Contexto general compacto - incluir cuotas como gastos y planes con fechas
-		byType, _ := s.data.GetByType(ctx, req.UserID, req.Period.From, req.Period.To)
-		installmentPayments := getVal(byType, "installment_payment")
-		allExpenses := totals.Expenses + installmentPayments
+		allExpenses := totals.Expenses + cardSpending.Installment
 		byMonth, _ := s.data.GetInstallmentsByMonth(ctx, req.UserID)
+		
+		lastIncomeInfo := "(sin ingresos)"
+		if lastIncome != nil {
+			lastIncomeInfo = fmt.Sprintf("$%.2f el %s", lastIncome.Amount, lastIncome.CreatedAt.Format("2006-01-02"))
+		}
 
-		ctxText = fmt.Sprintf(`HOY: 2025-10-15
-GASTOS TOTALES: $%.2f (directos: $%.2f + cuotas: $%.2f)
-INGRESOS: $%.2f
-PLANES ACTIVOS: %d | VENCIDOS: %d | RESTANTE: $%.2f
-CUOTAS PENDIENTES POR MES: %s
-DETALLE PLANES: %s`,
-			allExpenses, totals.Expenses, installmentPayments, totals.Incomes,
+		ctxText = fmt.Sprintf(`HOY: %s | PERÍODO: %s | GASTOS: $%.2f (crédito $%.2f, débito $%.2f, cuotas $%.2f, otros $%.2f) | INGRESOS: $%.2f | Último ingreso: %s | PLANES: Activos %d, Vencidos %d, Restante $%.2f | Por mes: %s | Detalle: %s`,
+			time.Now().Format("2006-01-02"), inferredCtx.PeriodLabel,
+			allExpenses, cardSpending.Credit, cardSpending.Debit, cardSpending.Installment, totals.Expenses,
+			totals.Incomes, lastIncomeInfo,
 			instSummary.Active, instSummary.Overdue, instSummary.RemainingAmount,
 			formatInstallmentsByMonth(byMonth), formatPlans(plans))
 	}
 
-	user = fmt.Sprintf("Pregunta: %s\nContexto:\n%s", req.Message, ctxText)
+	// Formato del período para el prompt
+	periodStr := fmt.Sprintf("desde %s hasta %s", req.Period.From.Format("2006-01-02"), req.Period.To.Format("2006-01-02"))
+	periodLabel := inferredCtx.PeriodLabel
+	if periodLabel == "yesterday" {
+		periodLabel = "ayer"
+	} else if periodLabel == "last month" {
+		periodLabel = "mes pasado"
+	} else if periodLabel == "next month" {
+		periodLabel = "próximo mes"
+	} else if periodLabel == "last week" {
+		periodLabel = "semana pasada"
+	} else if periodLabel == "today" {
+		periodLabel = "hoy"
+	} else if periodLabel == "this month" {
+		periodLabel = "este mes"
+	} else if periodLabel == "this week" {
+		periodLabel = "esta semana"
+	}
+
+	user = fmt.Sprintf("Pregunta: %s\nPeríodo consultado: %s (%s)\nContexto:\n%s", req.Message, periodLabel, periodStr, ctxText)
 
 	r, err := s.llm.Chat(ctx, system, user)
 
@@ -281,7 +303,15 @@ func formatMerchants(ms []ports.MerchantTotal) string {
 	out := make([]string, 0, n)
 	for i := 0; i < n; i++ {
 		m := ms[i]
-		out = append(out, fmt.Sprintf("%s (%.2f)", m.Merchant, m.Total))
+		// Filtrar "FinTrack Store" u otros placeholders genéricos
+		merchantName := m.Merchant
+		if merchantName == "FinTrack Store" || merchantName == "" {
+			continue
+		}
+		out = append(out, fmt.Sprintf("%s: $%.0f", merchantName, m.Total))
+	}
+	if len(out) == 0 {
+		return "(sin datos)"
 	}
 	return strings.Join(out, ", ")
 }
@@ -307,33 +337,26 @@ func formatPlans(plans []ports.InstallmentPlanInfo) string {
 		return "(sin planes)"
 	}
 	n := len(plans)
-	if n > 8 {
-		n = 8
-	} // Mostrar más planes para mejor contexto
+	if n > 5 {
+		n = 5
+	} // Limitar a 5 para más compacto
 	out := make([]string, 0, n)
 	for i := 0; i < n; i++ {
 		p := plans[i]
 		next := formatDate(p.NextDueDate)
-		created := formatDate(p.CreatedAt)
-		label := p.MerchantName
-		if strings.TrimSpace(label) == "" {
-			label = "Plan"
+		
+		// Elegir label: preferir descripción, luego merchant (excepto FinTrack Store), luego "Plan"
+		label := strings.TrimSpace(p.Description)
+		if label == "" {
+			label = strings.TrimSpace(p.MerchantName)
+			if label == "FinTrack Store" || label == "" {
+				label = "Compra"
+			}
 		}
 
-		// Formato más detallado para mejor comprensión del LLM
-		status := p.Status
-		if p.Status == "active" {
-			status = "activo"
-		}
-		if p.Status == "completed" {
-			status = "completado"
-		}
-		if p.Status == "cancelled" {
-			status = "cancelado"
-		}
-
-		out = append(out, fmt.Sprintf("[%s] %s '%s': %d cuotas, restante $%.2f, próximo vencimiento %s, creado %s, estado %s",
-			p.ID[:8], label, p.Description, p.InstallmentsCount, p.RemainingAmount, next, created, status))
+		// Formato ultra-compacto
+		out = append(out, fmt.Sprintf("%s: %d cuotas, $%.0f restante, vence %s",
+			label, p.InstallmentsCount, p.RemainingAmount, next))
 	}
 	return strings.Join(out, " | ")
 }
@@ -349,34 +372,51 @@ func formatTransactions(transactions []ports.TransactionDetail) string {
 	out := make([]string, 0, n)
 	for i := 0; i < n; i++ {
 		t := transactions[i]
-		out = append(out, fmt.Sprintf("[%s] %s: $%.2f en %s (%s) - %s",
-			t.ID[:8], t.Type, t.Amount, t.MerchantName, t.Status, t.CreatedAt.Format("2006-01-02 15:04")))
+		merchant := t.MerchantName
+		if merchant == "FinTrack Store" || merchant == "" {
+			merchant = t.Description
+		}
+		if merchant == "" {
+			merchant = "Compra"
+		}
+		out = append(out, fmt.Sprintf("%s: $%.0f en %s - %s",
+			t.Type, t.Amount, merchant, t.CreatedAt.Format("2006-01-02")))
 	}
-	return strings.Join(out, " | ")
+	return strings.Join(out, ", ")
 }
 
 func formatAccounts(accounts []ports.AccountInfo) string {
 	if len(accounts) == 0 {
 		return "(sin cuentas)"
 	}
-	out := make([]string, 0, len(accounts))
-	for _, a := range accounts {
-		out = append(out, fmt.Sprintf("[%s] %s: $%.2f %s (%s)",
-			a.ID[:8], a.AccountType, a.Balance, a.Currency, a.Status))
+	n := len(accounts)
+	if n > 5 {
+		n = 5
 	}
-	return strings.Join(out, " | ")
+	out := make([]string, 0, n)
+	for i := 0; i < n; i++ {
+		a := accounts[i]
+		out = append(out, fmt.Sprintf("%s: $%.0f %s",
+			a.AccountType, a.Balance, a.Currency))
+	}
+	return strings.Join(out, ", ")
 }
 
 func formatCards(cards []ports.CardInfo) string {
 	if len(cards) == 0 {
 		return "(sin tarjetas)"
 	}
-	out := make([]string, 0, len(cards))
-	for _, c := range cards {
-		out = append(out, fmt.Sprintf("[%s] %s ****%s (%s): límite $%.2f, deuda $%.2f (%s)",
-			c.ID[:8], c.CardBrand, c.LastFour, c.CardType, c.CreditLimit, c.CurrentDebt, c.Status))
+	n := len(cards)
+	if n > 5 {
+		n = 5
 	}
-	return strings.Join(out, " | ")
+	out := make([]string, 0, n)
+	for i := 0; i < n; i++ {
+		c := cards[i]
+		out = append(out, fmt.Sprintf("%s ****%s: límite $%.0f, deuda $%.0f",
+			c.CardBrand, c.LastFour, c.CreditLimit, c.CurrentDebt))
+	}
+	return strings.Join(out, ", ")
 }
 
 func formatExchangeRates(rates []ports.ExchangeRateInfo) string {
@@ -398,7 +438,7 @@ func formatExchangeRates(rates []ports.ExchangeRateInfo) string {
 
 func formatInstallmentsByMonth(byMonth map[string]ports.InstallmentMonthSummary) string {
 	if len(byMonth) == 0 {
-		return "(sin cuotas futuras)"
+		return "(sin cuotas)"
 	}
 
 	// Ordenar los meses
@@ -408,14 +448,26 @@ func formatInstallmentsByMonth(byMonth map[string]ports.InstallmentMonthSummary)
 	}
 	sort.Strings(months)
 
-	out := make([]string, 0, len(months))
-	for _, month := range months {
-		summary := byMonth[month]
-		// Convertir "2025-11" a "Nov 2025"
-		monthName := formatYearMonth(summary.YearMonth)
-		out = append(out, fmt.Sprintf("%s: %d cuotas por $%.2f", monthName, summary.Count, summary.Total))
+	// Limitar a 3 meses para compactar
+	n := len(months)
+	if n > 3 {
+		n = 3
 	}
-	return strings.Join(out, " | ")
+
+	out := make([]string, 0, n)
+	for i := 0; i < n; i++ {
+		summary := byMonth[months[i]]
+		monthName := formatYearMonth(summary.YearMonth)
+		out = append(out, fmt.Sprintf("%s: %d x $%.0f", monthName, summary.Count, summary.Total))
+	}
+	return strings.Join(out, ", ")
+}
+
+func getMonthInfo(byMonth map[string]ports.InstallmentMonthSummary, targetMonth string) string {
+	if summary, exists := byMonth[targetMonth]; exists {
+		return fmt.Sprintf("%d cuotas por un total de $%.2f", summary.Count, summary.Total)
+	}
+	return ""
 }
 
 func formatYearMonth(yearMonth string) string {
@@ -499,26 +551,59 @@ INSTRUCCIONES:
 3. Cuando el usuario dice "y eso?" o "¿cuál?", refiérete al mensaje anterior
 4. Sé conciso pero informativo (máximo 3-4 líneas por defecto)
 5. Si el usuario pide más detalles, entonces expándete
-6. Usa emojis moderadamente (💰 💳 📊 ✅ ❌)
-7. Formatea números con separadores: $322,000.95
-8. IMPORTANTE: Los pagos de cuotas SON GASTOS
+6. Usa emojis moderadamente (💰 💳 📊 ✅ ❌ 📈 📉)
+7. IMPORTANTE: Los pagos de cuotas SON GASTOS
+8. CRÍTICO: Cuando se proporciona un período específico (ayer, mes pasado, etc.), usa SOLO los datos de ese período
+9. Si los datos muestran $0 para un período, significa que NO HUBO MOVIMIENTOS en ese período
+
+FORMATO DE RESPUESTA (MUY COMPACTO):
+- Usa **negrita** para destacar conceptos importantes
+- Destaca montos: $X,XXX.XX
+- Usa listas con guiones (-) para enumerar
+- Usa emojis al inicio de información importante
+- USA SOLO UN SALTO DE LÍNEA (\n) entre secciones, NUNCA dos (\n\n)
+- Mantén todo lo más compacto posible
+
+EJEMPLO DE FORMATO:
+💰 **Total gastado hoy**: $1,250.00
+Desglose:
+- Tarjeta de crédito: $800.00
+- Tarjeta de débito: $450.00
+✅ Presupuesto dentro del límite.
 
 `
 
 	// Add context focus specific instructions
 	switch contextFocus {
 	case "expenses":
-		base += "ENFOQUE ACTUAL: Analiza GASTOS (incluye cuotas, compras, pagos)\n"
+		base += `ENFOQUE ACTUAL: Analiza GASTOS desglosados
+IMPORTANTE: Separa gastos por método (crédito, débito, cuotas)
+FORMATO: Usa **negrita** para conceptos, lista con (-) para desglose, emoji 💸 para gastos
+Ejemplo: "💸 **Gastos del día**: $X\nDesglose:\n- Crédito: $Y\n- Débito: $Z"
+`
 	case "income":
-		base += "ENFOQUE ACTUAL: Analiza INGRESOS (sueldos, depósitos, cobros)\n"
+		base += `ENFOQUE ACTUAL: Analiza INGRESOS
+IMPORTANTE: Incluye fecha y monto del último ingreso si está disponible
+FORMATO: Usa emoji 💰 para ingresos, **negrita** para destacar montos importantes
+Ejemplo: "💰 **Último ingreso**: $X el DD/MM\n📈 **Total este mes**: $Y"
+`
 	case "cards":
-		base += "ENFOQUE ACTUAL: Analiza TARJETAS (límites, deudas, vencimientos)\n"
+		base += `ENFOQUE ACTUAL: Analiza TARJETAS (límites, deudas, vencimientos)
+FORMATO: Usa emoji 💳 para tarjetas, lista con (-) para cada tarjeta
+`
 	case "installments":
-		base += "ENFOQUE ACTUAL: Analiza CUOTAS Y PLANES (vencimientos, montos, estados)\n"
+		base += `ENFOQUE ACTUAL: Analiza CUOTAS Y PLANES (vencimientos, montos, estados)
+FORMATO: Usa emoji 📅 para fechas, lista con (-) para cada plan
+`
 	case "merchants":
-		base += "ENFOQUE ACTUAL: Analiza COMERCIOS (donde se gasta más)\n"
+		base += `ENFOQUE ACTUAL: Analiza COMERCIOS (donde se gasta más)
+FORMATO: Usa lista ordenada con (-) para ranking de comercios
+`
 	default:
-		base += "ENFOQUE ACTUAL: Información general financiera\n"
+		base += `ENFOQUE ACTUAL: Información general financiera
+IMPORTANTE: Desglosar gastos por método (crédito/débito/cuotas) cuando sea relevante
+FORMATO: Estructura la respuesta con emojis, listas y **negritas**, todo MUY COMPACTO
+`
 	}
 
 	// Add last 3 messages from history for context

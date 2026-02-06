@@ -28,6 +28,8 @@ type DataProvider interface {
 	GetInstallmentsByMonth(ctx context.Context, userID string) (map[string]InstallmentMonthSummary, error)
 	// Información detallada adicional
 	GetRecentTransactions(ctx context.Context, userID string, from, to time.Time, limit int) ([]TransactionDetail, error)
+	GetLastIncome(ctx context.Context, userID string) (*TransactionDetail, error)
+	GetSpendingByCardType(ctx context.Context, userID string, from, to time.Time) (SpendingByCardType, error)
 	GetAccountsInfo(ctx context.Context, userID string) ([]AccountInfo, error)
 	GetCardsInfo(ctx context.Context, userID string) ([]CardInfo, error)
 	GetExchangeRates(ctx context.Context, userID string, from, to time.Time) ([]ExchangeRateInfo, error)
@@ -109,6 +111,14 @@ type ChartDataset struct {
 type Totals struct {
 	Expenses float64
 	Incomes  float64
+}
+
+// Gastos desglosados por tipo de tarjeta
+type SpendingByCardType struct {
+	Credit      float64
+	Debit       float64
+	Installment float64
+	Total       float64
 }
 
 type MerchantTotal struct {

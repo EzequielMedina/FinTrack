@@ -142,10 +142,11 @@
                 type="number"
                 placeholder="5000"
                 min="100"
+                max="999999999"
                 step="100"
                 required>
               <span matTextPrefix>$&nbsp;</span>
-              <mat-hint>Límite mínimo: $100</mat-hint>
+              <mat-hint>Límite: $100 a $999,999,999</mat-hint>
               <mat-error>{{ getFieldError('creditLimit') }}</mat-error>
             </mat-form-field>
           }

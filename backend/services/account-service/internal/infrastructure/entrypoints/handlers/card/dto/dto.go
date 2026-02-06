@@ -80,7 +80,7 @@ type CreateCardRequest struct {
 	IsDefault       bool   `json:"is_default,omitempty"`
 
 	// Credit card specific fields
-	CreditLimit *float64    `json:"credit_limit,omitempty" binding:"omitempty,min=0"`
+	CreditLimit *float64    `json:"credit_limit,omitempty" binding:"omitempty,min=0,max=999999999"` // Hasta 9 dígitos
 	ClosingDate *CustomDate `json:"closing_date,omitempty"`
 	DueDate     *CustomDate `json:"due_date,omitempty"`
 
@@ -96,7 +96,7 @@ type UpdateCardRequest struct {
 	ExpirationYear  int         `json:"expiration_year,omitempty" binding:"omitempty,min=2020"` // Allow reasonable past years for testing
 	Nickname        string      `json:"nickname,omitempty" binding:"max=50"`
 	IsDefault       *bool       `json:"is_default,omitempty"`
-	CreditLimit     *float64    `json:"credit_limit,omitempty" binding:"omitempty,min=0,max=1000000"` // Allow credit limit updates
+	CreditLimit     *float64    `json:"credit_limit,omitempty" binding:"omitempty,min=0,max=999999999"` // Allow credit limit updates (hasta 9 dígitos)
 	DueDate         *CustomDate `json:"due_date,omitempty"`                                          // Payment due date (credit cards)
 }
 

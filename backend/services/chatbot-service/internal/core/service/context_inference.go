@@ -40,8 +40,8 @@ func InferContextFromMessage(message string, prevContext *ports.InferredContext)
 		periodDetected = true
 	}
 
-	// Yesterday
-	if !periodDetected && containsAny(msgLower, "ayer", "yesterday") {
+	// Yesterday - more variations
+	if !periodDetected && containsAny(msgLower, "ayer", "yesterday", "el día de ayer", "día anterior") {
 		result.Period = getPeriodYesterday(now, loc)
 		result.PeriodLabel = "yesterday"
 		result.DetectedKeywords = append(result.DetectedKeywords, "period:yesterday")
@@ -56,8 +56,8 @@ func InferContextFromMessage(message string, prevContext *ports.InferredContext)
 		periodDetected = true
 	}
 
-	// Last week
-	if !periodDetected && containsAny(msgLower, "semana pasada", "last week", "última semana") {
+	// Last week - more variations
+	if !periodDetected && containsAny(msgLower, "semana pasada", "last week", "última semana", "la semana pasada", "en la semana pasada", "semana anterior") {
 		result.Period = getPeriodLastWeek(now, loc)
 		result.PeriodLabel = "last week"
 		result.DetectedKeywords = append(result.DetectedKeywords, "period:last_week")
@@ -72,11 +72,19 @@ func InferContextFromMessage(message string, prevContext *ports.InferredContext)
 		periodDetected = true
 	}
 
-	// Last month
-	if !periodDetected && containsAny(msgLower, "mes pasado", "last month", "último mes") {
+	// Last month - more variations
+	if !periodDetected && containsAny(msgLower, "mes pasado", "last month", "último mes", "el mes pasado", "del mes pasado", "en el mes pasado", "mes anterior") {
 		result.Period = getPeriodLastMonth(now, loc)
 		result.PeriodLabel = "last month"
 		result.DetectedKeywords = append(result.DetectedKeywords, "period:last_month")
+		periodDetected = true
+	}
+
+	// Next month - detectar mes que viene / próximo mes
+	if !periodDetected && containsAny(msgLower, "mes que viene", "próximo mes", "proximo mes", "siguiente mes", "next month", "el mes que viene", "el próximo mes", "del mes que viene", "del próximo mes") {
+		result.Period = getPeriodNextMonth(now, loc)
+		result.PeriodLabel = "next month"
+		result.DetectedKeywords = append(result.DetectedKeywords, "period:next_month")
 		periodDetected = true
 	}
 
@@ -125,8 +133,8 @@ func InferContextFromMessage(message string, prevContext *ports.InferredContext)
 		contextDetected = true
 	}
 
-	// Income context
-	if !contextDetected && containsAny(msgLower, "ingreso", "income", "cobr", "recib", "ganancia", "earning") {
+	// Income context - ampliado para detectar "último ingreso"
+	if !contextDetected && containsAny(msgLower, "ingreso", "income", "cobr", "recib", "ganancia", "earning", "último ingreso", "ultimo ingreso", "mi último ingreso", "últimos ingresos", "cuando ingresó", "cuando ingreso") {
 		result.ContextFocus = "income"
 		result.DetectedKeywords = append(result.DetectedKeywords, "context:income")
 		contextDetected = true
@@ -208,6 +216,13 @@ func getPeriodLastMonth(now time.Time, loc *time.Location) ports.Period {
 	return ports.Period{From: firstOfLastMonth, To: lastOfLastMonth}
 }
 
+func getPeriodNextMonth(now time.Time, loc *time.Location) ports.Period {
+	firstOfNextMonth := time.Date(now.Year(), now.Month()+1, 1, 0, 0, 0, 0, loc)
+	firstOfMonthAfter := time.Date(now.Year(), now.Month()+2, 1, 0, 0, 0, 0, loc)
+	lastOfNextMonth := firstOfMonthAfter.Add(-time.Second)
+	return ports.Period{From: firstOfNextMonth, To: lastOfNextMonth}
+}
+
 func getPeriodLast30Days(now time.Time, loc *time.Location) ports.Period {
 	from := now.AddDate(0, 0, -30)
 	from = time.Date(from.Year(), from.Month(), from.Day(), 0, 0, 0, 0, loc)
@@ -235,9 +250,10 @@ func GenerateQuickSuggestions(context string, hasData bool) []string {
 	switch context {
 	case "expenses":
 		return []string{
+			"¿Cuánto gasté en crédito hoy?",
+			"¿Cuánto gasté en débito este mes?",
 			"¿En qué comercios gasté más?",
-			"¿Cuánto gasté con tarjetas?",
-			"Ver por tipo de gasto",
+			"Ver gastos de ayer",
 		}
 	case "cards":
 		return []string{
@@ -248,8 +264,8 @@ func GenerateQuickSuggestions(context string, hasData bool) []string {
 	case "installments":
 		return []string{
 			"¿Cuándo vence la próxima cuota?",
-			"¿Puedo cancelar algún plan?",
-			"Ver proyección de pagos",
+			"¿Cuánto debo en cuotas?",
+			"Ver planes activos",
 		}
 	case "merchants":
 		return []string{
@@ -259,15 +275,16 @@ func GenerateQuickSuggestions(context string, hasData bool) []string {
 		}
 	case "income":
 		return []string{
-			"¿De dónde vienen mis ingresos?",
-			"Comparar con gastos",
-			"Ver balance",
+			"¿Cuándo fue mi último ingreso?",
+			"Ingresos de este mes",
+			"Comparar ingresos vs gastos",
 		}
 	default:
 		return []string{
-			"Ver gastos del mes",
-			"Estado de mis tarjetas",
-			"Planes de cuotas activos",
+			"¿Cuánto gasté hoy?",
+			"Ingresos de este mes",
+			"¿Cuándo fue mi último ingreso?",
+			"Ver planes de cuotas",
 		}
 	}
 }

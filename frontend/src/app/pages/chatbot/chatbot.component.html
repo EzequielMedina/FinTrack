@@ -26,9 +26,15 @@
         [class.user-message]="msg.role === 'user'"
         [class.assistant-message]="msg.role === 'assistant'">
         
-        <div class="message-bubble">
+        <!-- Avatar -->
+        <div class="message-avatar">
+          <mat-icon *ngIf="msg.role === 'user'" class="user-icon">person</mat-icon>
+          <mat-icon *ngIf="msg.role === 'assistant'" class="bot-icon">smart_toy</mat-icon>
+        </div>
+
+        <div class="message-content-wrapper">
           <div class="message-content">
-            <p class="message-text">{{ msg.message }}</p>
+            <div class="message-text" [innerHTML]="msg.message | markdown"></div>
           </div>
 
           <!-- Sugerencias Rápidas -->
@@ -46,12 +52,6 @@
           </div>
 
           <span class="message-time">{{ formatTime(msg.timestamp) }}</span>
-        </div>
-
-        <!-- Avatar -->
-        <div class="message-avatar">
-          <mat-icon *ngIf="msg.role === 'user'" class="user-icon">person</mat-icon>
-          <mat-icon *ngIf="msg.role === 'assistant'" class="bot-icon">smart_toy</mat-icon>
         </div>
       </div>
 

@@ -88,7 +88,7 @@ export class CreditCardService {
       installmentsCount: chargeData.installments.count,
       startDate: chargeData.installments.startDate || new Date().toISOString(),
       reference: chargeData.reference || '',
-      merchantName: 'FinTrack Store',
+      merchantName: chargeData.description || 'sin descripción',
       interestRate: chargeData.installments.interestRate || 0,
       adminFee: chargeData.installments.adminFee || 0
     };

@@ -32,7 +32,7 @@ type UpdateAccountRequest struct {
 	AccountType string `json:"account_type,omitempty" binding:"omitempty,oneof=checking savings credit debit wallet bank_account"`
 
 	// Credit card specific fields
-	CreditLimit *float64   `json:"credit_limit,omitempty" binding:"omitempty,min=0"`
+	CreditLimit *float64   `json:"credit_limit,omitempty" binding:"omitempty,min=0,max=999999999"` // Hasta 9 dígitos
 	ClosingDate *time.Time `json:"closing_date,omitempty"`
 	DueDate     *time.Time `json:"due_date,omitempty"`
 
@@ -66,7 +66,7 @@ type WithdrawFundsRequest struct {
 
 // UpdateCreditLimitRequest represents the request to update credit limit
 type UpdateCreditLimitRequest struct {
-	CreditLimit float64 `json:"credit_limit" binding:"min=0"`
+	CreditLimit float64 `json:"credit_limit" binding:"min=0,max=999999999"` // Hasta 9 dígitos
 }
 
 // UpdateCreditDatesRequest represents the request to update credit card dates

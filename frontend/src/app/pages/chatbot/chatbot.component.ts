@@ -10,6 +10,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ChatbotService, ChatMessage, ChatQueryResponse } from '../../services/chatbot.service';
+import { MarkdownPipe } from '../../pipes/markdown.pipe';
 
 interface ChatBubble {
   role: 'user' | 'assistant';
@@ -33,7 +34,8 @@ interface ChatBubble {
     MatIconModule,
     MatChipsModule,
     MatProgressSpinnerModule,
-    MatTooltipModule
+    MatTooltipModule,
+    MarkdownPipe
   ],
   templateUrl: './chatbot.component.html',
   styleUrls: ['./chatbot.component.css']
@@ -59,7 +61,7 @@ export class ChatbotComponent implements OnInit, AfterViewChecked {
     // Iniciar con mensaje de bienvenida
     this.messages.push({
       role: 'assistant',
-      message: '¡Hola! Soy tu asistente financiero. Pregúntame sobre tus gastos, ingresos, tarjetas o cuotas. Por ejemplo:\n\n- "¿Cuánto gasté hoy?"\n- "Muéstrame mis tarjetas"\n- "Estado de cuotas esta semana"',
+      message: '¡Hola! 👋 Soy tu **asistente financiero** de FinTrack.\nPuedo ayudarte con:\n- 💸 Consultar tus **gastos** (hoy, ayer, este mes...)\n- 💰 Ver tus **ingresos** y último cobro\n- 💳 Estado de tus **tarjetas** y límites\n- 📅 Revisar **planes de cuotas** activos\n- 📊 Analizar **comercios** donde más gastas\n¿En qué puedo ayudarte?',
       timestamp: new Date()
     });
   }
