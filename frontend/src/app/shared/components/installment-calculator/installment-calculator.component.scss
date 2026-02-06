@@ -121,6 +121,11 @@
   gap: 16px;
   margin-bottom: 24px;
 
+  &.centered {
+    grid-template-columns: repeat(2, minmax(200px, 300px));
+    justify-content: center;
+  }
+
   .summary-card {
     padding: 16px;
     border-radius: 8px;

@@ -104,7 +104,7 @@
       </div>
 
       <!-- Summary Cards -->
-      <div class="summary-grid">
+      <div class="summary-grid centered">
         <div class="summary-card">
           <div class="summary-label">Monto Original</div>
           <div class="summary-value primary">{{ formatCurrency(currentPreview.totalAmount) }}</div>
@@ -113,16 +113,6 @@
         <div class="summary-card">
           <div class="summary-label">Cuota Mensual</div>
           <div class="summary-value accent">{{ formatCurrency(currentPreview.installmentAmount) }}</div>
-        </div>
-        
-        <div class="summary-card">
-          <div class="summary-label">Total a Pagar</div>
-          <div class="summary-value">{{ formatCurrency(currentPreview.totalToPay) }}</div>
-        </div>
-        
-        <div class="summary-card">
-          <div class="summary-label">Total Intereses</div>
-          <div class="summary-value warn">{{ formatCurrency(currentPreview.totalInterest) }}</div>
         </div>
       </div>
 
