@@ -12,7 +12,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { Card, CardType, InstallmentPlan } from '../../../models';
+import { Card, CardType, InstallmentPlan, CardHelpers } from '../../../models';
 import { CreditCardService, CreditCardBalanceResponse } from '../../../services/credit-card.service';
 import { DebitCardService, DebitCardBalanceResponse } from '../../../services/debit-card.service';
 import { InstallmentService } from '../../../services/installment.service';
@@ -81,8 +81,13 @@ export class CardDetailComponent implements OnInit {
   paymentForm!: FormGroup;
   transactionForm!: FormGroup;
 
-  // Exponer enum para el template
+  // Exponer enum y helpers para el template
   readonly CardType = CardType;
+  
+  // Método helper para verificar expiración en el template
+  isCardExpired(): boolean {
+    return CardHelpers.isExpired(this.card);
+  }
 
   ngOnInit(): void {
     this.initializeForms();
@@ -285,6 +290,26 @@ export class CardDetailComponent implements OnInit {
 
   onInstallmentsSelected(calculation: InstallmentCalculatorResult): void {
     if (calculation && this.card.cardType === CardType.CREDIT) {
+      // Validar que la tarjeta no esté vencida
+      if (CardHelpers.isExpired(this.card)) {
+        this.snackBar.open(
+          `No se puede crear el plan de cuotas. La tarjeta está vencida (${CardHelpers.formatExpiration(this.card)}). Por favor, actualiza la fecha de expiración.`,
+          'Cerrar',
+          { duration: 7000, panelClass: ['error-snackbar'] }
+        );
+        return;
+      }
+
+      // Validar que la tarjeta esté activa
+      if (!CardHelpers.isFullyActive(this.card)) {
+        this.snackBar.open(
+          `No se puede crear el plan de cuotas. ${CardHelpers.getStatusMessage(this.card)}. Por favor, verifica el estado de la tarjeta.`,
+          'Cerrar',
+          { duration: 7000, panelClass: ['error-snackbar'] }
+        );
+        return;
+      }
+
       // Crear la compra con cuotas
       const chargeRequest = {
         amount: calculation.preview.totalAmount, // Base amount without interests

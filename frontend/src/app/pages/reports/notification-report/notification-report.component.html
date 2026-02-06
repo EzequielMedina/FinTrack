@@ -1,15 +1,18 @@
 <div class="notification-report-container">
   <div class="header-section">
     <h2>Reporte de Notificaciones (Admin)</h2>
-    <button 
-      mat-raised-button
-      color="primary"
-      class="btn-download-pdf" 
-      (click)="downloadPDF()" 
-      [disabled]="downloadingPDF || loading || !reportData">
-      <mat-icon>{{ downloadingPDF ? 'hourglass_empty' : 'picture_as_pdf' }}</mat-icon>
-      <span>{{ downloadingPDF ? 'Generando PDF...' : 'Descargar PDF' }}</span>
-    </button>
+    <div class="header-actions">
+      <button 
+        mat-raised-button
+        color="primary"
+        class="btn-download-pdf" 
+        (click)="downloadPDF()" 
+        [disabled]="downloadingPDF || loading || !reportData">
+        <mat-icon>{{ downloadingPDF ? 'hourglass_empty' : 'picture_as_pdf' }}</mat-icon>
+        <span>{{ downloadingPDF ? 'Generando PDF...' : 'Descargar PDF' }}</span>
+      </button>
+      <button class="btn-back" routerLink="/reports">← Volver a Reportes</button>
+    </div>
   </div>
 
   <!-- Filtros (mismo estilo que reporte de transacciones) -->
@@ -154,54 +157,40 @@
       </div>
     </div>
 
-    <!-- Job Runs -->
+    <!-- Job Runs - Información simplificada -->
     <div class="jobs-section" *ngIf="reportData.job_runs && reportData.job_runs.length > 0">
       <h3>
         <mat-icon>history</mat-icon>
-        Historial de Ejecuciones ({{ reportData.job_runs.length }})
+        Últimas Ejecuciones ({{ reportData.job_runs.length }})
       </h3>
       <div class="jobs-list">
-        <mat-card *ngFor="let job of reportData.job_runs" class="job-card" [class]="getStatusClass(job.status)">
+        <mat-card *ngFor="let job of reportData.job_runs; let i = index" class="job-card" [class]="getStatusClass(job.status)">
           <mat-card-header>
             <mat-icon [class]="getStatusClass(job.status)">
               {{ getStatusIcon(job.status) }}
             </mat-icon>
             <mat-card-title>
-              <span class="job-id">Job #{{ job.id }}</span>
+              <span class="job-number">Ejecución #{{ i + 1 }}</span>
               <span class="status-badge" [class]="getStatusClass(job.status)">
                 {{ getStatusLabel(job.status) }}
               </span>
             </mat-card-title>
-            <mat-card-subtitle>
-              {{ formatDateTime(job.started_at) }}
-            </mat-card-subtitle>
           </mat-card-header>
           <mat-card-content>
-            <div class="job-details">
-              <div class="detail-row">
-                <mat-icon>credit_card</mat-icon>
-                <span class="label">Tarjetas encontradas:</span>
-                <span class="value">{{ job.cards_found }}</span>
-              </div>
-              <div class="detail-row">
+            <div class="job-summary">
+              <div class="metric-item">
                 <mat-icon>email</mat-icon>
-                <span class="label">Emails enviados:</span>
                 <span class="value success">{{ job.emails_sent }}</span>
+                <span class="label">enviados</span>
               </div>
-              <div class="detail-row" *ngIf="job.errors > 0">
+              <div class="metric-item" *ngIf="job.errors > 0">
                 <mat-icon>error</mat-icon>
-                <span class="label">Errores:</span>
                 <span class="value error">{{ job.errors }}</span>
+                <span class="label">fallidos</span>
               </div>
-              <div class="detail-row" *ngIf="job.duration">
+              <div class="metric-item">
                 <mat-icon>schedule</mat-icon>
-                <span class="label">Duración:</span>
-                <span class="value">{{ job.duration }}</span>
-              </div>
-              <div class="detail-row" *ngIf="job.completed_at">
-                <mat-icon>done</mat-icon>
-                <span class="label">Completado:</span>
-                <span class="value">{{ formatDateTime(job.completed_at) }}</span>
+                <span class="value">{{ formatDateTime(job.started_at) }}</span>
               </div>
             </div>
             <div class="error-message" *ngIf="job.error_message">
@@ -215,7 +204,7 @@
 
     <div *ngIf="reportData.job_runs && reportData.job_runs.length === 0" class="empty-state">
       <mat-icon>info</mat-icon>
-      <p>No hay ejecuciones de jobs en este período</p>
+      <p>No hay ejecuciones de notificaciones en este período</p>
     </div>
   </div>
 </div>

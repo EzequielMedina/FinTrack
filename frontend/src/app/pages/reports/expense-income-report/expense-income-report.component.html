@@ -1,15 +1,18 @@
 <div class="expense-income-report-container">
   <div class="header-section">
     <h2>Reporte de Gastos vs Ingresos</h2>
-    <button 
-      mat-raised-button 
-      color="primary"
-      class="btn-download-pdf"
-      (click)="downloadPDF()" 
-      [disabled]="downloadingPDF || loading || !reportData">
-      <mat-icon>{{ downloadingPDF ? 'hourglass_empty' : 'picture_as_pdf' }}</mat-icon>
-      <span>{{ downloadingPDF ? 'Generando PDF...' : 'Descargar PDF' }}</span>
-    </button>
+    <div class="header-actions">
+      <button 
+        mat-raised-button 
+        color="primary"
+        class="btn-download-pdf"
+        (click)="downloadPDF()" 
+        [disabled]="downloadingPDF || loading || !reportData">
+        <mat-icon>{{ downloadingPDF ? 'hourglass_empty' : 'picture_as_pdf' }}</mat-icon>
+        <span>{{ downloadingPDF ? 'Generando PDF...' : 'Descargar PDF' }}</span>
+      </button>
+      <button class="btn-back" routerLink="/reports">← Volver a Reportes</button>
+    </div>
   </div>
 
   <!-- Filtros (mismo estilo que reporte de transacciones) -->
@@ -219,18 +222,62 @@
         <mat-icon>category</mat-icon>
         Distribución por Categoría
       </h3>
-      <div class="category-grid">
-        <mat-card *ngFor="let cat of reportData.by_category" class="category-card" [class]="getTypeClass(cat.type)">
+      
+      <!-- Gráfico de Torta -->
+      <div class="pie-chart-container">
+        <mat-card class="pie-chart-card">
           <mat-card-header>
-            <mat-icon>{{ getCategoryIcon(cat.category) }}</mat-icon>
-            <mat-card-title>{{ cat.category }}</mat-card-title>
+            <mat-icon>pie_chart</mat-icon>
+            <mat-card-title>Distribución Visual</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="pie-chart-wrapper">
+              <div class="pie-chart">
+                <svg viewBox="0 0 100 100" width="300" height="300">
+                  <ng-container *ngFor="let item of getPieChartData(); let i = index">
+                    <circle
+                      *ngIf="item.percentage > 0"
+                      cx="50"
+                      cy="50"
+                      r="45"
+                      fill="transparent"
+                      [attr.stroke]="item.color"
+                      stroke-width="10"
+                      [attr.stroke-dasharray]="(item.percentage * 2.827) + ' 282.7'"
+                      [attr.stroke-dashoffset]="getPieOffset(i)"
+                      class="pie-segment"
+                    />
+                  </ng-container>
+                </svg>
+              </div>
+              <div class="pie-legend">
+                <div *ngFor="let item of getPieChartData(); let i = index" class="legend-item">
+                  <span class="legend-color" [style.background-color]="item.color"></span>
+                  <span class="legend-label">{{ item.category }}</span>
+                  <span class="legend-value">{{ formatPercentage(item.percentage) }}</span>
+                </div>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <!-- Grid de Categorías -->
+      <div class="category-grid">
+        <mat-card *ngFor="let cat of reportData.by_category; let i = index" class="category-card" [class]="getTypeClass(cat.type)">
+          <mat-card-header>
+            <div class="category-header-icon">
+              <span class="color-indicator" [style.background-color]="getCategoryColor(i)"></span>
+              <mat-icon>{{ getCategoryIcon(cat.category) }}</mat-icon>
+            </div>
+            <mat-card-title>{{ getCategoryLabel(cat.category) }}</mat-card-title>
           </mat-card-header>
           <mat-card-content>
             <div class="category-amount" [class]="getTypeClass(cat.type)">
               {{ formatCurrency(cat.amount) }}
             </div>
             <div class="category-details">
-              <span class="transaction-count">{{ cat.count }} transacciones</span>
+              <span class="transaction-count">{{ cat.count }} {{ cat.count === 1 ? 'transacción' : 'transacciones' }}</span>
               <span class="category-percentage">{{ formatPercentage(cat.percentage) }}</span>
             </div>
           </mat-card-content>

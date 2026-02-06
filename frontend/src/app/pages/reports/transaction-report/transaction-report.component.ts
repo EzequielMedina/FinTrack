@@ -35,7 +35,12 @@ export class TransactionReportComponent implements OnInit {
     { value: 'credit_payment', label: 'Pago de Crédito' },
     { value: 'debit_purchase', label: 'Compra con Débito' },
     { value: 'account_deposit', label: 'Depósito en Cuenta' },
-    { value: 'account_withdraw', label: 'Retiro de Cuenta' }
+    { value: 'account_withdraw', label: 'Retiro de Cuenta' },
+    { value: 'installment_payment', label: 'Pago de Cuota' },
+    { value: 'installment_charge', label: 'Cargo de Cuota' },
+    { value: 'transfer', label: 'Transferencia' },
+    { value: 'refund', label: 'Reembolso' },
+    { value: 'adjustment', label: 'Ajuste' }
   ];
 
   constructor(
@@ -113,7 +118,78 @@ export class TransactionReportComponent implements OnInit {
 
   getTypeLabel(type: string): string {
     const typeObj = this.transactionTypes.find(t => t.value === type);
-    return typeObj ? typeObj.label : type;
+    if (typeObj) {
+      return typeObj.label;
+    }
+    
+    // Mapeo directo de tipos comunes al español
+    const directTranslations: { [key: string]: string } = {
+      'account_deposit': 'Depósito en Cuenta',
+      'account_withdraw': 'Retiro de Cuenta',
+      'wallet_deposit': 'Depósito en Billetera',
+      'wallet_withdrawal': 'Retiro de Billetera',
+      'debit_purchase': 'Compra con Débito',
+      'credit_charge': 'Cargo de Crédito',
+      'credit_payment': 'Pago de Crédito',
+      'installment_payment': 'Pago de Cuota',
+      'installment_charge': 'Cargo de Cuota',
+      'transfer': 'Transferencia',
+      'refund': 'Reembolso',
+      'adjustment': 'Ajuste',
+      'fee': 'Comisión',
+      'interest': 'Interés',
+      'purchase': 'Compra',
+      'payment': 'Pago',
+      'deposit': 'Depósito',
+      'withdrawal': 'Retiro'
+    };
+    
+    // Intentar traducción directa primero
+    if (directTranslations[type.toLowerCase()]) {
+      return directTranslations[type.toLowerCase()];
+    }
+    
+    // Si no encuentra, formatear de forma legible
+    return type
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  }
+
+  getTypeColor(type: string): string {
+    const colorMap: { [key: string]: string } = {
+      'wallet_deposit': '#4CAF50',
+      'account_deposit': '#4CAF50',
+      'credit_payment': '#8BC34A',
+      'refund': '#8BC34A',
+      'wallet_withdrawal': '#FF9800',
+      'account_withdraw': '#FF9800',
+      'credit_charge': '#F44336',
+      'debit_purchase': '#E91E63',
+      'installment_payment': '#9C27B0',
+      'installment_charge': '#673AB7',
+      'transfer': '#2196F3',
+      'adjustment': '#607D8B'
+    };
+    return colorMap[type] || '#667eea';
+  }
+
+  getTypeIcon(type: string): string {
+    const iconMap: { [key: string]: string } = {
+      'wallet_deposit': '💰',
+      'account_deposit': '💵',
+      'credit_payment': '✅',
+      'refund': '↩️',
+      'wallet_withdrawal': '💸',
+      'account_withdraw': '🏧',
+      'credit_charge': '💳',
+      'debit_purchase': '🛒',
+      'installment_payment': '📅',
+      'installment_charge': '📊',
+      'transfer': '🔄',
+      'adjustment': '⚙️'
+    };
+    return iconMap[type] || '📋';
   }
 
   downloadPDF(): void {

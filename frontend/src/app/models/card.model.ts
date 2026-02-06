@@ -50,6 +50,60 @@ export interface Card {
   updatedAt: string;
 }
 
+// Helper functions for Card
+export class CardHelpers {
+  /**
+   * Verifica si una tarjeta está vencida
+   */
+  static isExpired(card: Card): boolean {
+    const now = new Date();
+    const currentMonth = now.getMonth() + 1; // getMonth() returns 0-11
+    const currentYear = now.getFullYear();
+    
+    // La tarjeta vence al final del mes indicado
+    if (card.expirationYear < currentYear) {
+      return true;
+    }
+    
+    if (card.expirationYear === currentYear && card.expirationMonth < currentMonth) {
+      return true;
+    }
+    
+    return false;
+  }
+
+  /**
+   * Verifica si una tarjeta está activa y NO vencida
+   */
+  static isFullyActive(card: Card): boolean {
+    return card.status === CardStatus.ACTIVE && !this.isExpired(card);
+  }
+
+  /**
+   * Obtiene un mensaje descriptivo del estado de la tarjeta
+   */
+  static getStatusMessage(card: Card): string {
+    if (this.isExpired(card)) {
+      return `Tarjeta vencida (${card.expirationMonth}/${card.expirationYear})`;
+    }
+    if (card.status === CardStatus.BLOCKED) {
+      return 'Tarjeta bloqueada';
+    }
+    if (card.status === CardStatus.INACTIVE) {
+      return 'Tarjeta inactiva';
+    }
+    return 'Tarjeta activa';
+  }
+
+  /**
+   * Formatea la fecha de expiración
+   */
+  static formatExpiration(card: Card): string {
+    const month = card.expirationMonth.toString().padStart(2, '0');
+    return `${month}/${card.expirationYear}`;
+  }
+}
+
 export interface InstallmentPlansSummary {
   activePlans: number;
   totalDebt: number;

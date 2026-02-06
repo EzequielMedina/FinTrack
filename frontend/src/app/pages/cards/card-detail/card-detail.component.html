@@ -21,8 +21,8 @@
             {{ card.cardBrand | titlecase }}
           </mat-chip>
           <mat-chip 
-            [color]="card.status === 'active' ? 'primary' : 'warn'">
-            {{ card.status === 'active' ? 'Activa' : 'Inactiva' }}
+            [color]="card.status === 'active' && !isCardExpired() ? 'primary' : 'warn'">
+            {{ card.status === 'active' && !isCardExpired() ? 'Activa' : (isCardExpired() ? 'Vencida' : 'Inactiva') }}
           </mat-chip>
           <mat-chip 
             *ngIf="card.isDefault" 
@@ -31,6 +31,20 @@
             Predeterminada
           </mat-chip>
         </mat-chip-set>
+      </div>
+
+      <!-- Alerta de tarjeta vencida -->
+      <div *ngIf="isCardExpired()" class="card-expired-alert" style="margin-top: 16px; padding: 12px; background-color: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <mat-icon style="color: #ff9800;">warning</mat-icon>
+          <div>
+            <strong>Tarjeta Vencida</strong>
+            <p style="margin: 4px 0 0 0; font-size: 14px;">
+              Esta tarjeta venció el {{ card.expirationMonth.toString().padStart(2, '0') }}/{{ card.expirationYear }}. 
+              No podrás crear planes de cuotas ni realizar cargos hasta que actualices la fecha de expiración.
+            </p>
+          </div>
+        </div>
       </div>
 
       <div class="card-details">

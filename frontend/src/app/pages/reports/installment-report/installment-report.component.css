@@ -20,6 +20,12 @@
   font-weight: 500;
 }
 
+.header-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
 /* Botón de descarga PDF - Usa Material Design */
 .btn-download-pdf {
   display: flex;
@@ -29,6 +35,24 @@
 
 .btn-download-pdf mat-icon {
   margin-right: 0;
+}
+
+.btn-back {
+  padding: var(--space-3, 12px) var(--space-6, 24px);
+  background: white;
+  color: var(--text-secondary, #666);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: var(--radius-md, 6px);
+  cursor: pointer;
+  transition: var(--transition-base, all 0.2s ease);
+  font-weight: var(--font-medium, 500);
+  font-size: var(--text-sm, 0.875rem);
+}
+
+.btn-back:hover {
+  background: var(--bg-secondary, #f3f4f6);
+  border-color: var(--accent-300, #667eea);
+  color: var(--text-primary, #333);
 }
 
 /* Filtros - mismo estilo que otros reportes */

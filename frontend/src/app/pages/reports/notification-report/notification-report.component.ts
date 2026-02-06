@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
@@ -14,6 +15,7 @@ import { AuthService } from '../../../services/auth.service';
   imports: [
     CommonModule,
     FormsModule,
+    RouterModule,
     MatCardModule,
     MatProgressSpinnerModule,
     MatIconModule,

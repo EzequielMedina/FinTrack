@@ -143,10 +143,12 @@ func (r *ReportRepository) GetAccountReport(ctx context.Context, userID string, 
 	response.Accounts = accounts
 
 	// Query para detalle de tarjetas (con filtro por created_at si aplica)
+	// Ahora incluimos el campo balance directamente en la consulta
 	cardsQuery := `
 		SELECT 
 			c.id, c.account_id, c.card_type, c.card_brand, c.last_four_digits,
 			c.holder_name, c.status, COALESCE(c.credit_limit, 0) as credit_limit,
+			COALESCE(c.balance, 0) as balance,
 			COALESCE(c.nickname, '') as nickname
 		FROM cards c
 		JOIN accounts a ON BINARY c.account_id = BINARY a.id
@@ -170,26 +172,19 @@ func (r *ReportRepository) GetAccountReport(ctx context.Context, userID string, 
 		err := cardRows.Scan(
 			&card.ID, &card.AccountID, &card.CardType, &card.CardBrand,
 			&card.LastFourDigits, &card.HolderName, &card.Status,
-			&card.CreditLimit, &card.Nickname,
+			&card.CreditLimit, &card.CurrentBalance, &card.Nickname,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("error escaneando tarjeta: %w", err)
 		}
 
-		// Calcular balance actual de la tarjeta si es de crédito
-		if card.CardType == "credit" {
-			balanceQuery := `
-				SELECT COALESCE(SUM(amount), 0)
-				FROM transactions
-				WHERE from_card_id = ? 
-					AND status IN ('pending', 'completed')
-					AND type = 'credit_charge'
-			`
-			err = r.db.QueryRowContext(ctx, balanceQuery, card.ID).Scan(&card.CurrentBalance)
-			if err != nil {
-				card.CurrentBalance = 0
-			}
+		// Calcular crédito disponible para tarjetas de crédito
+		if card.CardType == "credit" && card.CreditLimit > 0 {
 			card.AvailableCredit = card.CreditLimit - card.CurrentBalance
+			// Asegurar que no sea negativo
+			if card.AvailableCredit < 0 {
+				card.AvailableCredit = 0
+			}
 		}
 
 		cards = append(cards, card)
@@ -348,20 +343,26 @@ func (r *ReportRepository) GetExpenseIncomeReport(ctx context.Context, userID st
 	defer rows.Close()
 
 	var byCategory []dto.ExpenseIncomeByCategory
+	var totalCategoryAmount float64
+	
+	// Primera pasada: recolectar todos los items y calcular el total
 	for rows.Next() {
 		var item dto.ExpenseIncomeByCategory
 		err := rows.Scan(&item.Category, &item.Type, &item.Count, &item.Amount)
 		if err != nil {
 			return nil, fmt.Errorf("error escaneando categoría: %w", err)
 		}
-
-		total := summary.TotalIncome + summary.TotalExpenses
-		if total > 0 {
-			item.Percentage = (item.Amount / total) * 100
-		}
-
 		byCategory = append(byCategory, item)
+		totalCategoryAmount += item.Amount
 	}
+	
+	// Segunda pasada: calcular porcentajes basados en el total de todas las categorías
+	if totalCategoryAmount > 0 {
+		for i := range byCategory {
+			byCategory[i].Percentage = (byCategory[i].Amount / totalCategoryAmount) * 100
+		}
+	}
+	
 	response.ByCategory = byCategory
 
 	// Análisis de tendencias simple

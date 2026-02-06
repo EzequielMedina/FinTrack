@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
@@ -14,6 +15,7 @@ import { AuthService } from '../../../services/auth.service';
   imports: [
     CommonModule,
     FormsModule,
+    RouterModule,
     MatCardModule,
     MatProgressSpinnerModule,
     MatIconModule,
@@ -131,9 +133,15 @@ export class AccountReportComponent implements OnInit {
       'savings': 'Caja de Ahorro',
       'checking': 'Cuenta Corriente',
       'credit': 'Tarjeta de Crédito',
-      'debit': 'Tarjeta de Débito'
+      'debit': 'Tarjeta de Débito',
+      'bank_account': 'Cuenta Bancaria'
     };
     return labels[type] || type;
+  }
+
+  getUsagePercentage(currentBalance: number | undefined, creditLimit: number | undefined): number {
+    if (!creditLimit || creditLimit === 0) return 0;
+    return ((currentBalance || 0) / creditLimit) * 100;
   }
 
   getTypeIcon(type: string): string {

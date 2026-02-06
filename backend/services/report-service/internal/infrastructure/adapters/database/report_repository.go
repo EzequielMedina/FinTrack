@@ -82,18 +82,26 @@ func (r *ReportRepository) GetTransactionReport(ctx context.Context, userID stri
 	defer rows.Close()
 
 	var byType []dto.TransactionByType
-	totalAmount := summary.TotalIncome + summary.TotalExpenses
+	
+	// Calcular el total de transacciones (suma de montos absolutos)
+	var totalTransactionAmount float64
 
 	for rows.Next() {
 		var item dto.TransactionByType
 		if err := rows.Scan(&item.Type, &item.Count, &item.Amount); err != nil {
 			return nil, fmt.Errorf("error escaneando transacción por tipo: %w", err)
 		}
-		if totalAmount > 0 {
-			item.Percentage = (item.Amount / totalAmount) * 100
-		}
 		byType = append(byType, item)
+		totalTransactionAmount += item.Amount
 	}
+
+	// Calcular porcentajes sobre el total de transacciones
+	if totalTransactionAmount > 0 {
+		for i := range byType {
+			byType[i].Percentage = (byType[i].Amount / totalTransactionAmount) * 100
+		}
+	}
+	
 	response.ByType = byType
 
 	// Query para transacciones por período (agrupadas por día)

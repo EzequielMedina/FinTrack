@@ -13,6 +13,37 @@
   gap: 16px;
 }
 
+.header-section h2 {
+  margin: 0;
+  color: #333;
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.btn-back {
+  padding: var(--space-3, 12px) var(--space-6, 24px);
+  background: white;
+  color: var(--text-secondary, #666);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: var(--radius-md, 6px);
+  cursor: pointer;
+  transition: var(--transition-base, all 0.2s ease);
+  font-weight: var(--font-medium, 500);
+  font-size: var(--text-sm, 0.875rem);
+}
+
+.btn-back:hover {
+  background: var(--bg-secondary, #f3f4f6);
+  border-color: var(--accent-300, #667eea);
+  color: var(--text-primary, #333);
+}
+
 /* Filtros - mismo estilo que reporte de transacciones */
 .filters-card {
   background: var(--bg-primary, #fff);
@@ -532,6 +563,116 @@
   color: #666;
 }
 
+/* Gráfico de Torta */
+.pie-chart-container {
+  margin-bottom: 32px;
+}
+
+.pie-chart-card {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.pie-chart-card mat-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.pie-chart-card mat-icon {
+  font-size: 32px;
+  width: 32px;
+  height: 32px;
+  color: #2196F3;
+}
+
+.pie-chart-wrapper {
+  display: grid;
+  grid-template-columns: 350px 1fr;
+  gap: 40px;
+  align-items: center;
+}
+
+.pie-chart {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.pie-chart svg {
+  transform: rotate(-90deg);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.pie-segment {
+  transition: stroke-width 0.3s ease;
+}
+
+.pie-segment:hover {
+  stroke-width: 12;
+  filter: brightness(1.1);
+}
+
+.pie-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.legend-item {
+  display: grid;
+  grid-template-columns: 20px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  transition: all 0.3s ease;
+}
+
+.legend-item:hover {
+  transform: translateX(4px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.legend-color {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.legend-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+.legend-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2196F3;
+}
+
+/* Indicador de color en tarjetas de categoría */
+.category-header-icon {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.color-indicator {
+  width: 4px;
+  height: 28px;
+  border-radius: 2px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
 /* Empty State */
 .empty-state {
   display: flex;
@@ -580,5 +721,15 @@
     margin-left: 0;
     flex-basis: 100%;
     text-align: center;
+  }
+
+  .pie-chart-wrapper {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .pie-chart svg {
+    width: 250px;
+    height: 250px;
   }
 }

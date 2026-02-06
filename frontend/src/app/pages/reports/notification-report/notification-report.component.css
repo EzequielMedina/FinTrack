@@ -15,6 +15,12 @@
   color: var(--text-primary);
 }
 
+.header-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
 .btn-download-pdf {
   display: flex;
   align-items: center;
@@ -23,6 +29,24 @@
 
 .btn-download-pdf mat-icon {
   margin-right: 0;
+}
+
+.btn-back {
+  padding: var(--space-3, 12px) var(--space-6, 24px);
+  background: white;
+  color: var(--text-secondary, #666);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: var(--radius-md, 6px);
+  cursor: pointer;
+  transition: var(--transition-base, all 0.2s ease);
+  font-weight: var(--font-medium, 500);
+  font-size: var(--text-sm, 0.875rem);
+}
+
+.btn-back:hover {
+  background: var(--bg-secondary, #f3f4f6);
+  border-color: var(--accent-300, #667eea);
+  color: var(--text-primary, #333);
 }
 
 .notification-report-container {
@@ -486,6 +510,51 @@
   font-size: 13px;
   color: #999;
   margin-top: 4px;
+}
+
+.job-number {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.job-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: center;
+}
+
+.metric-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.metric-item mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  margin: 0;
+}
+
+.metric-item .value {
+  font-size: 18px;
+  font-weight: 600;
+  margin-right: 4px;
+}
+
+.metric-item .value.success {
+  color: #4caf50;
+}
+
+.metric-item .value.error {
+  color: #f44336;
+}
+
+.metric-item .label {
+  font-size: 14px;
+  color: #666;
 }
 
 .job-details {

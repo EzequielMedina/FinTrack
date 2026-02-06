@@ -1,15 +1,18 @@
 <div class="installment-report-container">
   <div class="header-section">
     <h2>Reporte de Cuotas</h2>
-    <button 
-      mat-raised-button
-      color="primary"
-      class="btn-download-pdf" 
-      (click)="downloadPDF()" 
-      [disabled]="downloadingPDF || loading || !reportData">
-      <mat-icon>{{ downloadingPDF ? 'hourglass_empty' : 'picture_as_pdf' }}</mat-icon>
-      <span>{{ downloadingPDF ? 'Generando PDF...' : 'Descargar PDF' }}</span>
-    </button>
+    <div class="header-actions">
+      <button 
+        mat-raised-button
+        color="primary"
+        class="btn-download-pdf" 
+        (click)="downloadPDF()" 
+        [disabled]="downloadingPDF || loading || !reportData">
+        <mat-icon>{{ downloadingPDF ? 'hourglass_empty' : 'picture_as_pdf' }}</mat-icon>
+        <span>{{ downloadingPDF ? 'Generando PDF...' : 'Descargar PDF' }}</span>
+      </button>
+      <button class="btn-back" routerLink="/reports">← Volver a Reportes</button>
+    </div>
   </div>
 
   <div class="filters-card">
@@ -28,7 +31,7 @@
         <button type="button" class="btn-secondary" (click)="resetFilters()">Resetear</button>
       </div>
     </div>
-    <p class="filter-hint">Filtra por fecha de vencimiento (due_date) de las cuotas.</p>
+    <p class="filter-hint">Filtra por fecha de vencimiento de las cuotas.</p>
   </div>
 
   <div *ngIf="loading" class="loading-container">

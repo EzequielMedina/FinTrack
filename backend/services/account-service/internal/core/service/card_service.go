@@ -495,20 +495,63 @@ func (s *CardService) ChargeCardWithInstallments(req *dto.CreateInstallmentPlanR
 		return nil, fmt.Errorf("installment plans are only available for credit cards")
 	}
 
+	// Validar límite de crédito usando la misma lógica que el método Charge interno
+	creditLimit := 0.0
+	if card.CreditLimit != nil {
+		creditLimit = *card.CreditLimit
+	}
+	
+	currentDebt := card.Balance
+	availableCredit := card.GetAvailableBalance()
+	
+	fmt.Printf("DEBUG - Card ID: %s\n", card.ID)
+	fmt.Printf("DEBUG - Card Type: %s\n", card.CardType)
+	fmt.Printf("DEBUG - Card Status: %s\n", card.Status)
+	fmt.Printf("DEBUG - Card Expiration: %d/%d\n", card.ExpirationMonth, card.ExpirationYear)
+	fmt.Printf("DEBUG - Card IsActive(): %v\n", card.IsActive())
+	fmt.Printf("DEBUG - Card IsExpired(): %v\n", card.IsExpired())
+	fmt.Printf("DEBUG - Card credit limit: %.2f\n", creditLimit)
+	fmt.Printf("DEBUG - Card current debt: %.2f\n", currentDebt)
+	fmt.Printf("DEBUG - Available credit: %.2f\n", availableCredit)
+	fmt.Printf("DEBUG - Total amount for new purchase: %.2f\n", req.TotalAmount)
+	fmt.Printf("DEBUG - CanCharge(%0.2f): %v\n", req.TotalAmount, card.CanCharge(req.TotalAmount))
+	
+	// Validar estado de la tarjeta con mensajes específicos
+	if card.IsExpired() {
+		return nil, fmt.Errorf("card has expired (%d/%d). Please update the expiration date or use a different card", 
+			card.ExpirationMonth, card.ExpirationYear)
+	}
+	
+	if card.Status != "active" {
+		return nil, fmt.Errorf("card is not active (status: %s). Please activate the card first", card.Status)
+	}
+	
+	// Validar límite de crédito
+	if !card.CanCharge(req.TotalAmount) {
+		return nil, fmt.Errorf("insufficient credit limit. Credit limit: $%.2f, Current debt: $%.2f, Available: $%.2f, Required: $%.2f", 
+			creditLimit, currentDebt, availableCredit, req.TotalAmount)
+	}
+	
+	fmt.Printf("DEBUG - Validation passed. Proceeding to create installment plan\n")
+
 	// Crear el plan de cuotas usando InstallmentService
 	installmentPlan, err := s.installmentService.CreateInstallmentPlan(req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create installment plan: %w", err)
 	}
 
-	// Cargar el monto total inmediatamente
-	fmt.Printf("DEBUG - About to charge card %s with total amount %.2f\n", req.CardID, req.TotalAmount)
+	fmt.Printf("DEBUG - Installment plan created successfully. ID: %s\n", installmentPlan.ID)
+	fmt.Printf("DEBUG - Plan details: %d installments of $%.2f each\n", installmentPlan.InstallmentsCount, installmentPlan.InstallmentAmount)
+	
+	// Cargar el monto total inmediatamente a la tarjeta (aumenta la deuda)
+	// Las cuotas son solo un plan de PAGO de esta deuda
+	fmt.Printf("DEBUG - Charging card with total amount: %.2f\n", req.TotalAmount)
 	chargedCard, err := s.ChargeCard(req.CardID, req.TotalAmount,
 		fmt.Sprintf("Purchase with %d installments - %s", installmentPlan.InstallmentsCount, req.Description),
 		req.Reference)
 	if err != nil {
-		fmt.Printf("DEBUG - Card charge failed: %v\n", err)
-		// Tratar de cancelar el plan de cuotas si falla el cargo de tarjeta
+		fmt.Printf("ERROR - Card charge failed: %v\n", err)
+		// Cancelar el plan de cuotas si falla el cargo de tarjeta
 		_, cancelErr := s.installmentService.CancelInstallmentPlan(installmentPlan.ID,
 			"Card charge failed for purchase", req.InitiatedBy)
 		if cancelErr != nil {
@@ -516,13 +559,12 @@ func (s *CardService) ChargeCardWithInstallments(req *dto.CreateInstallmentPlanR
 		}
 		return nil, fmt.Errorf("failed to charge card for purchase: %w", err)
 	}
-	fmt.Printf("DEBUG - Card charged successfully with new balance: %.2f\n", chargedCard.Balance)
-	firstInstallmentCharged := true
+	fmt.Printf("DEBUG - Card charged successfully. New debt: %.2f\n", chargedCard.Balance)
 
 	return &dto.ChargeWithInstallmentsResponse{
 		InstallmentPlan:         installmentPlan,
-		Card:                    chargedCard, // Usar la tarjeta actualizada después del cargo
-		FirstInstallmentCharged: firstInstallmentCharged,
+		Card:                    chargedCard, // Devolver la tarjeta con la deuda actualizada
+		FirstInstallmentCharged: true,
 		TransactionID:           installmentPlan.TransactionID,
 	}, nil
 }

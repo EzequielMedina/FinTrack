@@ -5,15 +5,16 @@
         <mat-icon>account_balance</mat-icon>
         Reporte de Cuentas y Tarjetas
       </mat-card-title>
-      <div class="header-actions" *ngIf="!error && reportData">
+      <div class="header-actions">
         <button 
           mat-raised-button 
           color="primary"
           (click)="downloadPDF()" 
-          [disabled]="downloadingPDF || loading">
+          [disabled]="downloadingPDF || loading || !reportData">
           <mat-icon>picture_as_pdf</mat-icon>
           <span>{{ downloadingPDF ? 'Generando PDF...' : 'Descargar PDF' }}</span>
         </button>
+        <button class="btn-back" routerLink="/reports">← Volver a Reportes</button>
       </div>
     </mat-card-header>
 
@@ -113,27 +114,27 @@
 
         <!-- Utilización de Crédito -->
         <div class="credit-section" *ngIf="reportData.cards && reportData.cards.length > 0">
-          <h3>Tarjetas de Crédito</h3>
+          <h3>Tarjetas de Crédito - Utilización de Límite</h3>
           <div class="credit-list">
             <div class="credit-item" *ngFor="let card of reportData.cards">
               <div class="credit-header">
                 <span class="card-name">{{ card.nickname || (card.card_brand + ' *' + card.last_four_digits) }}</span>
                 <span class="credit-percentage" 
-                      *ngIf="card.credit_limit && card.current_balance"
-                      [class.warning]="(card.current_balance / card.credit_limit * 100) > 70"
-                      [class.danger]="(card.current_balance / card.credit_limit * 100) > 90">
-                  {{ formatPercentage(card.current_balance / card.credit_limit * 100) }}
+                      [class.warning]="getUsagePercentage(card.current_balance, card.credit_limit) > 70"
+                      [class.danger]="getUsagePercentage(card.current_balance, card.credit_limit) > 90">
+                  {{ formatPercentage(getUsagePercentage(card.current_balance, card.credit_limit)) }} usado
                 </span>
               </div>
               <div class="credit-details">
-                <span>Usado: {{ formatCurrency(card.current_balance || 0) }}</span>
+                <span>Deuda: {{ formatCurrency(card.current_balance || 0) }}</span>
+                <span>Disponible: {{ formatCurrency((card.credit_limit || 0) - (card.current_balance || 0)) }}</span>
                 <span>Límite: {{ formatCurrency(card.credit_limit || 0) }}</span>
               </div>
               <div class="credit-bar" *ngIf="card.credit_limit">
                 <div class="credit-bar-fill" 
-                     [style.width.%]="(card.current_balance || 0) / card.credit_limit * 100"
-                     [class.warning]="((card.current_balance || 0) / card.credit_limit * 100) > 70"
-                     [class.danger]="((card.current_balance || 0) / card.credit_limit * 100) > 90">
+                     [style.width.%]="getUsagePercentage(card.current_balance, card.credit_limit)"
+                     [class.warning]="getUsagePercentage(card.current_balance, card.credit_limit) > 70"
+                     [class.danger]="getUsagePercentage(card.current_balance, card.credit_limit) > 90">
                 </div>
               </div>
             </div>

@@ -100,17 +100,35 @@
         <button class="btn-export" (click)="exportReport()">📥 Exportar CSV</button>
       </div>
       <div class="type-list">
-        <div *ngFor="let item of report.by_type" class="type-item">
+        <div *ngFor="let item of report.by_type; let i = index" class="type-item">
+          <div class="type-icon-wrapper">
+            <span class="type-icon">{{ getTypeIcon(item.type) }}</span>
+            <span class="type-rank">#{{ i + 1 }}</span>
+          </div>
           <div class="type-info">
             <span class="type-name">{{ getTypeLabel(item.type) }}</span>
-            <span class="type-count">{{ item.count }} transacciones</span>
+            <span class="type-count">{{ item.count }} {{ item.count === 1 ? 'transacción' : 'transacciones' }}</span>
           </div>
           <div class="type-bar-container">
-            <div class="type-bar" [style.width.%]="item.percentage"></div>
+            <div 
+              class="type-bar" 
+              [style.width.%]="item.percentage"
+              [style.background]="getTypeColor(item.type)">
+            </div>
             <span class="type-amount">{{ formatCurrency(item.amount) }}</span>
           </div>
-          <span class="type-percentage">{{ item.percentage.toFixed(1) }}%</span>
+          <div class="type-percentage-wrapper">
+            <span class="type-percentage">{{ item.percentage.toFixed(1) }}%</span>
+            <div class="percentage-bar">
+              <div class="percentage-fill" [style.width.%]="item.percentage"></div>
+            </div>
+          </div>
         </div>
+      </div>
+
+      <!-- Empty state -->
+      <div *ngIf="!report.by_type || report.by_type.length === 0" class="empty-state">
+        <p>📭 No hay transacciones para mostrar en este período</p>
       </div>
     </div>
 
